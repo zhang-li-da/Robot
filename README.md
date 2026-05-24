@@ -9,6 +9,7 @@ Main project entry points:
 
 - Chinese project report: [`reports/g1_knee_climb_50cm_report_zh.pdf`](reports/g1_knee_climb_50cm_report_zh.pdf)
 - Experiment record: [`EXPERIMENTS.md`](EXPERIMENTS.md)
+- Long-term roadmap: [`ROADMAP.md`](ROADMAP.md)
 - G1 knee-climb notes: [`README_G1_KNEE_CLIMB.md`](README_G1_KNEE_CLIMB.md)
 - Final checkpoint: [`artifacts/g1_knee_climb_50cm/checkpoints/model_6000.pt`](artifacts/g1_knee_climb_50cm/checkpoints/model_6000.pt)
 - Final success video: [`artifacts/g1_knee_climb_50cm/video/rl-video-step-0.mp4`](artifacts/g1_knee_climb_50cm/video/rl-video-step-0.mp4)
