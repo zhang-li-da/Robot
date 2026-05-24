@@ -1,0 +1,59 @@
+# Omniverse / Isaac Sim
+**/*.dmp
+**/.thumbs
+_isaac_sim*
+_repo/
+_build/
+.lastformat
+
+# Python
+.DS_Store
+**/*.egg-info/
+**/__pycache__/
+**/.pytest_cache/
+**/*.pyc
+**/*.pyo
+**/*.pb
+
+# IDE
+**/.idea/
+**/.vscode/
+!.vscode/
+
+# Runtime outputs and experiment logs
+logs/
+outputs/
+runs/
+recordings/
+wandb/
+.neptune/
+**/events.out.tfevents.*
+*.tmp
+
+# Large robot description assets are restored from unitree_description.tar.gz.
+source/whole_body_tracking/whole_body_tracking/assets/unitree_description/
+
+# Raw downloaded archives stay outside git.
+*.zip
+*.tar.gz
+
+# Generated local datasets/checkpoints/videos are ignored by default.
+# Curated deliverables under artifacts/ are explicitly tracked below.
+*.npz
+*.pt
+*.mp4
+*.pkl
+*.zarr
+*.csv
+
+!artifacts/
+!artifacts/**
+!artifacts/**/*.npz
+!artifacts/**/*.pt
+!artifacts/**/*.mp4
+
+# Keep reports, including PDFs, tracked.
+!reports/
+!reports/**
+reports/**/__pycache__/
+reports/**/*.pyc
