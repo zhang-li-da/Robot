@@ -53,6 +53,85 @@ def run_command(command: list[str], cwd: Path, log_path: Path, env: dict[str, st
         return int(process.returncode)
 
 
+def tail_text(path: Path, max_bytes: int = 12000) -> str:
+    if not path.exists():
+        return ""
+    with path.open("rb") as stream:
+        stream.seek(0, os.SEEK_END)
+        size = stream.tell()
+        stream.seek(max(0, size - max_bytes), os.SEEK_SET)
+        return stream.read().decode("utf-8", errors="replace")
+
+
+def signal_name(return_code: int) -> str | None:
+    if return_code >= 0:
+        return None
+    try:
+        import signal
+
+        return signal.Signals(-return_code).name
+    except Exception:
+        return f"signal_{-return_code}"
+
+
+def write_status(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {"timestamp": time.time(), **payload}
+    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def _model_iteration(path: Path) -> int:
+    stem = path.stem
+    try:
+        return int(stem.rsplit("_", 1)[1])
+    except (IndexError, ValueError):
+        return -1
+
+
+def _replace_arg(command: list[str], flag: str, value: str) -> None:
+    try:
+        command[command.index(flag) + 1] = value
+    except (ValueError, IndexError):
+        return
+
+
+def prepare_eval_command(command: list[str], cwd: Path) -> tuple[list[str], dict[str, Any]]:
+    """Resolve timestamped run directories and final checkpoint names before evaluation."""
+    eval_command = list(command)
+    details: dict[str, Any] = {}
+    try:
+        planned_run = eval_command[eval_command.index("--load_run") + 1]
+    except (ValueError, IndexError):
+        return eval_command, details
+
+    run_matches = sorted(
+        (cwd / "logs" / "rsl_rl").glob(f"*/*{planned_run}"),
+        key=lambda path: path.stat().st_mtime,
+    )
+    if not run_matches:
+        return eval_command, details
+
+    run_dir = run_matches[-1]
+    _replace_arg(eval_command, "--load_run", run_dir.name)
+    details["resolved_load_run"] = run_dir.name
+    details["resolved_run_dir"] = str(run_dir)
+
+    try:
+        planned_checkpoint = eval_command[eval_command.index("--checkpoint") + 1]
+    except (ValueError, IndexError):
+        planned_checkpoint = ""
+    checkpoint_path = run_dir / planned_checkpoint
+    if not planned_checkpoint or not checkpoint_path.exists():
+        checkpoints = sorted(run_dir.glob("model_*.pt"), key=_model_iteration)
+        if checkpoints:
+            _replace_arg(eval_command, "--checkpoint", checkpoints[-1].name)
+            details["resolved_checkpoint"] = checkpoints[-1].name
+            details["planned_checkpoint_missing"] = planned_checkpoint
+    else:
+        details["resolved_checkpoint"] = planned_checkpoint
+    return eval_command, details
+
+
 def build_env(conda_env: str, nvidia_vulkan_lib: str = DEFAULT_NVIDIA_VULKAN_LIB) -> dict[str, str]:
     env = os.environ.copy()
     env["CONDA_PREFIX"] = conda_env
@@ -174,18 +253,95 @@ def main() -> int:
     for plan_path in plans:
         plan = load_json(plan_path)
         genome_id = plan["genome_id"]
+        genome_dir = output_dir / genome_id
         train_log = output_dir / genome_id / "train_stage1.log"
         eval_log = output_dir / genome_id / "eval_stage1.log"
-        train_rc = run_command(plan["train_stage1"], Path.cwd(), train_log, env)
-        if train_rc != 0:
-            (output_dir / genome_id / "status.json").write_text(
-                json.dumps({"status": "train_failed", "return_code": train_rc}, indent=2) + "\n",
-                encoding="utf-8",
+        status_path = genome_dir / "status.json"
+        stage_started = time.time()
+        write_status(
+            status_path,
+            {
+                "genome_id": genome_id,
+                "status": "training",
+                "stage": "stage1_train",
+                "train_log": str(train_log),
+                "command": plan["train_stage1"],
+            },
+        )
+        try:
+            train_rc = run_command(plan["train_stage1"], Path.cwd(), train_log, env)
+        except Exception as exc:
+            write_status(
+                status_path,
+                {
+                    "genome_id": genome_id,
+                    "status": "train_exception",
+                    "stage": "stage1_train",
+                    "exception": repr(exc),
+                    "duration_seconds": time.time() - stage_started,
+                    "train_log": str(train_log),
+                    "train_log_tail": tail_text(train_log),
+                },
             )
             continue
-        eval_rc = run_command(plan["eval_stage1"], Path.cwd(), eval_log, env)
-        status = {"status": "evaluated" if eval_rc == 0 else "eval_failed", "eval_return_code": eval_rc}
-        (output_dir / genome_id / "status.json").write_text(json.dumps(status, indent=2) + "\n", encoding="utf-8")
+        if train_rc != 0:
+            write_status(
+                status_path,
+                {
+                    "genome_id": genome_id,
+                    "status": "train_failed",
+                    "stage": "stage1_train",
+                    "return_code": train_rc,
+                    "signal": signal_name(train_rc),
+                    "duration_seconds": time.time() - stage_started,
+                    "train_log": str(train_log),
+                    "train_log_tail": tail_text(train_log),
+                },
+            )
+            continue
+        eval_command, eval_details = prepare_eval_command(plan["eval_stage1"], Path.cwd())
+        write_status(
+            status_path,
+            {
+                "genome_id": genome_id,
+                "status": "evaluating",
+                "stage": "stage1_eval",
+                "duration_seconds": time.time() - stage_started,
+                "eval_log": str(eval_log),
+                "command": eval_command,
+                "eval_resolution": eval_details,
+            },
+        )
+        eval_started = time.time()
+        try:
+            eval_rc = run_command(eval_command, Path.cwd(), eval_log, env)
+        except Exception as exc:
+            write_status(
+                status_path,
+                {
+                    "genome_id": genome_id,
+                    "status": "eval_exception",
+                    "stage": "stage1_eval",
+                    "exception": repr(exc),
+                    "duration_seconds": time.time() - eval_started,
+                    "total_duration_seconds": time.time() - stage_started,
+                    "eval_log": str(eval_log),
+                    "eval_log_tail": tail_text(eval_log),
+                },
+            )
+            continue
+        status = {
+            "genome_id": genome_id,
+            "status": "evaluated" if eval_rc == 0 else "eval_failed",
+            "stage": "stage1_eval",
+            "eval_return_code": eval_rc,
+            "eval_signal": signal_name(eval_rc),
+            "duration_seconds": time.time() - eval_started,
+            "total_duration_seconds": time.time() - stage_started,
+            "eval_log": str(eval_log),
+            "eval_log_tail": tail_text(eval_log) if eval_rc != 0 else "",
+        }
+        write_status(status_path, status)
         write_scoreboard(output_dir, config, args.baseline_eval, args.baseline_id)
 
     write_scoreboard(output_dir, config, args.baseline_eval, args.baseline_id)

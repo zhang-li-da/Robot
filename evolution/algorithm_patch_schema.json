@@ -1,0 +1,140 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Constrained algorithm-level patch proposal for task-adaptive BeyondMimic evolution",
+  "allowed_patch_types": [
+    "reward_term",
+    "termination_term",
+    "sampling_policy",
+    "curriculum_rule",
+    "evaluation_metric"
+  ],
+  "patch_contract": {
+    "patch_id": "short stable id, no path separators",
+    "target_task_family": "humanoid_obstacle_stunt",
+    "motivation": "failure tags or task feature this patch addresses",
+    "patch_type": "one of allowed_patch_types",
+    "insertion_template": "one of templates below",
+    "parameters": "JSON-serializable scalar/list/dict fields only",
+    "safety_checks": [
+      "must pass unit/static validation",
+      "must pass IsaacLab one-iteration smoke test before full training",
+      "must preserve configured legal contacts",
+      "must not weaken final evaluation success criteria"
+    ],
+    "rollback": "remove patch file or disable config flag"
+  },
+  "templates": {
+    "reward_term": {
+      "template_id": "reward_math_expr_v1",
+      "allowed_inputs": [
+        "robot body poses/velocities",
+        "motion reference poses/velocities",
+        "task geometry constants",
+        "contact sensor aggregates",
+        "episode phase/time"
+      ],
+      "allowed_ops": [
+        "add",
+        "sub",
+        "mul",
+        "div with epsilon",
+        "norm",
+        "clamp",
+        "exp",
+        "where",
+        "logical masks"
+      ],
+      "forbidden_ops": [
+        "file IO",
+        "network access",
+        "subprocess",
+        "eval/exec",
+        "stateful global mutation"
+      ]
+    },
+    "termination_term": {
+      "template_id": "threshold_mask_v1",
+      "allowed_inputs": [
+        "body pose error",
+        "task geometry collision zones",
+        "motion phase",
+        "contact force aggregate"
+      ],
+      "must_include": [
+        "phase or task-zone gate for contact-heavy motions",
+        "configurable threshold",
+        "debug metric name"
+      ]
+    },
+    "sampling_policy": {
+      "template_id": "phase_weight_update_v1",
+      "allowed_inputs": [
+        "per-phase failure rate",
+        "per-phase success rate",
+        "per-phase tracking error",
+        "minimum uniform sampling ratio"
+      ],
+      "must_include": [
+        "minimum coverage floor",
+        "smoothing kernel",
+        "maximum single-bin probability"
+      ]
+    },
+    "curriculum_rule": {
+      "template_id": "stage_gate_v1",
+      "allowed_inputs": [
+        "success_rate",
+        "progress_ratio",
+        "dominant termination",
+        "training iteration"
+      ],
+      "must_include": [
+        "promotion threshold",
+        "rollback threshold",
+        "resource cap"
+      ]
+    },
+    "evaluation_metric": {
+      "template_id": "episode_metric_v1",
+      "allowed_inputs": [
+        "episode body trajectories",
+        "task geometry",
+        "termination reasons",
+        "success criteria"
+      ],
+      "must_include": [
+        "metric name",
+        "aggregation rule",
+        "success/failure interpretation"
+      ]
+    }
+  },
+  "example_patch": {
+    "patch_id": "crawl_ceiling_zone_reward_v1",
+    "target_task_family": "humanoid_obstacle_stunt",
+    "motivation": [
+      "ceiling_collision_risk",
+      "crawl_progress_stall"
+    ],
+    "patch_type": "reward_term",
+    "insertion_template": "reward_math_expr_v1",
+    "parameters": {
+      "task_zone": {
+        "x_min": 0.3,
+        "x_max": 1.9
+      },
+      "max_body_height": 0.85,
+      "std": 0.08,
+      "weight_range": [
+        0.0,
+        1.6
+      ]
+    },
+    "expected_effect": "Reward low-profile forward motion inside the tunnel zone without penalizing legal hand/knee support.",
+    "required_tests": [
+      "python -m py_compile changed files",
+      "one-iteration IsaacLab smoke test",
+      "16-episode evaluation before promotion"
+    ]
+  }
+}

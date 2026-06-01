@@ -29,6 +29,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--use_llm", action="store_true", help="Call Mimimax M3 for candidate generation.")
     parser.add_argument("--dry_run", action="store_true", help="Generate plans without executing training.")
     parser.add_argument("--history", type=Path, default=None, help="Optional scoreboard/history JSON.")
+    parser.add_argument("--feedback", type=Path, default=None, help="Optional structured feedback JSON from feedback_analyzer.py.")
     parser.add_argument("--llm_timeout", type=float, default=None, help="Mimimax request timeout in seconds.")
     return parser.parse_args()
 
@@ -50,6 +51,18 @@ def render_prompt(config: dict[str, Any], history: dict[str, Any], population_si
         template.replace("{{CONFIG_JSON}}", json.dumps(config, indent=2, ensure_ascii=False))
         .replace("{{HISTORY_JSON}}", json.dumps(history, indent=2, ensure_ascii=False))
         .replace("{{REQUESTED_POPULATION_SIZE}}", str(population_size))
+    )
+
+
+def render_prompt_with_feedback(
+    config: dict[str, Any],
+    history: dict[str, Any],
+    feedback: dict[str, Any],
+    population_size: int,
+) -> str:
+    return render_prompt(config, history, population_size).replace(
+        "{{FEEDBACK_JSON}}",
+        json.dumps(feedback, indent=2, ensure_ascii=False),
     )
 
 
@@ -89,6 +102,7 @@ def main() -> int:
     llm_timeout = float(args.llm_timeout or config.get("llm", {}).get("timeout_seconds", 300.0))
     population_size = int(args.population_size or config.get("evolution", {}).get("population_size", 4))
     history = load_history(args.history)
+    feedback = load_json(args.feedback) if args.feedback is not None and args.feedback.exists() else {}
 
     run_id_base = datetime.now().strftime(f"%Y%m%d_%H%M%S_%f_gen{args.generation:02d}")
     output_dir = args.output_root / run_id_base
@@ -105,10 +119,15 @@ def main() -> int:
         json.dumps(history, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+    if feedback:
+        (output_dir / "feedback_snapshot.json").write_text(
+            json.dumps(feedback, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
 
     genomes: list[AlgorithmGenome] = []
     if args.use_llm:
-        prompt = render_prompt(config, history, population_size)
+        prompt = render_prompt_with_feedback(config, history, feedback, population_size)
         prompt_path = output_dir / "prompt_rendered.md"
         prompt_path.write_text(prompt, encoding="utf-8")
         try:

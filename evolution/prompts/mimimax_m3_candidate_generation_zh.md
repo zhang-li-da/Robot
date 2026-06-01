@@ -40,6 +40,18 @@
 
 `{{HISTORY_JSON}}`
 
+`{{FEEDBACK_JSON}}`
+
+# 反馈使用要求
+
+如果 `FEEDBACK_JSON` 非空，必须优先响应其中的 `llm_feedback_brief.must_address` 和候选级 `failure_tags`：
+
+1. 不要重复已经导致 `severe_regression_vs_baseline` 的策略。
+2. 如果出现 `ee_body_pos_dominant`，必须至少有一个候选放宽或重构接触/末端跟踪相关设置。
+3. 如果出现 `early_progress_failure`，必须至少有一个候选强化前进/接近阶段，而不是只增加姿态跟踪。
+4. 如果出现 `deterministic_collapse`，必须至少有一个候选提高探索或拓宽 phase sampling。
+5. 对已经高成功率的基线，不要用短预算从零训练候选替代长期基线，除非候选明确是 baseline-adjacent repair。
+
 # 本次候选数量
 
 `{{REQUESTED_POPULATION_SIZE}}`

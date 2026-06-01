@@ -75,23 +75,137 @@ fitness =
 Mimimax M3 负责提出候选算法基因和候选修改理由，但不直接执行训练，也不直接 patch 任意源码。完整链路为：
 
 ```text
-历史实验结果 + 当前任务描述 + 安全搜索空间
+历史实验结果 + 结构化失败反馈 + 当前任务描述 + 安全搜索空间
         -> Mimimax M3 JSON 候选
         -> 本地 schema/range/invariant 校验
         -> 渲染训练命令和评估命令
         -> 小预算训练/评估
         -> score board
+        -> feedback analyzer
         -> 交叉/变异/淘汰
         -> 下一代候选
 ```
 
+## V1.2 闭环反馈层
+
+当前新增了两类运行时组件：
+
+```text
+scripts/evolution/feedback_analyzer.py
+scripts/evolution/closed_loop.py
+```
+
+`feedback_analyzer.py` 把每个候选的 `eval_*.json` 转成结构化失败反馈：
+
+```text
+failure_tags
+hypotheses
+suggested_levers
+dominant_termination
+baseline_delta
+recommendation
+```
+
+例如本次 `gen0_m3_000` 候选完成 2048 环境、800 iteration 训练后，motion-start 16 回合评估为 0/16 成功，所有 episode 因 `ee_body_pos` 终止，平均最大前进距离约 0.36m，平均越障 clearance 仍为负。该结果会被标记为：
+
+```text
+no_success
+early_progress_failure
+insufficient_clearance
+ee_body_pos_dominant
+deterministic_collapse
+severe_regression_vs_baseline
+```
+
+这类反馈会进入下一代 prompt，要求 LLM 不再重复相同退化策略，而是围绕合法接触、前进阶段、phase sampling、终止阈值和 baseline-adjacent repair 进行修正。
+
+`closed_loop.py` 是多代编排器，负责：
+
+```text
+run_generation.py -> execute_generation.py -> scoreboard.json -> feedback.json -> 下一代 run_generation.py
+```
+
+最小命令：
+
+```bash
+cd /root/whole_body_tracking-main
+python scripts/evolution/closed_loop.py \
+  --config evolution/configs/g1_knee_climb_v1.json \
+  --baseline_eval artifacts/g1_knee_climb_50cm/evaluation/eval_model_6000_motion_start_fixed_128ep.json \
+  --baseline_id g1_knee_climb_model_6000_128ep \
+  --use_llm \
+  --generations 3 \
+  --population_size 4 \
+  --stop_on_target
+```
+
+只检查闭环，不启动训练：
+
+```bash
+python scripts/evolution/closed_loop.py \
+  --config evolution/configs/g1_knee_climb_v1.json \
+  --baseline_eval artifacts/g1_knee_climb_50cm/evaluation/eval_model_6000_motion_start_fixed_128ep.json \
+  --baseline_id g1_knee_climb_model_6000_128ep \
+  --use_llm \
+  --generations 2 \
+  --population_size 2 \
+  --skip_execute
+```
+
+每一代的状态记录在：
+
+```text
+outputs/evolution/closed_loop_<timestamp>/loop_state.json
+```
+
+## 受限算法改动包
+
+为了从“参数进化”扩展到“算法结构进化”，V1.2 增加了受限 patch schema：
+
+```text
+evolution/algorithm_patch_schema.json
+```
+
+允许 LLM 提出五类改动：
+
+```text
+reward_term
+termination_term
+sampling_policy
+curriculum_rule
+evaluation_metric
+```
+
+约束原则：
+
+1. LLM 只输出 patch 描述，不直接输出任意 Python 源码。
+2. patch 必须绑定失败标签或任务特征。
+3. patch 只能使用模板允许的输入和数学操作。
+4. 进入正式训练前必须通过本地 schema 检查、`py_compile`、1 iteration IsaacLab smoke test 和 16 episode 小评估。
+5. patch 必须能通过配置开关回滚。
+
+本地验证命令：
+
+```bash
+python scripts/evolution/patch_validator.py \
+  --patch evolution/examples/crawl_ceiling_zone_reward_v1.json
+```
+
+任务特征输入模板：
+
+```text
+evolution/task_feature_schema.json
+```
+
+后续新增翻墙、钻洞、后空翻、登墙转身或新机器人时，先写 task feature profile，再运行闭环。这样 LLM 的搜索目标从“泛化调参”变成“围绕任务几何、合法接触、机器人能力和评估协议进行定向算法进化”。
+
 ## V1 到 V2 的扩展方向
 
-1. 增加任务特异 reward 函数库：翻墙接触序列、洞口高度约束、落地稳定、手脚支撑合法性。
+1. 把受限 patch schema 落成自动代码生成器：从 JSON patch 生成 reward/termination 模板代码，并自动注册到 IsaacLab config。
 
 2. 增加形态适配层：把机器人描述、关节限位、末端集合、执行器能力转换成统一 robot capability profile。
 
-3. 增加 patch bundle 模式：只允许 LLM 在受限模板内新增 reward term 或 termination term，并通过单元测试和 IsaacLab smoke test 后才进入训练。
+3. 增加任务特异 reward 函数库：翻墙接触序列、洞口高度约束、落地稳定、手脚支撑合法性。
 
 4. 增加 sim2real 约束：扭矩裕度、动作频率、低通滤波、延迟扰动、接触冲击上限和跌倒风险评分。
 

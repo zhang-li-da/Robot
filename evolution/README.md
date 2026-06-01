@@ -23,10 +23,15 @@ scripts/evolution/
   genome_ops.py
   planner.py
   scoreboard.py
+  feedback_analyzer.py
   run_generation.py
   execute_generation.py
+  closed_loop.py
 docs/beyondmimic_task_adaptive_evolution.md
 evolution/action_catalog/stunt_motion_sources_zh.md
+evolution/task_feature_schema.json
+evolution/algorithm_patch_schema.json
+evolution/examples/crawl_ceiling_zone_reward_v1.json
 ```
 
 ## 本地密钥配置
@@ -148,6 +153,107 @@ python scripts/evolution/scoreboard.py \
   --baseline_eval artifacts/g1_knee_climb_50cm/evaluation/eval_model_6000_motion_start_fixed_128ep.json \
   --baseline_id g1_knee_climb_model_6000_128ep
 ```
+
+## 结构化反馈与闭环进化
+
+单次候选训练结束后，先把评估结果转成 LLM 可消费的失败诊断：
+
+```bash
+cd /root/whole_body_tracking-main
+python scripts/evolution/feedback_analyzer.py \
+  --config evolution/configs/g1_knee_climb_v1.json \
+  --output_dir outputs/evolution/<run_id> \
+  --baseline_eval artifacts/g1_knee_climb_50cm/evaluation/eval_model_6000_motion_start_fixed_128ep.json \
+  --baseline_id g1_knee_climb_model_6000_128ep
+```
+
+输出：
+
+```text
+outputs/evolution/<run_id>/feedback.json
+```
+
+`feedback.json` 会记录：
+
+- `failure_tags`：例如 `ee_body_pos_dominant`、`early_progress_failure`、`insufficient_clearance`。
+- `hypotheses`：候选失败的算法原因假设。
+- `suggested_levers`：下一代应修改的 reward、termination、sampling 或 PPO 方向。
+- `next_generation_focus`：传给 Mimimax M3 的硬约束改进重点。
+
+下一代生成时同时传入历史分数和结构化反馈：
+
+```bash
+python scripts/evolution/run_generation.py \
+  --config evolution/configs/g1_knee_climb_v1.json \
+  --use_llm \
+  --dry_run \
+  --population_size 6 \
+  --generation 1 \
+  --history outputs/evolution/<run_id>/scoreboard.json \
+  --feedback outputs/evolution/<run_id>/feedback.json \
+  --llm_timeout 300
+```
+
+也可以直接使用闭环编排脚本，自动串联生成、执行、评分和反馈：
+
+```bash
+python scripts/evolution/closed_loop.py \
+  --config evolution/configs/g1_knee_climb_v1.json \
+  --baseline_eval artifacts/g1_knee_climb_50cm/evaluation/eval_model_6000_motion_start_fixed_128ep.json \
+  --baseline_id g1_knee_climb_model_6000_128ep \
+  --use_llm \
+  --generations 3 \
+  --population_size 4 \
+  --stop_on_target
+```
+
+如果只想检查闭环目录、prompt 和反馈接线，不启动训练：
+
+```bash
+python scripts/evolution/closed_loop.py \
+  --config evolution/configs/g1_knee_climb_v1.json \
+  --baseline_eval artifacts/g1_knee_climb_50cm/evaluation/eval_model_6000_motion_start_fixed_128ep.json \
+  --baseline_id g1_knee_climb_model_6000_128ep \
+  --use_llm \
+  --generations 2 \
+  --population_size 2 \
+  --skip_execute
+```
+
+## 算法级改动包
+
+V1 默认让 Mimimax M3 只输出参数 genome。后续要让 LLM 参与“新增 reward/termination/采样策略”时，必须使用受限算法改动包：
+
+```text
+evolution/algorithm_patch_schema.json
+```
+
+允许的改动类型：
+
+```text
+reward_term
+termination_term
+sampling_policy
+curriculum_rule
+evaluation_metric
+```
+
+改动包只描述模板、输入、参数和安全检查，不允许 LLM 直接输出任意 Python 源码。进入训练前必须通过本地验证、`py_compile`、IsaacLab 1-iteration smoke test 和 16 episode 小评估。
+
+验证改动包：
+
+```bash
+python scripts/evolution/patch_validator.py \
+  --patch evolution/examples/crawl_ceiling_zone_reward_v1.json
+```
+
+任务特征统一描述模板：
+
+```text
+evolution/task_feature_schema.json
+```
+
+后续翻墙、钻洞、后空翻、登墙转身和新机器人迁移时，先写任务特征 profile，再由 LLM 根据任务特征和 baseline 反馈提出候选算法。
 
 正式考核时，保留 baseline 与进化后最优候选各不少于 50 episode 的 motion-start 评估 JSON，并报告：
 

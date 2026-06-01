@@ -45,6 +45,12 @@
 
 `{{HISTORY_JSON}}`
 
+`{{FEEDBACK_JSON}}`
+
+# 反馈使用要求
+
+如果 `FEEDBACK_JSON` 非空，必须优先响应其中的 `llm_feedback_brief.must_address` 和候选级 `failure_tags`。候选必须解释其针对的失败标签；不得重复已经导致严重退化的参数组合。对接触型特技，需要明确区分合法支撑接触、危险冲击和跟踪误差。
+
 # 本次候选数量
 
 `{{REQUESTED_POPULATION_SIZE}}`

@@ -6,6 +6,7 @@ import argparse
 import json
 import math
 import os
+from pathlib import Path
 import sys
 from datetime import datetime
 
@@ -57,6 +58,37 @@ from isaaclab_tasks.utils import get_checkpoint_path
 from isaaclab_tasks.utils.hydra import hydra_task_config
 
 import whole_body_tracking.tasks  # noqa: F401
+
+
+def _checkpoint_iteration(path: Path) -> int:
+    try:
+        return int(path.stem.rsplit("_", 1)[1])
+    except (IndexError, ValueError):
+        return -1
+
+
+def resolve_checkpoint_path(log_root_path: str, load_run: str | None, checkpoint: str | None) -> str:
+    """Resolve timestamped run folders and latest checkpoints used by generated plans."""
+    try:
+        return get_checkpoint_path(log_root_path, load_run, checkpoint)
+    except ValueError:
+        if not load_run:
+            raise
+        root = Path(log_root_path)
+        matches = sorted(root.glob(f"*{load_run}"), key=lambda path: path.stat().st_mtime)
+        if not matches:
+            raise
+        run_dir = matches[-1]
+        if checkpoint and (run_dir / checkpoint).exists():
+            return str(run_dir / checkpoint)
+        checkpoints = sorted(run_dir.glob("model_*.pt"), key=_checkpoint_iteration)
+        if not checkpoints:
+            raise
+        print(
+            f"[INFO] Requested checkpoint '{checkpoint}' not found under {run_dir.name}; "
+            f"using latest checkpoint '{checkpoints[-1].name}'."
+        )
+        return str(checkpoints[-1])
 
 
 def _wrap_to_pi(value: torch.Tensor) -> torch.Tensor:
@@ -119,7 +151,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
     env_cfg.commands.motion.motion_file = args_cli.motion_file
 
     log_root_path = os.path.abspath(os.path.join("logs", "rsl_rl", agent_cfg.experiment_name))
-    checkpoint_path = get_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint)
+    checkpoint_path = resolve_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint)
     print(f"[INFO] Loading checkpoint: {checkpoint_path}")
 
     env = gym.make(args_cli.task, cfg=env_cfg)

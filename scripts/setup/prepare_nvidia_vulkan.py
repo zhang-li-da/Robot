@@ -103,6 +103,17 @@ def link_system_cuda_driver(output_dir: Path) -> None:
     link.symlink_to(system_libcuda)
 
 
+def link_system_nvml(output_dir: Path) -> None:
+    """Expose NVML for Kit GPU diagnostics without overriding the versioned host library."""
+    system_nvml = Path("/usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1")
+    if not system_nvml.exists():
+        return
+    link = output_dir / "libnvidia-ml.so"
+    if link.exists() or link.is_symlink():
+        link.unlink()
+    link.symlink_to(system_nvml)
+
+
 def verify(output_dir: Path, icd_path: Path) -> None:
     env = os.environ.copy()
     env["LD_LIBRARY_PATH"] = f"{output_dir}:/usr/lib/x86_64-linux-gnu:" + env.get("LD_LIBRARY_PATH", "")
@@ -126,6 +137,7 @@ def main() -> int:
         raise SystemExit(f"Missing NVIDIA driver root: {args.driver_root}")
     copy_libraries(args.driver_root, args.output_dir)
     link_system_cuda_driver(args.output_dir)
+    link_system_nvml(args.output_dir)
     icd_path = write_icd(args.output_dir)
     print(f"export LD_LIBRARY_PATH={args.output_dir}:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH")
     print(f"export VK_ICD_FILENAMES={icd_path}")

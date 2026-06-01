@@ -1,0 +1,29 @@
+{
+  "patch_id": "crawl_ceiling_zone_reward_v1",
+  "target_task_family": "humanoid_obstacle_stunt",
+  "motivation": [
+    "ceiling_collision_risk",
+    "crawl_progress_stall"
+  ],
+  "patch_type": "reward_term",
+  "insertion_template": "reward_math_expr_v1",
+  "parameters": {
+    "task_zone": {
+      "x_min": 0.3,
+      "x_max": 1.9
+    },
+    "max_body_height": 0.85,
+    "std": 0.08,
+    "weight_range": [
+      0.0,
+      1.6
+    ]
+  },
+  "expected_effect": "Reward low-profile forward motion inside the tunnel zone without penalizing legal hand/knee support.",
+  "safety_checks": [
+    "must pass local schema validation",
+    "must pass one-iteration IsaacLab smoke test",
+    "must pass 16-episode evaluation before promotion"
+  ],
+  "rollback": "disable the generated reward term in task config"
+}
