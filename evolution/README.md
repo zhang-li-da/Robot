@@ -24,7 +24,9 @@ scripts/evolution/
   planner.py
   scoreboard.py
   run_generation.py
+  execute_generation.py
 docs/beyondmimic_task_adaptive_evolution.md
+evolution/action_catalog/stunt_motion_sources_zh.md
 ```
 
 ## 本地密钥配置
@@ -121,6 +123,19 @@ cd /root/whole_body_tracking-main
 bash outputs/evolution/<run_id>/eval_commands.sh
 ```
 
+也可以使用执行器自动做 preflight、训练、评估和 scoreboard：
+
+```bash
+cd /root/whole_body_tracking-main
+python scripts/evolution/execute_generation.py \
+  --config evolution/configs/g1_knee_climb_v1.json \
+  --output_dir outputs/evolution/<run_id> \
+  --baseline_eval artifacts/g1_knee_climb_50cm/evaluation/eval_model_6000_motion_start_fixed_128ep.json \
+  --baseline_id g1_knee_climb_model_6000_128ep
+```
+
+如果当前服务器的 NVIDIA Vulkan/Isaac 图形栈不可用，执行器会写出 `blocked_environment.json`，不会把候选算法标记为失败。
+
 已有评估 JSON 可以用 `scoreboard.py` 的函数读取；下一步可把 `scoreboard.json` 传给 `--history`，让 Mimimax M3 根据失败类型继续生成第二代候选。
 
 生成排序结果：
@@ -141,3 +156,56 @@ success_rate_improvement = evolved_success_rate - baseline_success_rate
 ```
 
 当前配置使用严格 128 episode baseline `0.9375`，目标是最终候选达到至少 `1.0175` 不可能，因此对于已接近饱和的 G1 50cm 膝爬，应把 V1 框架主要用于后续更难的翻墙/钻洞基线，并在该任务上比较自主进化前后的成功率提升。
+
+## 特技动作扩展
+
+已预注册三类后续动作任务：
+
+```text
+Tracking-Backflip-G1-v0
+Tracking-WallTurn-G1-v0
+Tracking-CrawlTunnel-G1-v0
+```
+
+对应配置：
+
+```text
+evolution/configs/g1_backflip_v1.json
+evolution/configs/g1_wall_turn_v1.json
+evolution/configs/g1_crawl_tunnel_v1.json
+```
+
+这些配置使用通用特技 prompt：
+
+```text
+evolution/prompts/mimimax_m3_stunt_candidate_generation_zh.md
+```
+
+新增可搜索 reward genes 包括：
+
+```text
+reward.apex_height_weight
+reward.landing_stability_weight
+reward.ceiling_clearance_weight
+reward.yaw_alignment_weight
+reward.contact_force_weight
+```
+
+特技 motion 数据源清单和落盘规范见：
+
+```text
+evolution/action_catalog/stunt_motion_sources_zh.md
+```
+
+拿到后空翻 motion 后，可以先生成候选计划：
+
+```bash
+cd /root/whole_body_tracking-main
+python scripts/evolution/run_generation.py \
+  --config evolution/configs/g1_backflip_v1.json \
+  --use_llm \
+  --dry_run \
+  --population_size 4 \
+  --generation 0 \
+  --llm_timeout 300
+```

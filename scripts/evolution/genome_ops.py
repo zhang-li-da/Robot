@@ -70,6 +70,18 @@ def _sample_value(rng: random.Random, dotted: str, current: Any, config: dict[st
     return float(rng.uniform(float(lo), float(hi)))
 
 
+def _clip_to_search_space(dotted: str, value: Any, config: dict[str, Any]) -> Any:
+    if dotted not in config.get("search_space", {}):
+        return value
+    lo, hi = config["search_space"][dotted]
+    if dotted in INT_KEYS:
+        clipped = max(int(lo), min(int(hi), int(value)))
+        if dotted == "sampling.adaptive_kernel_size" and clipped % 2 == 0:
+            clipped = min(int(hi), clipped + 1) if clipped + 1 <= int(hi) else max(int(lo), clipped - 1)
+        return clipped
+    return max(float(lo), min(float(hi), float(value)))
+
+
 def _section_dict(section: str, genome: AlgorithmGenome) -> dict[str, Any]:
     return asdict(getattr(genome, section))
 
@@ -156,7 +168,7 @@ def seed_population(config: dict[str, Any], population_size: int, generation: in
                 if dotted == "description":
                     continue
                 section, key = dotted.split(".", 1)
-                sections[section][key] = value
+                sections[section][key] = _clip_to_search_space(dotted, value, config)
         else:
             description = "随机采样的任务自适应 BeyondMimic 候选。"
             for section, values in sections.items():
@@ -255,4 +267,3 @@ def next_generation(
         children.append(child)
 
     return children[:population_size]
-

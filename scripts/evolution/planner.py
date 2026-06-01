@@ -29,6 +29,11 @@ REWARD_OVERRIDES = {
     "undesired_contacts_weight": "env.rewards.undesired_contacts.weight",
     "task_progress_weight": "env.rewards.task_progress.weight",
     "clearance_weight": "env.rewards.clearance.weight",
+    "apex_height_weight": "env.rewards.apex_height.weight",
+    "landing_stability_weight": "env.rewards.landing_stability.weight",
+    "ceiling_clearance_weight": "env.rewards.ceiling_clearance.weight",
+    "yaw_alignment_weight": "env.rewards.yaw_alignment.weight",
+    "contact_force_weight": "env.rewards.contact_force.weight",
 }
 
 SAMPLING_OVERRIDES = {
@@ -84,11 +89,19 @@ def _hydra_override(key: str, value: Any) -> str:
     return f"{key}={_format_value(value)}"
 
 
-def hydra_overrides(genome: AlgorithmGenome) -> list[str]:
+def _available_reward_terms(config: dict[str, Any]) -> set[str]:
+    return set(config.get("task", {}).get("reward_terms", []))
+
+
+def hydra_overrides(genome: AlgorithmGenome, config: dict[str, Any] | None = None) -> list[str]:
     overrides: list[str] = []
+    available_rewards = _available_reward_terms(config or {})
 
     reward = asdict(genome.reward)
     for key, path in REWARD_OVERRIDES.items():
+        reward_name = path.split(".")[2]
+        if available_rewards and reward_name not in available_rewards:
+            continue
         overrides.append(_hydra_override(path, reward[key]))
 
     sampling = asdict(genome.sampling)
@@ -161,7 +174,7 @@ def training_command(genome: AlgorithmGenome, config: dict[str, Any], stage: str
         "--logger",
         "tensorboard",
     ]
-    command.extend(hydra_overrides(genome))
+    command.extend(hydra_overrides(genome, config))
     return command
 
 
@@ -179,10 +192,11 @@ def evaluation_command(
         "stage2": genome.resource.stage2_eval_episodes,
         "final": genome.resource.final_eval_episodes,
     }[stage]
-    return [
+    eval_script = task.get("eval_script", "scripts/rsl_rl/eval_knee_climb.py")
+    command = [
         "python",
         "-u",
-        "scripts/rsl_rl/eval_knee_climb.py",
+        eval_script,
         "--task",
         task["isaac_task"],
         "--motion_file",
@@ -207,6 +221,26 @@ def evaluation_command(
         "--output",
         output_path,
     ]
+    if eval_script.endswith("eval_stunt.py"):
+        success = task.get("success_criteria", {})
+        command.extend(["--success_type", str(task.get("success_type", "progress"))])
+        if "min_apex_height" in success:
+            command.extend(["--min_apex_height", str(success["min_apex_height"])])
+        if "max_final_anchor_speed" in success:
+            command.extend(["--max_final_speed", str(success["max_final_anchor_speed"])])
+        if "max_final_ang_speed" in success:
+            command.extend(["--max_final_ang_speed", str(success["max_final_ang_speed"])])
+        if "max_head_or_torso_height" in success:
+            command.extend(["--max_body_height", str(success["max_head_or_torso_height"])])
+        if "ceiling_min_x" in success:
+            command.extend(["--ceiling_min_x", str(success["ceiling_min_x"])])
+        if "ceiling_max_x" in success:
+            command.extend(["--ceiling_max_x", str(success["ceiling_max_x"])])
+        if "target_final_yaw" in success:
+            command.extend(["--target_yaw", str(success["target_final_yaw"])])
+        if "max_final_yaw_error" in success:
+            command.extend(["--max_yaw_error", str(success["max_final_yaw_error"])])
+    return command
 
 
 def command_plan(genome: AlgorithmGenome, config: dict[str, Any], output_dir: Path) -> dict[str, Any]:
@@ -217,7 +251,7 @@ def command_plan(genome: AlgorithmGenome, config: dict[str, Any], output_dir: Pa
     plan = {
         "genome_id": genome.metadata.genome_id,
         "description": genome.metadata.description,
-        "hydra_overrides": hydra_overrides(genome),
+        "hydra_overrides": hydra_overrides(genome, config),
         "train_stage1": training_command(genome, config, stage="stage1"),
         "eval_stage1": evaluation_command(
             genome,

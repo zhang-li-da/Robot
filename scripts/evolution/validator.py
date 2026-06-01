@@ -97,6 +97,8 @@ def validate_genome(genome: AlgorithmGenome, config: dict[str, Any]) -> list[str
         errors.append("reward.joint_limit_weight must stay negative")
     if reward.undesired_contacts_weight >= 0.0:
         errors.append("reward.undesired_contacts_weight must stay negative")
+    if reward.contact_force_weight > 0.0:
+        errors.append("reward.contact_force_weight must stay non-positive")
 
     dr = genome.domain_randomization
     if dr.friction_static_min > dr.friction_static_max:

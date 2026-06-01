@@ -35,6 +35,11 @@ class RewardGenes:
     undesired_contacts_weight: float = -0.1
     task_progress_weight: float = 0.0
     clearance_weight: float = 0.0
+    apex_height_weight: float = 0.0
+    landing_stability_weight: float = 0.0
+    ceiling_clearance_weight: float = 0.0
+    yaw_alignment_weight: float = 0.0
+    contact_force_weight: float = -0.0
 
 
 @dataclass
@@ -165,4 +170,3 @@ def section_items(genome: AlgorithmGenome) -> list[tuple[str, str, Any]]:
         for key, value in asdict(section_obj).items():
             items.append((section, key, value))
     return items
-

@@ -90,8 +90,12 @@ def main() -> int:
     population_size = int(args.population_size or config.get("evolution", {}).get("population_size", 4))
     history = load_history(args.history)
 
-    run_id = datetime.now().strftime(f"%Y%m%d_%H%M%S_gen{args.generation:02d}")
-    output_dir = args.output_root / run_id
+    run_id_base = datetime.now().strftime(f"%Y%m%d_%H%M%S_%f_gen{args.generation:02d}")
+    output_dir = args.output_root / run_id_base
+    suffix = 1
+    while output_dir.exists():
+        output_dir = args.output_root / f"{run_id_base}_{suffix:02d}"
+        suffix += 1
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "config_snapshot.json").write_text(
         json.dumps(config, indent=2, ensure_ascii=False) + "\n",

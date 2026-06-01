@@ -12,7 +12,20 @@
     "min_root_height": 0.55,
     "baseline_success_rate": 0.9375,
     "target_relative_improvement": 0.08,
-    "final_eval_episodes": 64
+    "final_eval_episodes": 64,
+    "reward_terms": [
+      "motion_global_anchor_pos",
+      "motion_global_anchor_ori",
+      "motion_body_pos",
+      "motion_body_ori",
+      "motion_body_lin_vel",
+      "motion_body_ang_vel",
+      "action_rate_l2",
+      "joint_limit",
+      "undesired_contacts",
+      "task_progress",
+      "clearance"
+    ]
   },
   "llm": {
     "provider": "minimax",
@@ -63,6 +76,11 @@
     "reward.undesired_contacts_weight": [-0.25, -0.02],
     "reward.task_progress_weight": [0.0, 1.2],
     "reward.clearance_weight": [0.0, 0.8],
+    "reward.apex_height_weight": [0.0, 0.0],
+    "reward.landing_stability_weight": [0.0, 0.0],
+    "reward.ceiling_clearance_weight": [0.0, 0.0],
+    "reward.yaw_alignment_weight": [0.0, 0.0],
+    "reward.contact_force_weight": [0.0, 0.0],
     "sampling.adaptive_uniform_ratio": [0.25, 1.4],
     "sampling.adaptive_kernel_size": [3, 15],
     "sampling.adaptive_lambda": [0.65, 0.98],

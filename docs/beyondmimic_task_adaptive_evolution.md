@@ -96,3 +96,65 @@ Mimimax M3 负责提出候选算法基因和候选修改理由，但不直接执
 4. 增加 sim2real 约束：扭矩裕度、动作频率、低通滤波、延迟扰动、接触冲击上限和跌倒风险评分。
 
 5. 增加第三方测试包：固定随机种子、固定评估 motion-start/env-reset 两套协议、至少 50 episode，并自动生成基线与进化后对比报告。
+
+## V1.1 特技动作扩展
+
+当前仓库已经把“后空翻、登墙转身、钻洞”从临时实验需求提升为可注册任务规格：
+
+```text
+Tracking-Backflip-G1-v0
+Tracking-WallTurn-G1-v0
+Tracking-CrawlTunnel-G1-v0
+```
+
+对应进化配置：
+
+```text
+evolution/configs/g1_backflip_v1.json
+evolution/configs/g1_wall_turn_v1.json
+evolution/configs/g1_crawl_tunnel_v1.json
+```
+
+新增 reward genes：
+
+```text
+apex_height_weight
+landing_stability_weight
+ceiling_clearance_weight
+yaw_alignment_weight
+contact_force_weight
+```
+
+这些项解决 BeyondMimic 基线对高动态特技动作的三个缺陷：
+
+1. 后空翻需要鼓励腾空高度与稳定落地，而不是只按每帧姿态误差奖励。
+2. 登墙转身需要显式检查前进、越墙/触墙、最终朝向和落地恢复。
+3. 钻洞需要把“低姿态通过且不撞顶”作为任务目标，而不是让 anchor 高度终止误杀动作。
+
+数据源候选清单见：
+
+```text
+evolution/action_catalog/stunt_motion_sources_zh.md
+```
+
+拿到新 motion 后的最小闭环：
+
+```bash
+cd /root/whole_body_tracking-main
+
+python scripts/evolution/run_generation.py \
+  --config evolution/configs/g1_backflip_v1.json \
+  --use_llm \
+  --dry_run \
+  --population_size 4 \
+  --generation 0 \
+  --llm_timeout 300
+
+python scripts/evolution/execute_generation.py \
+  --config evolution/configs/g1_backflip_v1.json \
+  --output_dir outputs/evolution/<run_id> \
+  --baseline_eval artifacts/g1_backflip/evaluation/baseline_eval.json \
+  --baseline_id g1_backflip_baseline
+```
+
+如果 IsaacLab/Vulkan 图形设备不可用，执行器会写 `blocked_environment.json`，候选不会被误记为算法失败。
