@@ -1,10 +1,12 @@
 import isaaclab.sim as sim_utils
 from isaaclab.assets import RigidObjectCfg
+from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.utils import configclass
 
 from whole_body_tracking.robots.g1 import G1_ACTION_SCALE, G1_CYLINDER_CFG
 from whole_body_tracking.tasks.tracking.config.g1.agents.rsl_rl_ppo_cfg import LOW_FREQ_SCALE
-from whole_body_tracking.tasks.tracking.tracking_env_cfg import TrackingEnvCfg
+import whole_body_tracking.tasks.tracking.mdp as mdp
+from whole_body_tracking.tasks.tracking.tracking_env_cfg import RewardsCfg, TrackingEnvCfg
 
 
 # The knee-climb source dataset provides a 50 cm obstacle mesh.  After applying
@@ -13,6 +15,33 @@ from whole_body_tracking.tasks.tracking.tracking_env_cfg import TrackingEnvCfg
 #   x=[1.0171, 1.6515], y=[-0.3389, 0.5306], z=[0.0, 0.5087].
 OBSTACLE_SIZE = (0.6344, 0.8695, 0.5087)
 OBSTACLE_CENTER = (1.3343, 0.0959, 0.25435)
+
+
+@configclass
+class G1KneeClimbRewardsCfg(RewardsCfg):
+    # Disabled by default so the reproduced baseline remains unchanged.
+    # The evolution framework can enable these task-specific terms through
+    # Hydra overrides when searching beyond generic motion imitation.
+    task_progress = RewTerm(
+        func=mdp.motion_anchor_progress,
+        weight=0.0,
+        params={"command_name": "motion", "target_x": 1.70, "min_x": 0.0, "max_reward": 1.0},
+    )
+    clearance = RewTerm(
+        func=mdp.body_clearance_over_height,
+        weight=0.0,
+        params={
+            "command_name": "motion",
+            "obstacle_height": OBSTACLE_SIZE[2],
+            "target_clearance": 0.20,
+            "body_names": [
+                "left_knee_link",
+                "right_knee_link",
+                "left_ankle_roll_link",
+                "right_ankle_roll_link",
+            ],
+        },
+    )
 
 
 @configclass
@@ -59,6 +88,8 @@ class G1FlatLowFreqEnvCfg(G1FlatEnvCfg):
 
 @configclass
 class G1KneeClimbEnvCfg(G1FlatEnvCfg):
+    rewards: G1KneeClimbRewardsCfg = G1KneeClimbRewardsCfg()
+
     def __post_init__(self):
         super().__post_init__()
 

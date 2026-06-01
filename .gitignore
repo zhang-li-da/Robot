@@ -29,6 +29,13 @@ wandb/
 .neptune/
 **/events.out.tfevents.*
 *.tmp
+.env
+.env.*
+Mimimax
+/Mimimax
+/minimax_secret*
+/minimax.key
+secrets/
 
 # Large robot description assets are restored from unitree_description.tar.gz.
 source/whole_body_tracking/whole_body_tracking/assets/unitree_description/

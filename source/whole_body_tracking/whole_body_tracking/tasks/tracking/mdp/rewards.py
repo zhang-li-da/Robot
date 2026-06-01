@@ -80,3 +80,32 @@ def feet_contact_time(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, thresh
     last_contact_time = contact_sensor.data.last_contact_time[:, sensor_cfg.body_ids]
     reward = torch.sum((last_contact_time < threshold) * first_air, dim=-1)
     return reward
+
+
+def motion_anchor_progress(
+    env: ManagerBasedRLEnv,
+    command_name: str,
+    target_x: float,
+    min_x: float = 0.0,
+    max_reward: float = 1.0,
+) -> torch.Tensor:
+    """Dense local-x progress reward for obstacle tasks."""
+    command: MotionCommand = env.command_manager.get_term(command_name)
+    rel_x = command.robot_anchor_pos_w[:, 0] - env.scene.env_origins[:, 0]
+    progress = (rel_x - min_x) / max(target_x - min_x, 1.0e-6)
+    return torch.clamp(progress, min=0.0, max=max_reward)
+
+
+def body_clearance_over_height(
+    env: ManagerBasedRLEnv,
+    command_name: str,
+    obstacle_height: float,
+    target_clearance: float,
+    body_names: list[str] | None = None,
+) -> torch.Tensor:
+    """Reward selected bodies for clearing an obstacle height."""
+    command: MotionCommand = env.command_manager.get_term(command_name)
+    body_indexes = _get_body_indexes(command, body_names)
+    rel_body_z = command.robot_body_pos_w[:, body_indexes, 2] - env.scene.env_origins[:, None, 2]
+    clearance = rel_body_z.max(dim=-1).values - obstacle_height
+    return torch.clamp(clearance / max(target_clearance, 1.0e-6), min=0.0, max=1.0)
