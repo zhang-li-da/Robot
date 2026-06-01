@@ -70,7 +70,7 @@ python scripts/evolution/run_generation.py \
   --dry_run \
   --population_size 4 \
   --generation 0 \
-  --llm_timeout 180
+  --llm_timeout 300
 ```
 
 默认仍只生成计划，不启动大规模训练。正式训练前先检查输出目录中的：
@@ -104,7 +104,7 @@ python scripts/evolution/run_generation.py \
   --dry_run \
   --population_size 6 \
   --generation 0 \
-  --llm_timeout 180
+  --llm_timeout 300
 ```
 
 若 Mimimax 超时，脚本会回退到本地 seed 候选，仍然输出完整计划。进入输出目录后执行小预算训练：

@@ -14,7 +14,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from genome_ops import seed_population
-from minimax_client import MimimaxClientError, generate_candidates, load_credentials
+from minimax_client import MimimaxClientError, MimimaxJSONError, generate_candidates, load_credentials
 from planner import write_plan_files
 from schemas import AlgorithmGenome
 from validator import validate_genome
@@ -29,7 +29,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--use_llm", action="store_true", help="Call Mimimax M3 for candidate generation.")
     parser.add_argument("--dry_run", action="store_true", help="Generate plans without executing training.")
     parser.add_argument("--history", type=Path, default=None, help="Optional scoreboard/history JSON.")
-    parser.add_argument("--llm_timeout", type=float, default=90.0, help="Mimimax request timeout in seconds.")
+    parser.add_argument("--llm_timeout", type=float, default=None, help="Mimimax request timeout in seconds.")
     return parser.parse_args()
 
 
@@ -43,12 +43,13 @@ def load_history(path: Path | None) -> dict[str, Any]:
     return load_json(path)
 
 
-def render_prompt(config: dict[str, Any], history: dict[str, Any]) -> str:
+def render_prompt(config: dict[str, Any], history: dict[str, Any], population_size: int) -> str:
     template_path = Path(config["llm"]["prompt_template"])
     template = template_path.read_text(encoding="utf-8")
     return (
         template.replace("{{CONFIG_JSON}}", json.dumps(config, indent=2, ensure_ascii=False))
         .replace("{{HISTORY_JSON}}", json.dumps(history, indent=2, ensure_ascii=False))
+        .replace("{{REQUESTED_POPULATION_SIZE}}", str(population_size))
     )
 
 
@@ -85,6 +86,7 @@ def write_genomes(genomes: list[AlgorithmGenome], output_dir: Path) -> None:
 def main() -> int:
     args = parse_args()
     config = load_json(args.config)
+    llm_timeout = float(args.llm_timeout or config.get("llm", {}).get("timeout_seconds", 300.0))
     population_size = int(args.population_size or config.get("evolution", {}).get("population_size", 4))
     history = load_history(args.history)
 
@@ -102,7 +104,7 @@ def main() -> int:
 
     genomes: list[AlgorithmGenome] = []
     if args.use_llm:
-        prompt = render_prompt(config, history)
+        prompt = render_prompt(config, history, population_size)
         prompt_path = output_dir / "prompt_rendered.md"
         prompt_path.write_text(prompt, encoding="utf-8")
         try:
@@ -112,12 +114,20 @@ def main() -> int:
                 f"url={credentials.api_url}, mode={credentials.api_mode}, model={credentials.model}, "
                 f"key={credentials.redacted_key}"
             )
-            payload = generate_candidates(prompt, config, credentials, timeout=args.llm_timeout)
+            payload = generate_candidates(prompt, config, credentials, timeout=llm_timeout)
             (output_dir / "llm_response.json").write_text(
                 json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
                 encoding="utf-8",
             )
             genomes = parse_llm_candidates(payload, config, population_size)
+        except MimimaxJSONError as exc:
+            (output_dir / "llm_raw_text.txt").write_text(exc.raw_text, encoding="utf-8")
+            if exc.raw_response:
+                (output_dir / "llm_raw_response.json").write_text(
+                    json.dumps(exc.raw_response, indent=2, ensure_ascii=False) + "\n",
+                    encoding="utf-8",
+                )
+            print(f"[WARN] Mimimax returned invalid JSON, falling back to local seeds: {exc}")
         except (MimimaxClientError, OSError, ValueError, json.JSONDecodeError) as exc:
             print(f"[WARN] Mimimax generation failed, falling back to local seeds: {exc}")
 

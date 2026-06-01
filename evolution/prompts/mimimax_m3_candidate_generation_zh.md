@@ -20,6 +20,12 @@
 6. 不要删除 fixed-start 能力；该任务正式评估从 motion frame 0 开始。
 7. 对膝爬任务，不要把 knee contact 当成绝对失败。
 8. 候选应围绕任务特征改进，而不是泛泛调参。
+9. JSON 必须能被 Python `json.loads` 直接解析。
+10. 禁止使用尾随逗号、单引号、中文引号、注释、省略号、NaN、Infinity。
+11. 如果无法完整生成多个候选，只生成 1 个完整合法候选，不要生成半截 JSON。
+12. 输出必须以 `{` 开始，以 `}` 结束。
+13. 本次只允许生成 `{{REQUESTED_POPULATION_SIZE}}` 个候选，不能超过该数量。
+14. 每个 `rationale` 最多 2 条，每条不超过 40 个中文字符或 25 个英文单词。
 
 # 当前任务摘要
 
@@ -33,6 +39,10 @@
 `{{CONFIG_JSON}}`
 
 `{{HISTORY_JSON}}`
+
+# 本次候选数量
+
+`{{REQUESTED_POPULATION_SIZE}}`
 
 # 输出格式
 

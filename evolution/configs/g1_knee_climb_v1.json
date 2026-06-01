@@ -19,8 +19,9 @@
     "model": "MiniMax-M3",
     "prompt_template": "evolution/prompts/mimimax_m3_candidate_generation_zh.md",
     "temperature": 0.35,
-    "max_tokens": 4096,
-    "api_mode": "auto"
+    "max_tokens": 8192,
+    "api_mode": "auto",
+    "timeout_seconds": 300
   },
   "evolution": {
     "population_size": 6,

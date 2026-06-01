@@ -33,6 +33,15 @@ class MimimaxClientError(RuntimeError):
     """Raised when Mimimax candidate generation fails."""
 
 
+class MimimaxJSONError(MimimaxClientError):
+    """Raised when Mimimax returns text that cannot be parsed as JSON."""
+
+    def __init__(self, message: str, raw_text: str, raw_response: dict[str, Any] | None = None):
+        super().__init__(message)
+        self.raw_text = raw_text
+        self.raw_response = raw_response or {}
+
+
 def _extract_secret_file(path: Path) -> tuple[str | None, str | None]:
     if not path.exists():
         return None, None
@@ -121,19 +130,25 @@ def _extract_json_object(text: str) -> dict[str, Any]:
         stripped = re.sub(r"\s*```$", "", stripped)
     try:
         return json.loads(stripped)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as first_error:
         start = stripped.find("{")
         end = stripped.rfind("}")
         if start < 0 or end <= start:
-            raise MimimaxClientError(f"No JSON object found in Mimimax response: {text[:800]}")
-        return json.loads(stripped[start : end + 1])
+            raise MimimaxJSONError(f"No JSON object found in Mimimax response: {text[:800]}", text) from first_error
+        try:
+            return json.loads(stripped[start : end + 1])
+        except json.JSONDecodeError as second_error:
+            raise MimimaxJSONError(
+                f"Mimimax response JSON parse failed: {second_error}; first_error={first_error}",
+                text,
+            ) from second_error
 
 
 def generate_candidates(
     prompt: str,
     config: dict[str, Any],
     credentials: MimimaxCredentials,
-    timeout: float = 90.0,
+    timeout: float = 300.0,
 ) -> dict[str, Any]:
     """Call Mimimax and return the parsed JSON object."""
 
@@ -167,4 +182,8 @@ def generate_candidates(
 
     response = _request_json(url, headers, payload, timeout=timeout)
     text = _extract_text(response, credentials.api_mode)
-    return _extract_json_object(text)
+    try:
+        return _extract_json_object(text)
+    except MimimaxJSONError as exc:
+        exc.raw_response = response
+        raise
