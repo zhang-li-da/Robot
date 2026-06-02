@@ -131,7 +131,98 @@ def render_prompt_with_feedback(
     )
 
 
-def parse_llm_candidates(payload: dict[str, Any], config: dict[str, Any], population_size: int) -> list[AlgorithmGenome]:
+def _context_baseline_success(history: dict[str, Any], feedback: dict[str, Any]) -> float:
+    candidates = [
+        history.get("baseline", {}),
+        feedback.get("baseline", {}),
+        feedback.get("population_feedback", {}),
+    ]
+    for item in candidates:
+        if not isinstance(item, dict):
+            continue
+        for key in ("success_rate", "baseline_success_rate"):
+            try:
+                value = float(item.get(key))
+            except (TypeError, ValueError):
+                continue
+            return value
+    return 0.0
+
+
+def _clip_context_value(config: dict[str, Any], dotted: str, value: float) -> float:
+    bounds = config.get("search_space", {}).get(dotted)
+    if not isinstance(bounds, list) or len(bounds) != 2:
+        return value
+    lo, hi = float(bounds[0]), float(bounds[1])
+    return max(lo, min(hi, value))
+
+
+def _apply_high_baseline_guard(
+    genome: AlgorithmGenome,
+    config: dict[str, Any],
+    history: dict[str, Any],
+    feedback: dict[str, Any],
+) -> AlgorithmGenome:
+    """Prevent gen0 high-baseline proxy tasks from drifting into from-scratch search."""
+
+    guarded = genome
+    baseline_success = _context_baseline_success(history, feedback)
+    if baseline_success < 0.90:
+        return guarded
+
+    target_x = float(config.get("task", {}).get("target_x", 1.0))
+    proxy_note = str(config.get("task", {}).get("success_criteria", {}).get("proxy_note", ""))
+
+    guarded.sampling.fixed_start_probability = _clip_context_value(
+        config,
+        "sampling.fixed_start_probability",
+        max(float(guarded.sampling.fixed_start_probability), 0.82),
+    )
+    guarded.termination.anchor_pos_z_threshold = _clip_context_value(
+        config,
+        "termination.anchor_pos_z_threshold",
+        max(float(guarded.termination.anchor_pos_z_threshold), 0.30),
+    )
+    guarded.termination.ee_body_pos_z_threshold = _clip_context_value(
+        config,
+        "termination.ee_body_pos_z_threshold",
+        max(float(guarded.termination.ee_body_pos_z_threshold), 0.32),
+    )
+    guarded.reward.phase_progress_weight = _clip_context_value(
+        config,
+        "reward.phase_progress_weight",
+        max(float(guarded.reward.phase_progress_weight), 0.25),
+    )
+    if target_x <= 0.10 or proxy_note:
+        guarded.reward.task_progress_weight = _clip_context_value(
+            config,
+            "reward.task_progress_weight",
+            min(float(guarded.reward.task_progress_weight), 0.35),
+        )
+    note = "高成功率baseline保护：候选必须贴近baseline并避免proxy退化"
+    if note not in guarded.rationale:
+        guarded.rationale = list(guarded.rationale) + [note]
+    return guarded
+
+
+def _normalize_with_context(
+    genome: AlgorithmGenome,
+    config: dict[str, Any],
+    history: dict[str, Any],
+    feedback: dict[str, Any],
+) -> AlgorithmGenome:
+    genome = normalize_genome_for_config(genome, config)
+    genome = _apply_high_baseline_guard(genome, config, history, feedback)
+    return normalize_genome_for_config(genome, config)
+
+
+def parse_llm_candidates(
+    payload: dict[str, Any],
+    config: dict[str, Any],
+    population_size: int,
+    history: dict[str, Any],
+    feedback: dict[str, Any],
+) -> list[AlgorithmGenome]:
     raw_candidates = payload.get("candidates", [])
     if not isinstance(raw_candidates, list):
         raise ValueError("Mimimax payload must contain a candidates list")
@@ -143,7 +234,7 @@ def parse_llm_candidates(payload: dict[str, Any], config: dict[str, Any], popula
         except (TypeError, ValueError) as exc:
             print(f"[WARN] reject candidate[{index}] schema error: {exc}")
             continue
-        genome = normalize_genome_for_config(genome, config)
+        genome = _normalize_with_context(genome, config, history, feedback)
         errors = validate_genome(genome, config)
         if errors:
             print(f"[WARN] reject {genome.metadata.genome_id}: {'; '.join(errors)}")
@@ -225,7 +316,7 @@ def main() -> int:
                 json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
                 encoding="utf-8",
             )
-            genomes = parse_llm_candidates(payload, config, population_size)
+            genomes = parse_llm_candidates(payload, config, population_size, history, feedback)
         except MimimaxJSONError as exc:
             (output_dir / "llm_raw_text.txt").write_text(exc.raw_text, encoding="utf-8")
             if exc.raw_response:
@@ -250,7 +341,7 @@ def main() -> int:
     validation_report: list[dict[str, Any]] = []
     accepted: list[AlgorithmGenome] = []
     for genome in genomes:
-        genome = normalize_genome_for_config(genome, config)
+        genome = _normalize_with_context(genome, config, history, feedback)
         errors = validate_genome(genome, config)
         validation_report.append({"genome_id": genome.metadata.genome_id, "valid": not errors, "errors": errors})
         if not errors:

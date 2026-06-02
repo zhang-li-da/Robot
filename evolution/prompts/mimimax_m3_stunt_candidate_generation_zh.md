@@ -24,6 +24,9 @@
 18. 如果 `TASK_PROFILE_JSON` 非空，必须遵守其中的 `legal_contacts`、`risk_controls.must_preserve` 和 `success_criteria`；不得弱化最终评估标准。
 19. 如果反馈包含 `runtime_sigbus`、`tensorboard_writer_failure`、`runtime_gpu_memory_pressure` 或 `runtime_train_failed`，必须把它视为资源/运行时失败；至少一个修复候选应考虑 `resource.disable_logger=true` 或降低 `resource.num_envs`，不要只改变 reward。
 20. 如果 `ASSET_MANIFEST_JSON` 显示当前 ASAP 包没有真实目标动作文件，例如没有 backflip 文件名，不得把 proxy 数据描述成真实目标动作；只能把它作为预训练、压力测试或相邻动作迁移证据。
+21. 如果 `HISTORY_JSON.baseline.success_rate` 或 `FEEDBACK_JSON.baseline.success_rate` 大于等于 0.90，当前任务属于高成功率 baseline 场景；候选必须是 baseline-adjacent repair、鲁棒性提升或质量改进，不能从零大幅改动 sampling/termination 导致成功率退化。
+22. 高成功率 proxy 任务中，`fixed_start_probability` 不应低于 0.80，除非反馈明确要求扩大 phase exploration；`anchor_pos_z_threshold` 和 `ee_body_pos_z_threshold` 不得比 baseline-adjacent 候选更严格到阻断 motion-start 完成。
+23. 对 `target_x <= 0.10` 的小位移 proxy 任务，不要把 `task_progress_weight` 作为主要优化杠杆；优先保持 motion tracking、phase_progress、合法接触和落地/最终姿态稳定。
 
 # 任务特征提示
 
@@ -64,6 +67,8 @@
 
 如果 `FEEDBACK_JSON` 非空，必须优先响应其中的 `llm_feedback_brief.must_address` 和候选级 `failure_tags`。候选必须解释其针对的失败标签；不得重复已经导致严重退化的参数组合。对接触型特技，需要明确区分合法支撑接触、危险冲击和跟踪误差。
 如果 `llm_feedback_brief.runtime_failures` 非空，必须优先生成至少一个运行时修复候选。运行时修复只能改变资源预算、logger、采样/终止容忍等安全项，不能降低最终评估标准。
+
+如果 baseline 已经高成功率，下一代候选的目标不是证明 baseline 错误，而是在保持成功率的前提下改进更细的质量指标，例如最终 yaw、最终速度/角速度、接触冲击、动作自然度、鲁棒性或 sim2real 安全项。候选 rationale 必须明确说明如何避免 `severe_regression_vs_baseline`。
 
 如果 `MOTION_CATALOG_JSON` 非空，必须把目录中的动作标签和统计量作为任务证据：
 

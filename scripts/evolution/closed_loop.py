@@ -68,6 +68,68 @@ def baseline_summary(config: dict[str, Any], baseline_eval: Path | None, baselin
     return score_eval_json(baseline_id, baseline_eval, config).to_dict()
 
 
+def write_baseline_context(
+    loop_dir: Path,
+    config: dict[str, Any],
+    baseline_eval: Path | None,
+    baseline_id: str,
+) -> tuple[Path | None, Path | None]:
+    baseline = baseline_summary(config, baseline_eval, baseline_id)
+    if baseline is None:
+        return None, None
+
+    history = {
+        "scores": [],
+        "baseline": baseline,
+        "source": "closed_loop_baseline_context",
+    }
+    history_path = loop_dir / "baseline_history.json"
+    history_path.write_text(json.dumps(history, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    success_rate = float(baseline.get("success_rate", 0.0))
+    must_address = [
+        "use the provided baseline as the first reference point; do not generate from-scratch candidates that sacrifice baseline success",
+        "preserve the final evaluation protocol and compare every candidate against baseline_success_rate",
+    ]
+    if success_rate >= 0.90:
+        must_address.extend(
+            [
+                "baseline already has high success rate; candidates must be baseline-adjacent repairs or quality/robustness improvements",
+                "for proxy tasks, do not claim real wall-vault/backflip/tunnel success and do not over-optimize task_progress on tiny target_x",
+                "keep enough motion-start coverage and avoid overly strict anchor/ee termination that causes early regression",
+            ]
+        )
+
+    feedback = {
+        "schema_version": "1.0",
+        "project": config.get("project", "task_adaptive_beyondmimic"),
+        "task": config.get("task", {}),
+        "baseline": baseline,
+        "population_feedback": {
+            "population_status": "baseline_context_ready",
+            "best_genome_id": baseline_id,
+            "best_success_rate": success_rate,
+            "baseline_success_rate": success_rate,
+            "target_met": False,
+            "next_generation_focus": must_address,
+        },
+        "candidates": [],
+        "llm_feedback_brief": {
+            "must_address": must_address,
+            "avoid_repeating": [],
+            "runtime_failures": [],
+            "evaluation_contract": {
+                "baseline_success_rate": success_rate,
+                "minimum_final_trials": config.get("evolution", {}).get("minimum_final_trials", 50),
+                "proxy_note": config.get("task", {}).get("success_criteria", {}).get("proxy_note", ""),
+            },
+        },
+    }
+    feedback_path = loop_dir / "baseline_feedback.json"
+    feedback_path.write_text(json.dumps(feedback, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return history_path, feedback_path
+
+
 def write_loop_state(
     path: Path,
     state: dict[str, Any],
@@ -102,8 +164,14 @@ def main() -> int:
     }
     write_loop_state(state_path, state)
 
-    history_path: Path | None = args.initial_history if args.initial_history is not None and args.initial_history.exists() else None
-    feedback_path: Path | None = args.initial_feedback if args.initial_feedback is not None and args.initial_feedback.exists() else None
+    baseline_history_path, baseline_feedback_path = write_baseline_context(
+        loop_dir,
+        config,
+        args.baseline_eval,
+        args.baseline_id,
+    )
+    history_path: Path | None = args.initial_history if args.initial_history is not None and args.initial_history.exists() else baseline_history_path
+    feedback_path: Path | None = args.initial_feedback if args.initial_feedback is not None and args.initial_feedback.exists() else baseline_feedback_path
     if history_path is not None:
         state["initial_history"] = str(history_path)
     if feedback_path is not None:
