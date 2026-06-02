@@ -35,6 +35,11 @@ python scripts/create_asap_evolution_configs.py
 python scripts/create_asap_task_profiles.py
 python scripts/select_asap_evolution_tasks.py --limit 24
 python scripts/build_asap_task_adaptive_roadmap.py --limit 18
+python scripts/evolution/build_task_evolution_pack.py --goal backflip --limit 10
+python scripts/evolution/build_task_evolution_pack.py --goal wall_vault --limit 10
+python scripts/evolution/build_task_evolution_pack.py --goal crawl_tunnel --limit 10
+python scripts/evolution/build_task_evolution_pack.py --goal wall_turn --limit 10
+python scripts/evolution/build_task_evolution_pack.py --goal jump_leap --limit 10
 
 if [[ -z "${TASK_IDS}" ]]; then
   TASK_IDS="$(python scripts/asap_g1_task_suite.py --list-default)"

@@ -87,6 +87,7 @@ cd /root/whole_body_tracking-main
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/evolution/build_task_evolution_pack.py --goal wall_vault --limit 10
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/evolution/build_task_evolution_pack.py --goal crawl_tunnel --limit 10
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/evolution/build_task_evolution_pack.py --goal wall_turn --limit 10
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/evolution/build_task_evolution_pack.py --goal jump_leap --limit 10
 ```
 
 生成物职责如下：

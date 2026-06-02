@@ -243,6 +243,7 @@ python scripts/evolution/build_task_evolution_pack.py --goal backflip --limit 10
 python scripts/evolution/build_task_evolution_pack.py --goal wall_vault --limit 10
 python scripts/evolution/build_task_evolution_pack.py --goal crawl_tunnel --limit 10
 python scripts/evolution/build_task_evolution_pack.py --goal wall_turn --limit 10
+python scripts/evolution/build_task_evolution_pack.py --goal jump_leap --limit 10
 ```
 
 ## V1.4 多动作数据驱动的任务族进化
