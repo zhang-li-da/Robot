@@ -296,6 +296,45 @@ def config_task_payload(spec: dict[str, Any]) -> dict[str, Any]:
     return task
 
 
+def adapted_hydra_overrides(spec: dict[str, Any]) -> list[str]:
+    """Conservative hand-adapted baseline overrides for non-LLM comparison."""
+
+    task = config_task_payload(spec)
+    reward_terms = set(task.get("reward_terms", []))
+    reward_priors = {
+        "task_progress": ("env.rewards.task_progress.weight", 0.35),
+        "phase_progress": ("env.rewards.phase_progress.weight", 0.25),
+        "clearance": ("env.rewards.clearance.weight", 0.30),
+        "apex_height": ("env.rewards.apex_height.weight", 0.25),
+        "landing_stability": ("env.rewards.landing_stability.weight", 0.30),
+        "ceiling_clearance": ("env.rewards.ceiling_clearance.weight", 0.45),
+        "yaw_alignment": ("env.rewards.yaw_alignment.weight", 0.30),
+        "contact_force": ("env.rewards.contact_force.weight", -0.05),
+    }
+    overrides: list[str] = []
+    for term, (path, value) in reward_priors.items():
+        if term in reward_terms:
+            overrides.append(f"{path}={value}")
+
+    if any(term in reward_terms for term in ("task_progress", "phase_progress", "clearance", "ceiling_clearance")):
+        overrides.extend(
+            [
+                "env.terminations.anchor_pos.params.threshold=0.32",
+                "env.terminations.ee_body_pos.params.threshold=0.34",
+                "env.commands.motion.adaptive_uniform_ratio=1.05",
+            ]
+        )
+    if any(term in reward_terms for term in ("apex_height", "yaw_alignment", "landing_stability")):
+        overrides.append("env.terminations.anchor_ori.params.threshold=1.05")
+    overrides.extend(
+        [
+            "env.commands.motion.fixed_start_probability=0.95",
+            "env.commands.motion.fixed_start_time_steps=0",
+        ]
+    )
+    return overrides
+
+
 def shell_exports(spec: dict[str, Any]) -> str:
     task = config_task_payload(spec)
     criteria = task.get("success_criteria", {})
@@ -320,6 +359,7 @@ def shell_exports(spec: dict[str, Any]) -> str:
         "CEILING_MAX_X": criteria.get("ceiling_max_x", 1.0e9),
         "TARGET_YAW": criteria.get("target_final_yaw", 0.0),
         "MAX_YAW_ERROR": criteria.get("max_final_yaw_error", 1.0),
+        "ADAPTED_OVERRIDES": " ".join(adapted_hydra_overrides(spec)),
     }
     return "\n".join(f"{key}={shlex.quote(str(value))}" for key, value in values.items())
 

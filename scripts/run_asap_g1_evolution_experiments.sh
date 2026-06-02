@@ -119,6 +119,10 @@ for task_id in ${TASK_IDS}; do
     echo "[SKIP] ${TASK_NAME}/adapted_task_rewards already complete"
   else
     LOGGER_ARGS=()
+    ADAPTED_ARGS=()
+    if [[ -n "${ADAPTED_OVERRIDES:-}" ]]; then
+      read -r -a ADAPTED_ARGS <<< "${ADAPTED_OVERRIDES}"
+    fi
     if [[ "${DISABLE_LOGGER}" == "1" ]]; then
       LOGGER_ARGS=(--disable_logger)
     else
@@ -132,7 +136,8 @@ for task_id in ${TASK_IDS}; do
       --experiment_name "${TASK_NAME}" \
       --run_name adapted_task_rewards \
       --headless \
-      "${LOGGER_ARGS[@]}"
+      "${LOGGER_ARGS[@]}" \
+      "${ADAPTED_ARGS[@]}"
   fi
 
   BASELINE_CKPT="$(latest_checkpoint "${TASK_NAME}_baseline" baseline_beyondmimic)"
