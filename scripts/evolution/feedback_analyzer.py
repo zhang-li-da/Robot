@@ -203,6 +203,8 @@ def _runtime_failure_feedback(genome_id: str, status_path: Path, config: dict[st
             "mean_max_torso_x": 0.0,
             "mean_clearance": 0.0,
             "mean_max_body_height": 0.0,
+            "mean_min_body_height": 0.0,
+            "mean_low_posture_fraction": 0.0,
             "mean_ceiling_zone_body_height": 0.0,
             "mean_final_speed": 0.0,
             "mean_final_ang_speed": 0.0,
@@ -239,6 +241,8 @@ def _candidate_feedback(
     progress = _safe_float(data, "mean_max_torso_x")
     clearance = score.mean_clearance
     ceiling_zone_body_height = _safe_float(data, "mean_max_body_height", -10.0)
+    min_body_height = _safe_float(data, "mean_min_body_height", 10.0)
+    low_posture_fraction = _safe_float(data, "mean_low_posture_fraction", 0.0)
     torso_height = _safe_float(data, "mean_max_torso_height")
     body_height = ceiling_zone_body_height if ceiling_zone_body_height > -1.0 else torso_height
     final_speed = _safe_float(data, "mean_final_speed")
@@ -361,6 +365,21 @@ def _candidate_feedback(
             tags.append("crawl_progress_stall")
             levers.extend(["increase low-posture forward progress shaping", "increase phase_progress reward"])
 
+    if success_type == "low_posture":
+        max_body_height = float(criteria.get("max_head_or_torso_height", obstacle_height or 0.85))
+        min_fraction = float(criteria.get("min_low_posture_fraction", 0.25))
+        if min_body_height > 9.0:
+            tags.append("never_entered_low_posture_zone")
+            hypotheses.append("policy never enters the configured low-posture evaluation zone")
+            levers.extend(["broaden low-posture phase sampling", "avoid progress-only shaping for in-place squat proxies"])
+        elif min_body_height > max_body_height:
+            tags.append("insufficient_low_posture")
+            hypotheses.append("policy does not reach the required body height for low-posture pretraining")
+            levers.extend(["increase ceiling_clearance reward", "relax early anchor_pos while preserving low posture metric"])
+        if low_posture_fraction < min_fraction:
+            tags.append("low_posture_duration_shortfall")
+            levers.extend(["increase phase_progress reward over hold phase", "sample low-posture hold frames more frequently"])
+
     episode_lengths = _episode_list(data, "episode_lengths")
     episode_x = _episode_list(data, "episode_max_torso_x")
     episode_clearance = _episode_list(data, "episode_max_clearance_over_obstacle")
@@ -404,6 +423,8 @@ def _candidate_feedback(
             "mean_max_torso_x": progress,
             "mean_clearance": clearance,
             "mean_max_body_height": body_height,
+            "mean_min_body_height": min_body_height,
+            "mean_low_posture_fraction": low_posture_fraction,
             "mean_ceiling_zone_body_height": ceiling_zone_body_height,
             "mean_final_speed": final_speed,
             "mean_final_ang_speed": final_ang_speed,

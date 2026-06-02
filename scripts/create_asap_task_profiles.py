@@ -44,6 +44,8 @@ def infer_task_type(task: dict[str, Any], clip: dict[str, Any]) -> str:
     name = str(task.get("name", "")).lower()
     if task.get("success_type") == "backflip":
         return "aerial_flip_proxy"
+    if task.get("success_type") == "low_posture" or "low_posture" in tags or "squat" in tags:
+        return "low_posture_pretraining"
     if "turn_jump" in name or "yaw_control" in tags:
         return "aerial_turn_jump"
     if "spiderman" in name or "low_dynamic_pose" in tags:
@@ -56,15 +58,19 @@ def infer_task_type(task: dict[str, Any], clip: dict[str, Any]) -> str:
 def legal_contacts(task: dict[str, Any]) -> dict[str, Any]:
     success = task.get("success_criteria", {})
     allow_hand_contact = bool(success.get("allow_hand_contact", False))
+    allow_knee_hand_contact = bool(success.get("allow_knee_hand_contact", False))
     allowed = [
         "left_ankle_roll_link",
         "right_ankle_roll_link",
     ]
-    if allow_hand_contact:
+    if allow_hand_contact or allow_knee_hand_contact:
         allowed.extend(["left_wrist_yaw_link", "right_wrist_yaw_link"])
+    if allow_knee_hand_contact:
+        allowed.extend(["left_knee_link", "right_knee_link"])
     return {
         "allowed_support_bodies": allowed,
         "allow_hand_contact": allow_hand_contact,
+        "allow_knee_hand_contact": allow_knee_hand_contact,
         "forbidden_contacts": [
             "head_link hard impact",
             "torso_link hard impact unless task profile explicitly allows body support",

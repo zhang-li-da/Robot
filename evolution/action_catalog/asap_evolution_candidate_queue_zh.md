@@ -4,7 +4,7 @@
 
 - 数据目录：`/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles`
 - 动作片段数：`52`
-- 已写入正式任务配置的动作源：`7`
+- 已写入正式任务配置的动作源：`9`
 
 ## 已知限制
 
@@ -18,10 +18,10 @@
 
 | 排名 | 动作ID | 分数 | 类型 | 已配置 | 建议任务 | 关键标签 | 位移/高度/时长 | 进化重点 |
 | ---: | --- | ---: | --- | --- | --- | --- | --- | --- |
-| 1 | `0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass` | 330.0 | `low_posture_pretraining` | no | `Tracking-CrawlTunnel-G1-v0` | in_place_high_dynamic, large_height_transition, large_joint_excursion, large_vertical_motion, long_sequence, low_posture, low_posture_transition, low_root_height, squat, strength_pose | 0.04m / 0.64m / 6.13s | phase_progress, ceiling_clearance, landing_stability |
+| 1 | `0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass` | 322.0 | `low_posture_pretraining` | yes | `Tracking-CrawlTunnel-G1-v0` | in_place_high_dynamic, large_height_transition, large_joint_excursion, large_vertical_motion, long_sequence, low_posture, low_posture_transition, low_root_height, squat, strength_pose | 0.04m / 0.64m / 6.13s | phase_progress, ceiling_clearance, landing_stability |
 | 2 | `0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass` | 311.5 | `wall_contact_proxy` | yes | `Tracking-WallTurn-G1-v0` | in_place_high_dynamic, large_height_transition, large_joint_excursion, large_limb_range, large_vertical_motion, long_sequence, low_dynamic_pose, low_root_height, wall_turn_proxy | 0.05m / 0.51m / 5.23s | phase_progress, yaw_alignment, landing_stability, contact_force |
-| 3 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass` | 303.8 | `aerial_turn_jump` | no | `Tracking-WallTurn-G1-v0` | aerial, large_joint_excursion, large_vertical_motion, locomotion, low_root_height, turn_jump, yaw_control | 0.57m / 0.56m / 4.23s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
-| 4 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass` | 300.1 | `aerial_turn_jump` | yes | `Tracking-WallTurn-G1-v0` | aerial, large_joint_excursion, large_vertical_motion, locomotion, low_root_height, turn_jump, yaw_control | 0.79m / 0.54m / 4.43s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
+| 3 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass` | 300.1 | `aerial_turn_jump` | yes | `Tracking-WallTurn-G1-v0` | aerial, large_joint_excursion, large_vertical_motion, locomotion, low_root_height, turn_jump, yaw_control | 0.79m / 0.54m / 4.43s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
+| 4 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass` | 295.8 | `aerial_turn_jump` | yes | `Tracking-WallTurn-G1-v0` | aerial, large_joint_excursion, large_vertical_motion, locomotion, low_root_height, turn_jump, yaw_control | 0.57m / 0.56m / 4.23s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
 | 5 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass` | 287.2 | `aerial_turn_jump` | no | `Tracking-WallTurn-G1-v0` | aerial, large_joint_excursion, large_vertical_motion, low_root_height, turn_jump, yaw_control | 0.17m / 0.61m / 4.43s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
 | 6 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass` | 281.3 | `aerial_turn_jump` | no | `Tracking-WallTurn-G1-v0` | aerial, large_joint_excursion, large_vertical_motion, low_root_height, turn_jump, yaw_control | 0.26m / 0.53m / 4.13s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
 | 7 | `0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass` | 281.1 | `low_posture_pretraining` | no | `Tracking-CrawlTunnel-G1-v0` | in_place_high_dynamic, large_joint_excursion, large_vertical_motion, long_sequence, low_posture, low_posture_transition, low_root_height, squat, strength_pose | 0.08m / 0.32m / 6.33s | phase_progress, ceiling_clearance, landing_stability |

@@ -101,6 +101,7 @@
       "right_ankle_roll_link"
     ],
     "allow_hand_contact": false,
+    "allow_knee_hand_contact": false,
     "forbidden_contacts": [
       "head_link hard impact",
       "torso_link hard impact unless task profile explicitly allows body support"

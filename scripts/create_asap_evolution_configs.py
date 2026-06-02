@@ -23,6 +23,18 @@ REWARD_SEARCH_DEFAULTS = {
     "contact_force": [-0.35, 0.0],
 }
 
+SEED_OFFSETS = {
+    "g1_asap_jump_forward_l5": 17,
+    "g1_asap_jump_forward_l4": 18,
+    "g1_asap_side_jump_l4": 19,
+    "g1_asap_turn_jump_l5": 20,
+    "g1_asap_spiderman_l2": 21,
+    "g1_asap_single_foot_jump_l2": 22,
+    "g1_asap_cr7_l2_dynamic": 23,
+    "g1_asap_turn_jump_l4": 24,
+    "g1_asap_squat_l3_lowposture": 25,
+}
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
@@ -59,7 +71,8 @@ def main() -> int:
         cfg["task"]["algorithm_priors"] = "evolution/algorithm_priors/asap_algorithm_priors.json"
         enable_task_reward_search(cfg)
         cfg.setdefault("resource_defaults", {})["disable_logger"] = True
-        cfg["evolution"]["random_seed"] = int(cfg["evolution"].get("random_seed", 20260602)) + 17 + index
+        seed_offset = SEED_OFFSETS.get(spec["id"], 17 + index)
+        cfg["evolution"]["random_seed"] = int(cfg["evolution"].get("random_seed", 20260602)) + seed_offset
         cfg.setdefault("llm", {})["timeout_seconds"] = max(float(cfg.get("llm", {}).get("timeout_seconds", 300)), 600)
         write_json(CONFIG_DIR / spec["output_config"], cfg)
         print(CONFIG_DIR / spec["output_config"])

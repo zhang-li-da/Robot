@@ -26,7 +26,7 @@ parser.add_argument(
     default="",
     help="Optional absolute checkpoint path. Useful for evaluating a Flat baseline in a task-specific environment.",
 )
-parser.add_argument("--success_type", type=str, default="progress", choices=("progress", "backflip", "crawl"))
+parser.add_argument("--success_type", type=str, default="progress", choices=("progress", "backflip", "crawl", "low_posture"))
 parser.add_argument("--target_x", type=float, default=1.0)
 parser.add_argument("--obstacle_height", type=float, default=0.0)
 parser.add_argument("--min_root_height", type=float, default=0.55)
@@ -37,6 +37,7 @@ parser.add_argument("--max_final_ang_speed", type=float, default=1.5)
 parser.add_argument("--max_body_height", type=float, default=0.85)
 parser.add_argument("--ceiling_min_x", type=float, default=0.0)
 parser.add_argument("--ceiling_max_x", type=float, default=1.0e9)
+parser.add_argument("--min_low_posture_fraction", type=float, default=0.25)
 parser.add_argument("--target_yaw", type=float, default=0.0)
 parser.add_argument("--max_yaw_error", type=float, default=0.8)
 parser.add_argument(
@@ -194,6 +195,9 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
     max_torso_x = torch.zeros_like(current_return)
     max_root_height = torch.zeros_like(current_return)
     max_body_height_in_ceiling = torch.zeros_like(current_return) - 10.0
+    min_body_height_in_ceiling = torch.zeros_like(current_return) + 10.0
+    low_posture_steps = torch.zeros_like(current_return)
+    ceiling_zone_steps = torch.zeros_like(current_return)
     final_speed = torch.zeros_like(current_return)
     final_ang_speed = torch.zeros_like(current_return)
     final_yaw_error = torch.full_like(current_return, float(math.pi))
@@ -204,6 +208,8 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
     progress_values: list[float] = []
     root_height_values: list[float] = []
     body_height_values: list[float] = []
+    min_body_height_values: list[float] = []
+    low_posture_fraction_values: list[float] = []
     speed_values: list[float] = []
     ang_speed_values: list[float] = []
     yaw_error_values: list[float] = []
@@ -227,6 +233,13 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
             torch.maximum(max_body_height_in_ceiling, current_body_height),
             max_body_height_in_ceiling,
         )
+        min_body_height_in_ceiling = torch.where(
+            in_ceiling,
+            torch.minimum(min_body_height_in_ceiling, current_body_height),
+            min_body_height_in_ceiling,
+        )
+        ceiling_zone_steps += in_ceiling.float()
+        low_posture_steps += (in_ceiling & (current_body_height <= args_cli.max_body_height)).float()
         final_speed = torch.norm(robot.data.body_lin_vel_w[:, torso_id], dim=-1)
         final_ang_speed = torch.norm(robot.data.body_ang_vel_w[:, torso_id], dim=-1)
         final_yaw = yaw_from_quat_wxyz(robot.data.body_quat_w[:, torso_id])
@@ -266,6 +279,14 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
                 & (max_body_height_in_ceiling[done_ids] > -9.0)
                 & (max_body_height_in_ceiling[done_ids] <= args_cli.max_body_height)
             )
+        elif args_cli.success_type == "low_posture":
+            low_fraction = low_posture_steps[done_ids] / torch.clamp(current_length[done_ids], min=1.0)
+            success_now = (
+                (min_body_height_in_ceiling[done_ids] < 9.0)
+                & (min_body_height_in_ceiling[done_ids] <= args_cli.max_body_height)
+                & (low_fraction >= args_cli.min_low_posture_fraction)
+                & (max_root_height[done_ids] >= args_cli.min_root_height)
+            )
         else:
             success_now = (
                 (max_torso_x[done_ids] >= args_cli.target_x)
@@ -278,6 +299,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         progress_values.extend(max_torso_x[done_ids].detach().cpu().tolist())
         root_height_values.extend(max_root_height[done_ids].detach().cpu().tolist())
         body_height_values.extend(max_body_height_in_ceiling[done_ids].detach().cpu().tolist())
+        min_body_height_values.extend(min_body_height_in_ceiling[done_ids].detach().cpu().tolist())
+        low_posture_fraction_values.extend(
+            (low_posture_steps[done_ids] / torch.clamp(current_length[done_ids], min=1.0)).detach().cpu().tolist()
+        )
         speed_values.extend(final_speed[done_ids].detach().cpu().tolist())
         ang_speed_values.extend(final_ang_speed[done_ids].detach().cpu().tolist())
         yaw_error_values.extend(final_yaw_error[done_ids].detach().cpu().tolist())
@@ -290,6 +315,9 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         max_torso_x[done_ids] = 0.0
         max_root_height[done_ids] = 0.0
         max_body_height_in_ceiling[done_ids] = -10.0
+        min_body_height_in_ceiling[done_ids] = 10.0
+        low_posture_steps[done_ids] = 0.0
+        ceiling_zone_steps[done_ids] = 0.0
         flip_rotation[done_ids] = 0.0
         force_motion_start(env.unwrapped, done_ids)
         obs, _ = env.get_observations()
@@ -311,6 +339,8 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         "mean_max_torso_x": _mean(progress_values[:used]),
         "mean_max_torso_height": _mean(root_height_values[:used]),
         "mean_max_body_height": _mean(body_height_values[:used]),
+        "mean_min_body_height": _mean(min_body_height_values[:used]),
+        "mean_low_posture_fraction": _mean(low_posture_fraction_values[:used]),
         "mean_final_speed": _mean(speed_values[:used]),
         "mean_final_ang_speed": _mean(ang_speed_values[:used]),
         "mean_final_yaw_error": _mean(yaw_error_values[:used]),
@@ -323,6 +353,8 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         "episode_max_torso_x": [float(v) for v in progress_values[:used]],
         "episode_max_torso_height": [float(v) for v in root_height_values[:used]],
         "episode_max_body_height": [float(v) for v in body_height_values[:used]],
+        "episode_min_body_height": [float(v) for v in min_body_height_values[:used]],
+        "episode_low_posture_fraction": [float(v) for v in low_posture_fraction_values[:used]],
         "episode_final_speed": [float(v) for v in speed_values[:used]],
         "episode_final_ang_speed": [float(v) for v in ang_speed_values[:used]],
         "episode_final_yaw_error": [float(v) for v in yaw_error_values[:used]],

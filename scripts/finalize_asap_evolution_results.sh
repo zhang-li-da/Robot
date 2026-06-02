@@ -135,6 +135,7 @@ PY
       --max_body_height "${MAX_BODY_HEIGHT}" \
       --ceiling_min_x "${CEILING_MIN_X}" \
       --ceiling_max_x "${CEILING_MAX_X}" \
+      --min_low_posture_fraction "${MIN_LOW_POSTURE_FRACTION}" \
       --target_yaw "${TARGET_YAW}" \
       --max_yaw_error "${MAX_YAW_ERROR}" \
       --output "${FINAL_EVAL}"

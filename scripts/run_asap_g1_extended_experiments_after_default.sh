@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="${ROOT_DIR:-/root/whole_body_tracking-main}"
 WAIT_PID="${WAIT_PID:-}"
-TASK_IDS="${TASK_IDS:-g1_asap_jump_forward_l4 g1_asap_side_jump_l4 g1_asap_cr7_l2_dynamic}"
+TASK_IDS="${TASK_IDS:-g1_asap_turn_jump_l4 g1_asap_squat_l3_lowposture g1_asap_jump_forward_l4 g1_asap_side_jump_l4 g1_asap_cr7_l2_dynamic}"
 NUM_ENVS="${NUM_ENVS:-2048}"
 BASELINE_ITERS="${BASELINE_ITERS:-800}"
 ADAPTED_ITERS="${ADAPTED_ITERS:-800}"

@@ -281,6 +281,8 @@ def evaluation_command(
             command.extend(["--ceiling_min_x", str(success["ceiling_min_x"])])
         if "ceiling_max_x" in success:
             command.extend(["--ceiling_max_x", str(success["ceiling_max_x"])])
+        if "min_low_posture_fraction" in success:
+            command.extend(["--min_low_posture_fraction", str(success["min_low_posture_fraction"])])
         if "target_final_yaw" in success:
             command.extend(["--target_yaw", str(success["target_final_yaw"])])
         if "max_final_yaw_error" in success:

@@ -19,9 +19,11 @@
 
 | 任务 | 动作ID | 类型 | baseline | adapted | best evolved | 说明 |
 | --- | --- | --- | ---: | ---: | ---: | --- |
+| `g1_asap_squat_l3_lowposture` | `0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass` | `low_posture_pretraining` |  |  |  | use to tune low-posture transitions before real tunnel or crawl clips are added |
 | `g1_asap_spiderman_l2` | `0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass` | `wall_contact_proxy` | 0.984 | 0.984 | 1.000 | proxy for wall-contact coordination, not a final wall-vault claim |
 | `g1_asap_turn_jump_l5` | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass` | `aerial_turn_jump` | 0.000 | 0.000 | 0.000 | relax aerial orientation termination while keeping final yaw recovery strict |
-| `g1_asap_single_foot_jump_l2` | `0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass` | `flip_proxy_single_foot_jump` |  |  |  | use only as flip pretraining or stress testing until true flip motion is added |
+| `g1_asap_turn_jump_l4` | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass` | `aerial_turn_jump` |  |  |  | relax aerial orientation termination while keeping final yaw recovery strict |
+| `g1_asap_single_foot_jump_l2` | `0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass` | `flip_proxy_single_foot_jump` | 0.000 | 0.000 |  | use only as flip pretraining or stress testing until true flip motion is added |
 | `g1_asap_jump_forward_l5` | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass` | `aerial_jump` | 0.000 | 0.000 | 0.125 | use displacement, apex height, and landing stability as the screening metrics |
 | `g1_asap_jump_forward_l4` | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass` | `aerial_jump` |  |  |  | use displacement, apex height, and landing stability as the screening metrics |
 | `g1_asap_side_jump_l4` | `0-motions_raw_tairantestbed_smpl_video_side_jump_level4_filter_amass` | `aerial_jump` |  |  |  | use displacement, apex height, and landing stability as the screening metrics |
@@ -31,24 +33,24 @@
 
 | 优先级 | 动作ID | 类型 | 角色 | 位移/高度/时长 | LLM 搜索重点 |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | `0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass` | `low_posture_pretraining` | `proxy_pretraining` | 0.04m / 0.64m / 6.13s | phase_progress, ceiling_clearance, landing_stability |
-| 2 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass` | `aerial_turn_jump` | `formal_or_curriculum` | 0.57m / 0.56m / 4.23s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
-| 3 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass` | `aerial_turn_jump` | `formal_or_curriculum` | 0.17m / 0.61m / 4.43s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
-| 4 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass` | `aerial_turn_jump` | `formal_or_curriculum` | 0.26m / 0.53m / 4.13s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
-| 5 | `0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass` | `low_posture_pretraining` | `proxy_pretraining` | 0.08m / 0.32m / 6.33s | phase_progress, ceiling_clearance, landing_stability |
-| 6 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass` | `aerial_turn_jump` | `formal_or_curriculum` | 0.16m / 0.58m / 4.43s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
-| 7 | `0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level1_filter_amass` | `flip_proxy_single_foot_jump` | `proxy_pretraining` | 0.07m / 0.33m / 5.23s | phase_progress, apex_height, landing_stability, contact_force |
-| 8 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass` | `aerial_jump` | `formal_or_curriculum` | 1.54m / 0.28m / 4.23s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
-| 9 | `0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass` | `low_posture_pretraining` | `proxy_pretraining` | 0.07m / 0.19m / 5.23s | phase_progress, ceiling_clearance, landing_stability |
-| 10 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass` | `aerial_jump` | `formal_or_curriculum` | 1.11m / 0.33m / 3.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
-| 11 | `0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass` | `recovery_pretraining` | `robustness_pretraining` | 0.05m / 0.39m / 4.43s | phase_progress, landing_stability, contact_force |
-| 12 | `0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level4_filter_amass` | `recovery_pretraining` | `robustness_pretraining` | 1.20m / 0.30m / 4.23s | phase_progress, landing_stability, contact_force |
-| 13 | `0-TairanTestbed_TairanTestbed_CR7_video_CR7_level1_filter_amass` | `dynamic_balance` | `robustness_pretraining` | 0.53m / 0.55m / 3.93s | phase_progress, landing_stability, contact_force |
-| 14 | `0-motions_raw_tairantestbed_smpl_video_CR7_level1_filter_amass` | `dynamic_balance` | `robustness_pretraining` | 0.53m / 0.55m / 3.93s | phase_progress, landing_stability, contact_force |
-| 15 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass` | `aerial_jump` | `formal_or_curriculum` | 1.25m / 0.18m / 3.63s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
-| 16 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level2_filter_amass` | `aerial_jump` | `formal_or_curriculum` | 0.75m / 0.09m / 3.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
-| 17 | `0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level4_filter_amass` | `single_leg_balance_pretraining` | `robustness_pretraining` | 0.05m / 0.04m / 8.80s | phase_progress, landing_stability, contact_force |
-| 18 | `0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level2_filter_amass` | `single_leg_balance_pretraining` | `robustness_pretraining` | 0.07m / 0.25m / 9.70s | phase_progress, landing_stability, contact_force |
+| 1 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass` | `aerial_turn_jump` | `formal_or_curriculum` | 0.17m / 0.61m / 4.43s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
+| 2 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass` | `aerial_turn_jump` | `formal_or_curriculum` | 0.26m / 0.53m / 4.13s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
+| 3 | `0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass` | `low_posture_pretraining` | `proxy_pretraining` | 0.08m / 0.32m / 6.33s | phase_progress, ceiling_clearance, landing_stability |
+| 4 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass` | `aerial_turn_jump` | `formal_or_curriculum` | 0.16m / 0.58m / 4.43s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
+| 5 | `0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level1_filter_amass` | `flip_proxy_single_foot_jump` | `proxy_pretraining` | 0.07m / 0.33m / 5.23s | phase_progress, apex_height, landing_stability, contact_force |
+| 6 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass` | `aerial_jump` | `formal_or_curriculum` | 1.54m / 0.28m / 4.23s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 7 | `0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass` | `low_posture_pretraining` | `proxy_pretraining` | 0.07m / 0.19m / 5.23s | phase_progress, ceiling_clearance, landing_stability |
+| 8 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass` | `aerial_jump` | `formal_or_curriculum` | 1.11m / 0.33m / 3.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 9 | `0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass` | `recovery_pretraining` | `robustness_pretraining` | 0.05m / 0.39m / 4.43s | phase_progress, landing_stability, contact_force |
+| 10 | `0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level4_filter_amass` | `recovery_pretraining` | `robustness_pretraining` | 1.20m / 0.30m / 4.23s | phase_progress, landing_stability, contact_force |
+| 11 | `0-TairanTestbed_TairanTestbed_CR7_video_CR7_level1_filter_amass` | `dynamic_balance` | `robustness_pretraining` | 0.53m / 0.55m / 3.93s | phase_progress, landing_stability, contact_force |
+| 12 | `0-motions_raw_tairantestbed_smpl_video_CR7_level1_filter_amass` | `dynamic_balance` | `robustness_pretraining` | 0.53m / 0.55m / 3.93s | phase_progress, landing_stability, contact_force |
+| 13 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass` | `aerial_jump` | `formal_or_curriculum` | 1.25m / 0.18m / 3.63s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 14 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level2_filter_amass` | `aerial_jump` | `formal_or_curriculum` | 0.75m / 0.09m / 3.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 15 | `0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level4_filter_amass` | `single_leg_balance_pretraining` | `robustness_pretraining` | 0.05m / 0.04m / 8.80s | phase_progress, landing_stability, contact_force |
+| 16 | `0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level2_filter_amass` | `single_leg_balance_pretraining` | `robustness_pretraining` | 0.07m / 0.25m / 9.70s | phase_progress, landing_stability, contact_force |
+| 17 | `0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level3_filter_amass` | `single_leg_balance_pretraining` | `robustness_pretraining` | 0.07m / 0.05m / 9.00s | phase_progress, landing_stability, contact_force |
+| 18 | `0-motions_raw_tairantestbed_smpl_video_Kobe_level1_amass` | `dynamic_balance` | `robustness_pretraining` | 0.71m / 0.41m / 4.13s | phase_progress, landing_stability, contact_force |
 
 ## 任务族到算法进化杠杆
 

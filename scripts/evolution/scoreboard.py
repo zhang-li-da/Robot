@@ -91,6 +91,13 @@ def _task_margin(data: dict[str, Any], task: dict[str, Any]) -> float:
             return 0.0
         return ceiling - body_height
 
+    if success_type == "low_posture":
+        ceiling = float(criteria.get("max_head_or_torso_height", task.get("obstacle_height", 0.85)))
+        body_height = float(data.get("mean_min_body_height", data.get("mean_max_torso_height", 10.0)))
+        if body_height > 9.0:
+            return 0.0
+        return ceiling - body_height
+
     if success_type in {"progress", "backflip"}:
         required_height = float(criteria.get("min_apex_height", task.get("min_root_height", 0.0)))
         torso_height = float(data.get("mean_max_torso_height", 0.0))

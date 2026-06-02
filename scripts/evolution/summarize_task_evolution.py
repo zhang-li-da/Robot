@@ -88,6 +88,8 @@ def eval_metrics(eval_path: str | None) -> dict[str, Any]:
         "mean_final_yaw_error",
         "mean_flip_rotation",
         "mean_max_body_height",
+        "mean_min_body_height",
+        "mean_low_posture_fraction",
         "mean_max_torso_height",
         "mean_max_torso_x",
         "mean_return",
