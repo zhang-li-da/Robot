@@ -275,6 +275,48 @@ ASAP/AMASS/自采集动作数据
 
 重要边界：ASAP 当前包没有真实后空翻、真实翻矮墙或真实钻洞动作，所以 `single_foot_jump`、`SpiderMan`、`squat` 的实验只能作为 proxy/pretraining 或算法搜索压力测试。最终对任务书的考核结论必须等待真实目标动作和碰撞几何加入后重新生成 task profile，并进行不少于 50 次 baseline vs evolved 评估。
 
+## V1.5 任务数据契约层
+
+为了避免 LLM 把代理动作数据误当成真实任务完成证据，`run_generation.py` 在生成 prompt 和归一化候选时新增 `task_data_contract`。该契约由 task pack、asset manifest 和 task profile 汇总得到，写入每一代输出目录：
+
+```text
+outputs/evolution*/<run_id>/task_data_contract_snapshot.json
+outputs/evolution*/<run_id>/prompt_config_snapshot.json
+```
+
+关键字段包括：
+
+```text
+evidence_status              # real_motion_available / proxy_only / missing_motion
+real_motion_count
+proxy_motion_count
+allowed_candidate_scope      # formal_task_search / proxy_pretraining_or_stress_test
+final_success_claim_allowed
+success_contract
+must_preserve
+forbidden_shortcuts
+recommended_reward_levers
+recommended_sampling_levers
+recommended_termination_levers
+```
+
+该层有两个作用：
+
+1. Prompt 侧：Mimimax M3 在 `CONFIG_JSON.task.task_data_contract` 中直接看到当前任务是否只有 proxy 数据，以及最终成功声明是否被允许。对于 `proxy_only` 或 `missing_motion`，候选只能围绕预训练、压力测试、奖励/采样/终止策略搜索，不能宣称已经完成真实后空翻、翻墙或钻洞。
+
+2. 本地保护侧：即使 LLM 输出中出现不严谨描述，候选归一化也会追加 `proxy数据仅作预训练/压力测试` 的 rationale，并保持最终评估不少于 `minimum_final_trials`。对小位移 proxy 任务，还会限制过度依赖 `task_progress_weight`，避免用任务进度奖励掩盖真实动作证据缺失。
+
+当前 `g1_asap_turn_jump_l4` 的 contract 会显示：
+
+```text
+goal_id: wall_turn
+evidence_status: proxy_only
+final_success_claim_allowed: false
+proxy_note: This is an aerial turn-jump curriculum clip, not a real wall-vault motion.
+```
+
+这意味着它可以继续用于登墙转身/翻墙前的空中转体与落地恢复算法搜索，但不能作为真实翻墙任务的最终结果。
+
 ## V1 到 V2 的扩展方向
 
 1. 把受限 patch schema 落成自动代码生成器：从 JSON patch 生成 reward/termination 模板代码，并自动注册到 IsaacLab config。

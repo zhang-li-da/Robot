@@ -145,6 +145,8 @@ python scripts/evolution/run_generation.py \
 outputs/evolution/<run_id>/
 ```
 
+每个 generation 会额外写出 `task_data_contract_snapshot.json`。该文件记录当前任务使用的动作证据状态，例如 `real_motion_available`、`proxy_only` 或 `missing_motion`，以及是否允许把结果声明为真实目标任务完成。后空翻、翻墙、钻洞等任务在只有 proxy/pretraining 动作时，Mimimax M3 只能生成预训练/压力测试/算法搜索候选，本地归一化也会阻止候选把 proxy 结果表述成最终成功。
+
 ## 使用 Mimimax M3 生成候选
 
 ```bash
