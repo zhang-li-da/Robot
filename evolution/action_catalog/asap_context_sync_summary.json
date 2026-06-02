@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-02T20:52:46.457037+00:00",
+  "generated_at": "2026-06-02T22:17:40.492729+00:00",
   "purpose": "CPU-only ASAP dataset and algorithm-prior synchronization for LLM-assisted stunt imitation evolution.",
   "asap_root": "/root/ASAP-main",
   "motion_dir": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles",

@@ -168,11 +168,11 @@
       },
       "status": {
         "task_name": "g1_asap_turn_jump_l4",
-        "baseline_success_rate": null,
-        "adapted_success_rate": null,
+        "baseline_success_rate": 0.421875,
+        "adapted_success_rate": 0.0,
         "best_evolved_success_rate": null,
         "best_evolved_fitness": null,
-        "has_eval": false,
+        "has_eval": true,
         "eval_dir": "artifacts/g1_asap_turn_jump_l4/eval"
       }
     },
@@ -198,8 +198,8 @@
         "task_name": "g1_asap_single_foot_jump_l2",
         "baseline_success_rate": 0.0,
         "adapted_success_rate": 0.0,
-        "best_evolved_success_rate": null,
-        "best_evolved_fitness": null,
+        "best_evolved_success_rate": 1.0,
+        "best_evolved_fitness": 111.18888535499573,
         "has_eval": true,
         "eval_dir": "artifacts/g1_asap_single_foot_jump_l2/eval"
       }

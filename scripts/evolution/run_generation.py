@@ -162,6 +162,67 @@ def load_task_evolution_pack(config: dict[str, Any]) -> dict[str, Any]:
     return {"missing_task_evolution_pack_candidates": inferred} if inferred else {}
 
 
+def build_task_data_contract(
+    config: dict[str, Any],
+    task_evolution_pack: dict[str, Any] | None = None,
+    asset_manifest: dict[str, Any] | None = None,
+    task_profile: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Condense motion evidence/readiness into a compact LLM contract."""
+
+    task_evolution_pack = task_evolution_pack or {}
+    asset_manifest = asset_manifest or {}
+    task_profile = task_profile or {}
+    task = config.get("task", {})
+    criteria = task.get("success_criteria", {}) or {}
+    readiness = task_evolution_pack.get("data_readiness", {}) or {}
+    goal = task_evolution_pack.get("goal", {}) or {}
+    llm_context = task_evolution_pack.get("llm_evolution_context", {}) or {}
+    profile_motion = task_profile.get("motion_profile", {}) or {}
+
+    proxy_note = (
+        criteria.get("proxy_note")
+        or profile_motion.get("proxy_note")
+        or task_evolution_pack.get("proxy_note")
+        or ""
+    )
+    readiness_status = str(readiness.get("status") or ("proxy_only" if proxy_note else "unknown"))
+    real_motion_available = bool(readiness.get("real_motion_available", readiness_status == "real_motion_available"))
+    is_proxy_only = readiness_status in {"proxy_only", "missing_motion"} or bool(proxy_note and not real_motion_available)
+    known_limitations = []
+    known_limitations.extend(readiness.get("known_limitations", []) or [])
+    known_limitations.extend(asset_manifest.get("known_limitations", []) or [])
+    unique_limitations = []
+    seen: set[str] = set()
+    for item in known_limitations:
+        text = str(item)
+        if text and text not in seen:
+            unique_limitations.append(text)
+            seen.add(text)
+
+    return {
+        "source": task_evolution_pack.get("_source_path"),
+        "task_name": task.get("name"),
+        "goal_id": goal.get("goal_id"),
+        "target_task_family": goal.get("target_task_family"),
+        "evidence_status": readiness_status,
+        "real_motion_available": real_motion_available,
+        "real_motion_count": readiness.get("real_motion_count"),
+        "proxy_motion_count": readiness.get("proxy_motion_count"),
+        "proxy_note": proxy_note,
+        "success_contract": goal.get("success_contract"),
+        "allowed_candidate_scope": "proxy_pretraining_or_stress_test" if is_proxy_only else "formal_task_search",
+        "final_success_claim_allowed": not is_proxy_only,
+        "minimum_final_trials": config.get("evolution", {}).get("minimum_final_trials", 50),
+        "must_preserve": llm_context.get("must_preserve", []),
+        "forbidden_shortcuts": llm_context.get("forbidden_shortcuts", []),
+        "recommended_reward_levers": llm_context.get("reward_levers", []),
+        "recommended_sampling_levers": llm_context.get("sampling_levers", []),
+        "recommended_termination_levers": llm_context.get("termination_levers", []),
+        "known_limitations": unique_limitations,
+    }
+
+
 def _runtime_baseline_from_context(history: dict[str, Any], feedback: dict[str, Any]) -> dict[str, Any]:
     for source_name, source in (
         ("feedback.baseline", feedback.get("baseline", {})),
@@ -189,14 +250,21 @@ def _runtime_baseline_from_context(history: dict[str, Any], feedback: dict[str, 
     return {}
 
 
-def config_with_runtime_context(config: dict[str, Any], history: dict[str, Any], feedback: dict[str, Any]) -> dict[str, Any]:
+def config_with_runtime_context(
+    config: dict[str, Any],
+    history: dict[str, Any],
+    feedback: dict[str, Any],
+    task_data_contract: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Add measured baseline context to the prompt without mutating the source config."""
 
     runtime_config = copy.deepcopy(config)
+    task = runtime_config.setdefault("task", {})
+    if task_data_contract:
+        task["task_data_contract"] = task_data_contract
     baseline = _runtime_baseline_from_context(history, feedback)
     if not baseline:
         return runtime_config
-    task = runtime_config.setdefault("task", {})
     task["baseline_success_rate"] = baseline.get("success_rate")
     task["runtime_baseline_context"] = baseline
     return runtime_config
@@ -209,7 +277,6 @@ def render_prompt(
     feedback: dict[str, Any] | None = None,
 ) -> str:
     feedback = feedback or {}
-    prompt_config = config_with_runtime_context(config, history, feedback)
     template_path = Path(config["llm"]["prompt_template"])
     template = template_path.read_text(encoding="utf-8")
     motion_catalog = load_motion_catalog(config)
@@ -217,6 +284,8 @@ def render_prompt(
     asset_manifest = load_asset_manifest(config)
     algorithm_priors = load_algorithm_priors(config)
     task_evolution_pack = load_task_evolution_pack(config)
+    task_data_contract = build_task_data_contract(config, task_evolution_pack, asset_manifest, task_profile)
+    prompt_config = config_with_runtime_context(config, history, feedback, task_data_contract)
     return (
         template.replace("{{CONFIG_JSON}}", json.dumps(prompt_config, indent=2, ensure_ascii=False))
         .replace("{{TASK_PROFILE_JSON}}", json.dumps(task_profile, indent=2, ensure_ascii=False))
@@ -416,6 +485,67 @@ def _apply_feedback_failure_guard(
     return guarded
 
 
+def _append_contract_rationale(genome: AlgorithmGenome, note: str) -> None:
+    rationale = [str(item) for item in genome.rationale if str(item)]
+    if note in rationale:
+        genome.rationale = rationale
+        return
+    if len(rationale) >= 2:
+        rationale = rationale[:1] + [note]
+    else:
+        rationale.append(note)
+    genome.rationale = rationale
+
+
+def _apply_task_data_contract_guard(
+    genome: AlgorithmGenome,
+    config: dict[str, Any],
+) -> AlgorithmGenome:
+    """Keep proxy-only motion evidence from turning into false final-task claims."""
+
+    guarded = genome
+    task = config.get("task", {})
+    contract = task.get("task_data_contract", {}) or {}
+    criteria = task.get("success_criteria", {}) or {}
+    evidence_status = str(contract.get("evidence_status") or "")
+    proxy_note = str(contract.get("proxy_note") or criteria.get("proxy_note") or "")
+    is_proxy_scope = (
+        evidence_status in {"proxy_only", "missing_motion"}
+        or str(contract.get("allowed_candidate_scope", "")).startswith("proxy_")
+        or bool(proxy_note and not bool(contract.get("real_motion_available", False)))
+    )
+    if not is_proxy_scope:
+        return guarded
+
+    desc = str(guarded.metadata.description)
+    lower_desc = desc.lower()
+    forbidden_claim_tokens = [
+        "真实完成",
+        "完成真实",
+        "最终完成",
+        "solved real",
+        "true target completed",
+        "final task solved",
+    ]
+    if any(token in lower_desc for token in forbidden_claim_tokens):
+        guarded.metadata.description = "proxy/pretraining候选，保持最终评估协议"
+
+    minimum_trials = int(contract.get("minimum_final_trials") or config.get("evolution", {}).get("minimum_final_trials", 50))
+    if guarded.resource.final_eval_episodes < minimum_trials:
+        guarded.resource.final_eval_episodes = minimum_trials
+
+    target_x = float(task.get("target_x", 1.0) or 1.0)
+    if target_x <= 0.10:
+        guarded.reward.task_progress_weight = _clip_context_value(
+            config,
+            "reward.task_progress_weight",
+            min(float(guarded.reward.task_progress_weight), 0.35),
+        )
+
+    _append_contract_rationale(guarded, "proxy数据仅作预训练/压力测试")
+    return guarded
+
+
 def _normalize_with_context(
     genome: AlgorithmGenome,
     config: dict[str, Any],
@@ -426,6 +556,7 @@ def _normalize_with_context(
     genome = _apply_high_baseline_guard(genome, config, history, feedback)
     genome = _apply_nonzero_baseline_guard(genome, config, history, feedback)
     genome = _apply_feedback_failure_guard(genome, config, feedback)
+    genome = _apply_task_data_contract_guard(genome, config)
     return normalize_genome_for_config(genome, config)
 
 
@@ -502,12 +633,6 @@ def main() -> int:
             json.dumps(feedback, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
-    prompt_config = config_with_runtime_context(config, history, feedback)
-    if prompt_config != config:
-        (output_dir / "prompt_config_snapshot.json").write_text(
-            json.dumps(prompt_config, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
     if motion_catalog:
         (output_dir / "motion_catalog_snapshot.json").write_text(
             json.dumps(motion_catalog, indent=2, ensure_ascii=False) + "\n",
@@ -531,6 +656,18 @@ def main() -> int:
             json.dumps(task_evolution_pack, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
+    task_data_contract = build_task_data_contract(config, task_evolution_pack, asset_manifest, task_profile)
+    if task_data_contract:
+        (output_dir / "task_data_contract_snapshot.json").write_text(
+            json.dumps(task_data_contract, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+    context_config = config_with_runtime_context(config, history, feedback, task_data_contract)
+    if context_config != config:
+        (output_dir / "prompt_config_snapshot.json").write_text(
+            json.dumps(context_config, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
 
     genomes: list[AlgorithmGenome] = []
     if args.use_llm:
@@ -548,7 +685,7 @@ def main() -> int:
                 json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
                 encoding="utf-8",
             )
-            genomes = parse_llm_candidates(payload, config, population_size, args.generation, history, feedback)
+            genomes = parse_llm_candidates(payload, context_config, population_size, args.generation, history, feedback)
         except MimimaxJSONError as exc:
             (output_dir / "llm_raw_text.txt").write_text(exc.raw_text, encoding="utf-8")
             if exc.raw_response:
@@ -561,7 +698,7 @@ def main() -> int:
             print(f"[WARN] Mimimax generation failed, falling back to local seeds: {exc}")
 
     if len(genomes) < population_size:
-        fallback = seed_population(config, population_size, generation=args.generation)
+        fallback = seed_population(context_config, population_size, generation=args.generation)
         existing_ids = {genome.metadata.genome_id for genome in genomes}
         for genome in fallback:
             if genome.metadata.genome_id in existing_ids:
@@ -573,8 +710,8 @@ def main() -> int:
     validation_report: list[dict[str, Any]] = []
     accepted: list[AlgorithmGenome] = []
     for genome in genomes:
-        genome = _normalize_with_context(genome, config, history, feedback)
-        errors = validate_genome(genome, config)
+        genome = _normalize_with_context(genome, context_config, history, feedback)
+        errors = validate_genome(genome, context_config)
         validation_report.append({"genome_id": genome.metadata.genome_id, "valid": not errors, "errors": errors})
         if not errors:
             accepted.append(genome)
@@ -584,7 +721,7 @@ def main() -> int:
     )
 
     write_genomes(accepted, output_dir)
-    write_plan_files(accepted, config, output_dir)
+    write_plan_files(accepted, context_config, output_dir)
 
     summary = {
         "output_dir": str(output_dir),
