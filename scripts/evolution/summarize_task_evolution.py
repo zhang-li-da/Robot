@@ -56,18 +56,71 @@ def load_generation_summaries(evolution_root: Path) -> list[dict[str, Any]]:
         if not scores:
             continue
         best = max(scores, key=lambda item: float(item.get("fitness", -1.0e9)))
-        feedback_path = scoreboard_path.parent / "feedback.json"
+        feedback_path = scoreboard_path.parent / "feedback_enhanced.json"
+        if not feedback_path.exists():
+            feedback_path = scoreboard_path.parent / "feedback.json"
         feedback = load_json(feedback_path) if feedback_path.exists() else {}
         generation = {
             "generation_dir": str(scoreboard_path.parent),
             "scoreboard": str(scoreboard_path),
+            "feedback": str(feedback_path) if feedback_path.exists() else None,
             "best": best,
+            "best_eval_metrics": eval_metrics(best.get("eval_path")),
+            "task_specific_diagnosis": task_specific_diagnosis(best, feedback),
             "baseline": payload.get("baseline"),
             "population_feedback": feedback.get("population_feedback", {}),
             "llm_must_address": feedback.get("llm_feedback_brief", {}).get("must_address", []),
         }
         generations.append(generation)
     return generations
+
+
+def eval_metrics(eval_path: str | None) -> dict[str, Any]:
+    if not eval_path:
+        return {}
+    path = Path(eval_path)
+    if not path.exists():
+        return {}
+    data = load_json(path)
+    keys = [
+        "mean_final_speed",
+        "mean_final_ang_speed",
+        "mean_final_yaw_error",
+        "mean_flip_rotation",
+        "mean_max_body_height",
+        "mean_max_torso_height",
+        "mean_max_torso_x",
+        "mean_return",
+        "episodes",
+        "success_rate",
+        "successes",
+    ]
+    return {key: data.get(key) for key in keys if key in data}
+
+
+def task_specific_diagnosis(best: dict[str, Any], feedback: dict[str, Any]) -> dict[str, Any]:
+    candidates = feedback.get("candidates", []) if isinstance(feedback, dict) else []
+    genome_id = best.get("genome_id")
+    for item in candidates:
+        if item.get("genome_id") != genome_id:
+            continue
+        tags = item.get("failure_tags", [])
+        metrics = item.get("metrics", {})
+        if "yaw_recovery_failure" in tags:
+            return {
+                "type": "aerial_turn_yaw_repair",
+                "failure_tags": tags,
+                "mean_final_yaw_error": metrics.get("mean_final_yaw_error"),
+                "progress_ratio": metrics.get("progress_ratio"),
+                "mean_final_speed": metrics.get("mean_final_speed"),
+                "mean_final_ang_speed": metrics.get("mean_final_ang_speed"),
+                "recommended_focus": [
+                    "increase yaw recovery pressure",
+                    "preserve the progress/apex/landing gains of the current best candidate",
+                    "do not relax the final yaw criterion in formal evaluation",
+                ],
+            }
+    return {}
 
 
 def best_overall(generations: list[dict[str, Any]]) -> dict[str, Any] | None:
@@ -106,6 +159,8 @@ def render_markdown(summary: dict[str, Any]) -> str:
     best = summary.get("best_generation")
     if best:
         feedback = best.get("population_feedback", {})
+        diagnosis = best.get("task_specific_diagnosis", {})
+        metrics = best.get("best_eval_metrics", {})
         lines.extend(
             [
                 "",
@@ -115,14 +170,33 @@ def render_markdown(summary: dict[str, Any]) -> str:
                 f"- generation_dir: `{best.get('generation_dir')}`",
                 f"- population_status: `{feedback.get('population_status', '')}`",
                 f"- target_met: `{feedback.get('target_met', False)}`",
+                f"- mean_final_yaw_error: `{metrics.get('mean_final_yaw_error', '')}`",
+                f"- mean_final_speed: `{metrics.get('mean_final_speed', '')}`",
+                f"- mean_final_ang_speed: `{metrics.get('mean_final_ang_speed', '')}`",
                 "",
                 "## 下一代重点",
                 "",
             ]
         )
-        focus = feedback.get("next_generation_focus", []) or best.get("llm_must_address", [])
+        focus = (
+            diagnosis.get("recommended_focus")
+            or feedback.get("next_generation_focus", [])
+            or best.get("llm_must_address", [])
+        )
         for item in focus:
             lines.append(f"- {item}")
+        if diagnosis:
+            lines.extend(
+                [
+                    "",
+                    "## 任务特异诊断",
+                    "",
+                    f"- type: `{diagnosis.get('type')}`",
+                    f"- failure_tags: `{', '.join(diagnosis.get('failure_tags', []))}`",
+                    f"- progress_ratio: `{diagnosis.get('progress_ratio')}`",
+                    f"- mean_final_yaw_error: `{diagnosis.get('mean_final_yaw_error')}`",
+                ]
+            )
     target = summary.get("final_target_check")
     if target:
         lines.extend(

@@ -1,0 +1,538 @@
+{
+  "schema_version": "1.0",
+  "task": {
+    "name": "g1_asap_turn_jump_l5",
+    "isaac_task": "Tracking-WallTurn-G1-v0",
+    "robot": "unitree_g1_29dof",
+    "motion_file": "artifacts/g1_asap_turn_jump_l5/motion/motion.npz",
+    "motion_catalog": "evolution/action_catalog/asap_motion_catalog.json",
+    "baseline_checkpoint": "artifacts/g1_asap_turn_jump_l5/checkpoints/baseline.pt",
+    "target_x": 0.7,
+    "obstacle_height": 0.0,
+    "min_root_height": 0.9,
+    "baseline_success_rate": 0.0,
+    "target_relative_improvement": 0.08,
+    "final_eval_episodes": 64,
+    "reward_terms": [
+      "motion_global_anchor_pos",
+      "motion_global_anchor_ori",
+      "motion_body_pos",
+      "motion_body_ori",
+      "motion_body_lin_vel",
+      "motion_body_ang_vel",
+      "action_rate_l2",
+      "joint_limit",
+      "undesired_contacts",
+      "task_progress",
+      "phase_progress",
+      "apex_height",
+      "yaw_alignment",
+      "landing_stability",
+      "contact_force"
+    ],
+    "success_criteria": {
+      "description": "ASAP turn jump level5, focused on aerial yaw control and landing recovery.",
+      "min_progress_x": 0.7,
+      "min_apex_height": 0.9,
+      "target_final_yaw": 0.0,
+      "max_final_yaw_error": 1.1,
+      "max_final_anchor_speed": 1.4,
+      "max_final_ang_speed": 2.6,
+      "allow_hand_contact": false
+    },
+    "eval_script": "scripts/rsl_rl/eval_stunt.py",
+    "success_type": "progress",
+    "motion_catalog_filter_tasks": [
+      "g1_jump_leap",
+      "g1_wall_turn"
+    ],
+    "asset_manifest": "evolution/action_catalog/asap_asset_manifest.json",
+    "task_feature_profile": "evolution/task_profiles/g1_asap_turn_jump_l5.json"
+  },
+  "baseline": {
+    "genome_id": "baseline",
+    "fitness": 0.8412150144577022,
+    "success_rate": 0.0,
+    "episodes": 64,
+    "mean_return": 6.925550922751427,
+    "mean_max_torso_x": 0.09387886710464954,
+    "mean_clearance": 0.07110180649906395,
+    "termination_counts": {
+      "anchor_ori": 0,
+      "anchor_pos": 64,
+      "ee_body_pos": 0,
+      "time_out": 0
+    },
+    "eval_path": "artifacts/g1_asap_turn_jump_l5/eval/baseline_beyondmimic.json",
+    "mean_final_speed": 1.6023433825466782,
+    "mean_final_ang_speed": 4.338704712688923,
+    "mean_final_yaw_error": 0.7366356097627431,
+    "mean_max_body_height": 1.2127783335745335,
+    "mean_flip_rotation": 1.4382315399125218,
+    "successes": 0,
+    "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_turn_jump_l5_baseline/2026-06-02_20-34-18_baseline_beyondmimic/model_799.pt"
+  },
+  "adapted": {
+    "genome_id": "adapted_task_rewards",
+    "fitness": 1.069523196348122,
+    "success_rate": 0.0,
+    "episodes": 64,
+    "mean_return": 9.487869158387184,
+    "mean_max_torso_x": 0.10196209698915482,
+    "mean_clearance": 0.07110180649906395,
+    "termination_counts": {
+      "anchor_ori": 0,
+      "anchor_pos": 63,
+      "ee_body_pos": 1,
+      "time_out": 0
+    },
+    "eval_path": "artifacts/g1_asap_turn_jump_l5/eval/adapted_task_rewards.json",
+    "mean_final_speed": 0.8632628642953932,
+    "mean_final_ang_speed": 7.850411031395197,
+    "mean_final_yaw_error": 1.5154567062854767,
+    "mean_max_body_height": 1.212778327986598,
+    "mean_flip_rotation": 1.82294780947268,
+    "successes": 0,
+    "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_turn_jump_l5/2026-06-02_20-57-17_adapted_task_rewards/model_799.pt"
+  },
+  "best_evolved": {
+    "genome_id": "gen0_m3_002",
+    "fitness": 12.795303845405579,
+    "success_rate": 0.0,
+    "episodes": 16,
+    "mean_return": 15.906076908111572,
+    "mean_max_torso_x": 0.8673923425376415,
+    "mean_clearance": 0.3756800577044487,
+    "termination_counts": {
+      "anchor_ori": 0,
+      "anchor_pos": 0,
+      "ee_body_pos": 0,
+      "time_out": 0
+    },
+    "eval_path": "/root/whole_body_tracking-main/outputs/evolution_asap/g1_asap_turn_jump_l5/20260602_221209_464195_gen01/gen0_m3_002/eval_stage1.json",
+    "success_rate_delta_vs_baseline": 0.0,
+    "fitness_delta_vs_baseline": 11.954088830947876
+  },
+  "final_eval": null,
+  "final_target_check": null,
+  "best_generation": {
+    "generation_dir": "outputs/evolution_asap/g1_asap_turn_jump_l5/20260602_221209_464195_gen01",
+    "scoreboard": "outputs/evolution_asap/g1_asap_turn_jump_l5/20260602_221209_464195_gen01/scoreboard.json",
+    "feedback": "outputs/evolution_asap/g1_asap_turn_jump_l5/20260602_221209_464195_gen01/feedback_enhanced.json",
+    "best": {
+      "genome_id": "gen0_m3_002",
+      "fitness": 12.795303845405579,
+      "success_rate": 0.0,
+      "episodes": 16,
+      "mean_return": 15.906076908111572,
+      "mean_max_torso_x": 0.8673923425376415,
+      "mean_clearance": 0.3756800577044487,
+      "termination_counts": {
+        "anchor_ori": 0,
+        "anchor_pos": 0,
+        "ee_body_pos": 0,
+        "time_out": 0
+      },
+      "eval_path": "/root/whole_body_tracking-main/outputs/evolution_asap/g1_asap_turn_jump_l5/20260602_221209_464195_gen01/gen0_m3_002/eval_stage1.json",
+      "success_rate_delta_vs_baseline": 0.0,
+      "fitness_delta_vs_baseline": 11.954088830947876
+    },
+    "best_eval_metrics": {
+      "mean_final_speed": 0.11340846167877316,
+      "mean_final_ang_speed": 0.4953630901873112,
+      "mean_final_yaw_error": 1.3302924111485481,
+      "mean_flip_rotation": 3.6416327357292175,
+      "mean_max_body_height": 1.5324069112539291,
+      "mean_max_torso_height": 1.2756800577044487,
+      "mean_max_torso_x": 0.8673923425376415,
+      "mean_return": 15.906076908111572,
+      "episodes": 16,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "task_specific_diagnosis": {
+      "type": "aerial_turn_yaw_repair",
+      "failure_tags": [
+        "deterministic_collapse",
+        "low_behavior_diversity",
+        "no_success",
+        "yaw_recovery_failure"
+      ],
+      "mean_final_yaw_error": 1.3302924111485481,
+      "progress_ratio": 1.2391319179109166,
+      "mean_final_speed": 0.11340846167877316,
+      "mean_final_ang_speed": 0.4953630901873112,
+      "recommended_focus": [
+        "increase yaw recovery pressure",
+        "preserve the progress/apex/landing gains of the current best candidate",
+        "do not relax the final yaw criterion in formal evaluation"
+      ]
+    },
+    "baseline": {
+      "genome_id": "baseline_beyondmimic",
+      "fitness": 0.8412150144577022,
+      "success_rate": 0.0,
+      "episodes": 64,
+      "mean_return": 6.925550922751427,
+      "mean_max_torso_x": 0.09387886710464954,
+      "mean_clearance": 0.07110180649906395,
+      "termination_counts": {
+        "anchor_ori": 0,
+        "anchor_pos": 64,
+        "ee_body_pos": 0,
+        "time_out": 0
+      },
+      "eval_path": "artifacts/g1_asap_turn_jump_l5/eval/baseline_beyondmimic.json"
+    },
+    "population_feedback": {
+      "population_status": "needs_iteration",
+      "best_genome_id": "gen0_m3_002",
+      "best_success_rate": 0.0,
+      "baseline_success_rate": 0.0,
+      "success_rate_absolute_delta": 0.0,
+      "success_rate_relative_delta": 0.0,
+      "target_relative_improvement": 0.08,
+      "target_met": false,
+      "evaluation_count": 2,
+      "runtime_failure_count": 0,
+      "runtime_failures": [],
+      "top_failure_tags": [
+        {
+          "tag": "deterministic_collapse",
+          "count": 2
+        },
+        {
+          "tag": "low_behavior_diversity",
+          "count": 2
+        },
+        {
+          "tag": "no_success",
+          "count": 2
+        },
+        {
+          "tag": "yaw_recovery_failure",
+          "count": 2
+        },
+        {
+          "tag": "aerial_phase_tracking_too_strict",
+          "count": 1
+        },
+        {
+          "tag": "anchor_pos_dominant",
+          "count": 1
+        },
+        {
+          "tag": "early_progress_failure",
+          "count": 1
+        },
+        {
+          "tag": "unstable_landing_rotation",
+          "count": 1
+        }
+      ],
+      "dominant_termination_rates": [
+        [
+          "anchor_pos",
+          1.0
+        ],
+        [
+          "anchor_ori",
+          0.0
+        ],
+        [
+          "ee_body_pos",
+          0.0
+        ],
+        [
+          "time_out",
+          0.0
+        ]
+      ],
+      "next_generation_focus": [
+        "for aerial turn-jump, relax stage1 anchor/ee tracking while preserving final yaw and landing criteria",
+        "increase yaw recovery pressure and avoid candidates that only optimize progress",
+        "increase behavior diversity through entropy, phase sampling, or warm-start curriculum"
+      ],
+      "promotion_candidates": [],
+      "repair_candidates": [],
+      "elimination_candidates": [
+        "gen0_m3_002",
+        "gen1_baseline_000"
+      ]
+    },
+    "llm_must_address": [
+      "for aerial turn-jump, relax stage1 anchor/ee tracking while preserving final yaw and landing criteria",
+      "increase yaw recovery pressure and avoid candidates that only optimize progress",
+      "increase behavior diversity through entropy, phase sampling, or warm-start curriculum"
+    ]
+  },
+  "generations": [
+    {
+      "generation_dir": "outputs/evolution_asap/g1_asap_turn_jump_l5/20260602_212016_581160_gen00",
+      "scoreboard": "outputs/evolution_asap/g1_asap_turn_jump_l5/20260602_212016_581160_gen00/scoreboard.json",
+      "feedback": "outputs/evolution_asap/g1_asap_turn_jump_l5/20260602_212016_581160_gen00/feedback.json",
+      "best": {
+        "genome_id": "gen0_m3_001",
+        "fitness": 1.5444042086601253,
+        "success_rate": 0.0,
+        "episodes": 16,
+        "mean_return": 9.585407972335815,
+        "mean_max_torso_x": 0.14377133548259735,
+        "mean_clearance": 0.07110164165496824,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 16,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "/root/whole_body_tracking-main/outputs/evolution_asap/g1_asap_turn_jump_l5/20260602_212016_581160_gen00/gen0_m3_001/eval_stage1.json",
+        "success_rate_delta_vs_baseline": 0.0,
+        "fitness_delta_vs_baseline": 0.7031891942024231
+      },
+      "best_eval_metrics": {
+        "mean_final_speed": 0.9118952117860317,
+        "mean_final_ang_speed": 7.821742802858353,
+        "mean_final_yaw_error": 1.7678094133734703,
+        "mean_flip_rotation": 1.7535349056124687,
+        "mean_max_body_height": 1.2127782106399536,
+        "mean_max_torso_height": 0.9711016416549683,
+        "mean_max_torso_x": 0.14377133548259735,
+        "mean_return": 9.585407972335815,
+        "episodes": 16,
+        "success_rate": 0.0,
+        "successes": 0
+      },
+      "task_specific_diagnosis": {},
+      "baseline": {
+        "genome_id": "baseline_beyondmimic",
+        "fitness": 0.8412150144577022,
+        "success_rate": 0.0,
+        "episodes": 64,
+        "mean_return": 6.925550922751427,
+        "mean_max_torso_x": 0.09387886710464954,
+        "mean_clearance": 0.07110180649906395,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 64,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_turn_jump_l5/eval/baseline_beyondmimic.json"
+      },
+      "population_feedback": {
+        "population_status": "needs_iteration",
+        "best_genome_id": "gen0_m3_001",
+        "best_success_rate": 0.0,
+        "baseline_success_rate": 0.0,
+        "success_rate_absolute_delta": 0.0,
+        "success_rate_relative_delta": 0.0,
+        "target_relative_improvement": 0.08,
+        "target_met": false,
+        "evaluation_count": 2,
+        "runtime_failure_count": 0,
+        "runtime_failures": [],
+        "top_failure_tags": [
+          {
+            "tag": "anchor_pos_dominant",
+            "count": 2
+          },
+          {
+            "tag": "deterministic_collapse",
+            "count": 2
+          },
+          {
+            "tag": "early_progress_failure",
+            "count": 2
+          },
+          {
+            "tag": "no_success",
+            "count": 2
+          }
+        ],
+        "dominant_termination_rates": [
+          [
+            "anchor_pos",
+            2.0
+          ],
+          [
+            "anchor_ori",
+            0.0
+          ],
+          [
+            "ee_body_pos",
+            0.0
+          ],
+          [
+            "time_out",
+            0.0
+          ]
+        ],
+        "next_generation_focus": [
+          "improve motion-start and approach-phase progression before spending stage2 budget",
+          "increase behavior diversity through entropy, phase sampling, or warm-start curriculum"
+        ],
+        "promotion_candidates": [],
+        "repair_candidates": [],
+        "elimination_candidates": [
+          "gen0_m3_001",
+          "gen0_m3_000"
+        ]
+      },
+      "llm_must_address": [
+        "improve motion-start and approach-phase progression before spending stage2 budget",
+        "increase behavior diversity through entropy, phase sampling, or warm-start curriculum"
+      ]
+    },
+    {
+      "generation_dir": "outputs/evolution_asap/g1_asap_turn_jump_l5/20260602_221209_464195_gen01",
+      "scoreboard": "outputs/evolution_asap/g1_asap_turn_jump_l5/20260602_221209_464195_gen01/scoreboard.json",
+      "feedback": "outputs/evolution_asap/g1_asap_turn_jump_l5/20260602_221209_464195_gen01/feedback_enhanced.json",
+      "best": {
+        "genome_id": "gen0_m3_002",
+        "fitness": 12.795303845405579,
+        "success_rate": 0.0,
+        "episodes": 16,
+        "mean_return": 15.906076908111572,
+        "mean_max_torso_x": 0.8673923425376415,
+        "mean_clearance": 0.3756800577044487,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "/root/whole_body_tracking-main/outputs/evolution_asap/g1_asap_turn_jump_l5/20260602_221209_464195_gen01/gen0_m3_002/eval_stage1.json",
+        "success_rate_delta_vs_baseline": 0.0,
+        "fitness_delta_vs_baseline": 11.954088830947876
+      },
+      "best_eval_metrics": {
+        "mean_final_speed": 0.11340846167877316,
+        "mean_final_ang_speed": 0.4953630901873112,
+        "mean_final_yaw_error": 1.3302924111485481,
+        "mean_flip_rotation": 3.6416327357292175,
+        "mean_max_body_height": 1.5324069112539291,
+        "mean_max_torso_height": 1.2756800577044487,
+        "mean_max_torso_x": 0.8673923425376415,
+        "mean_return": 15.906076908111572,
+        "episodes": 16,
+        "success_rate": 0.0,
+        "successes": 0
+      },
+      "task_specific_diagnosis": {
+        "type": "aerial_turn_yaw_repair",
+        "failure_tags": [
+          "deterministic_collapse",
+          "low_behavior_diversity",
+          "no_success",
+          "yaw_recovery_failure"
+        ],
+        "mean_final_yaw_error": 1.3302924111485481,
+        "progress_ratio": 1.2391319179109166,
+        "mean_final_speed": 0.11340846167877316,
+        "mean_final_ang_speed": 0.4953630901873112,
+        "recommended_focus": [
+          "increase yaw recovery pressure",
+          "preserve the progress/apex/landing gains of the current best candidate",
+          "do not relax the final yaw criterion in formal evaluation"
+        ]
+      },
+      "baseline": {
+        "genome_id": "baseline_beyondmimic",
+        "fitness": 0.8412150144577022,
+        "success_rate": 0.0,
+        "episodes": 64,
+        "mean_return": 6.925550922751427,
+        "mean_max_torso_x": 0.09387886710464954,
+        "mean_clearance": 0.07110180649906395,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 64,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_turn_jump_l5/eval/baseline_beyondmimic.json"
+      },
+      "population_feedback": {
+        "population_status": "needs_iteration",
+        "best_genome_id": "gen0_m3_002",
+        "best_success_rate": 0.0,
+        "baseline_success_rate": 0.0,
+        "success_rate_absolute_delta": 0.0,
+        "success_rate_relative_delta": 0.0,
+        "target_relative_improvement": 0.08,
+        "target_met": false,
+        "evaluation_count": 2,
+        "runtime_failure_count": 0,
+        "runtime_failures": [],
+        "top_failure_tags": [
+          {
+            "tag": "deterministic_collapse",
+            "count": 2
+          },
+          {
+            "tag": "low_behavior_diversity",
+            "count": 2
+          },
+          {
+            "tag": "no_success",
+            "count": 2
+          },
+          {
+            "tag": "yaw_recovery_failure",
+            "count": 2
+          },
+          {
+            "tag": "aerial_phase_tracking_too_strict",
+            "count": 1
+          },
+          {
+            "tag": "anchor_pos_dominant",
+            "count": 1
+          },
+          {
+            "tag": "early_progress_failure",
+            "count": 1
+          },
+          {
+            "tag": "unstable_landing_rotation",
+            "count": 1
+          }
+        ],
+        "dominant_termination_rates": [
+          [
+            "anchor_pos",
+            1.0
+          ],
+          [
+            "anchor_ori",
+            0.0
+          ],
+          [
+            "ee_body_pos",
+            0.0
+          ],
+          [
+            "time_out",
+            0.0
+          ]
+        ],
+        "next_generation_focus": [
+          "for aerial turn-jump, relax stage1 anchor/ee tracking while preserving final yaw and landing criteria",
+          "increase yaw recovery pressure and avoid candidates that only optimize progress",
+          "increase behavior diversity through entropy, phase sampling, or warm-start curriculum"
+        ],
+        "promotion_candidates": [],
+        "repair_candidates": [],
+        "elimination_candidates": [
+          "gen0_m3_002",
+          "gen1_baseline_000"
+        ]
+      },
+      "llm_must_address": [
+        "for aerial turn-jump, relax stage1 anchor/ee tracking while preserving final yaw and landing criteria",
+        "increase yaw recovery pressure and avoid candidates that only optimize progress",
+        "increase behavior diversity through entropy, phase sampling, or warm-start curriculum"
+      ]
+    }
+  ]
+}
