@@ -199,6 +199,48 @@ evolution/task_feature_schema.json
 
 后续新增翻墙、钻洞、后空翻、登墙转身或新机器人时，先写 task feature profile，再运行闭环。这样 LLM 的搜索目标从“泛化调参”变成“围绕任务几何、合法接触、机器人能力和评估协议进行定向算法进化”。
 
+## V1.3 ASAP 算法先验层
+
+新增的 `/root/ASAP-main` 不只提供动作数据，还提供了可迁移的训练设计。当前仓库通过：
+
+```text
+scripts/extract_asap_algorithm_priors.py
+```
+
+把 ASAP 中的关键配置提取为：
+
+```text
+evolution/algorithm_priors/asap_algorithm_priors.json
+evolution/algorithm_priors/asap_algorithm_priors_zh.md
+```
+
+该先验层进入 `run_generation.py` 的 prompt 渲染路径，并通过 `ALGORITHM_PRIORS_JSON` 提供给 Mimimax M3。当前抽取的机制包括：
+
+1. `phase_motion_tracking`：身体/足端跟踪、动作相位、终止容忍、PPO MLP 结构和 sim2real 敏感惩罚项。
+
+2. `history_observation`：actor/critic 历史观测，服务高动态落地恢复、延迟鲁棒性和后续 sim2real。
+
+3. `domain_randomization`：摩擦、质量、COM、PD 增益、控制延迟、RFI 和外部 push。
+
+4. `delta_action_sim2real`：作为第二阶段 residual adapter 的设计参考，而不是替代当前 sim2sim policy 成功率评估。
+
+ASAP 当前包中没有明确的真实后空翻、钻洞或翻墙 motion 文件名，因此 `single_foot_jump`、`jump_forward`、`jump_degree`、`squat`、`SpiderMan` 只能作为 proxy/pretraining 数据。框架会把这个限制写入 `asap_asset_manifest.json`、`task_profile` 和 M3 prompt，避免把 proxy 结果误报成最终任务效果。
+
+刷新 ASAP 数据与算法先验的最小命令为：
+
+```bash
+cd /root/whole_body_tracking-main
+source /base/mambaforge/etc/profile.d/conda.sh
+conda activate /root/shared-nvme/conda_envs/isaaclab210
+python scripts/index_asap_motion_catalog.py
+python scripts/extract_asap_algorithm_priors.py
+python scripts/index_asap_assets.py
+python scripts/create_asap_evolution_configs.py
+python scripts/create_asap_task_profiles.py
+python scripts/select_asap_evolution_tasks.py --limit 24
+python scripts/build_asap_task_adaptive_roadmap.py --limit 18
+```
+
 ## V1 到 V2 的扩展方向
 
 1. 把受限 patch schema 落成自动代码生成器：从 JSON patch 生成 reward/termination 模板代码，并自动注册到 IsaacLab config。

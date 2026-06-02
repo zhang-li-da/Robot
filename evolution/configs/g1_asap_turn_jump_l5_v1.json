@@ -48,7 +48,8 @@
       "g1_wall_turn"
     ],
     "asset_manifest": "evolution/action_catalog/asap_asset_manifest.json",
-    "task_feature_profile": "evolution/task_profiles/g1_asap_turn_jump_l5.json"
+    "task_feature_profile": "evolution/task_profiles/g1_asap_turn_jump_l5.json",
+    "algorithm_priors": "evolution/algorithm_priors/asap_algorithm_priors.json"
   },
   "llm": {
     "provider": "minimax",

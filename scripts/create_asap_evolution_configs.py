@@ -56,6 +56,7 @@ def main() -> int:
         cfg = copy.deepcopy(cfg)
         cfg["task"].update(config_task_payload(spec))
         cfg["task"]["task_feature_profile"] = str(TASK_PROFILE_DIR / f"{spec['id']}.json")
+        cfg["task"]["algorithm_priors"] = "evolution/algorithm_priors/asap_algorithm_priors.json"
         enable_task_reward_search(cfg)
         cfg.setdefault("resource_defaults", {})["disable_logger"] = True
         cfg["evolution"]["random_seed"] = int(cfg["evolution"].get("random_seed", 20260602)) + 17 + index

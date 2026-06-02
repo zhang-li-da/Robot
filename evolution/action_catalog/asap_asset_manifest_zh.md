@@ -60,6 +60,15 @@
 - `sim2real/models/mimic/side_jump_level2/model_131500.onnx`: unclassified
 - `sim2real/models/mimic/side_jump_level3/model_245000.onnx`: unclassified
 
+## ASAP 算法先验
+
+- 状态：`available`
+- 文件：`evolution/algorithm_priors/asap_algorithm_priors.json`
+- Use ASAP priors as search constraints, not as direct proof of task success.
+- Never weaken final success criteria to make a candidate look better.
+- For proxy tasks, optimize quality/robustness or curriculum value when baseline success is already near ceiling.
+- For final claims, require at least 50 motion-start episodes and baseline-vs-evolved comparison.
+
 ## 复杂动作候选
 
 - `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-TairanTestbed_TairanTestbed_CR7_video_CR7_level1_filter_amass.pkl`: sports_motion, whole_body_coordination

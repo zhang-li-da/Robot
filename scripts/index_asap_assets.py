@@ -14,6 +14,8 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from asap_paths import resolve_asap_root  # noqa: E402
 
+DEFAULT_PRIORS_PATH = Path("evolution/algorithm_priors/asap_algorithm_priors.json")
+
 
 def rel(root: Path, path: Path) -> str:
     return str(path.relative_to(root))
@@ -66,6 +68,22 @@ def summarize_files(root: Path, pattern: str, limit: int | None = None) -> list[
     return items
 
 
+def load_algorithm_priors(path: Path = DEFAULT_PRIORS_PATH) -> dict[str, Any]:
+    if not path.exists():
+        return {"status": "missing", "path": str(path)}
+    try:
+        priors = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return {"status": "unreadable", "path": str(path), "error": str(exc)}
+    return {
+        "status": "available",
+        "path": str(path),
+        "purpose": priors.get("purpose"),
+        "task_family_guidance": priors.get("task_family_guidance", {}),
+        "llm_constraints": priors.get("llm_constraints", []),
+    }
+
+
 def build_manifest(root: Path) -> dict[str, Any]:
     motion_pkl = summarize_files(
         root,
@@ -106,6 +124,7 @@ def build_manifest(root: Path) -> dict[str, Any]:
         "sim2real_mimic_models": mimic_onnx,
         "sim2real_locomotion_models": locomotion_onnx,
         "source_config_files": config_files,
+        "algorithm_priors": load_algorithm_priors(),
     }
 
 
@@ -130,6 +149,12 @@ def write_markdown(manifest: dict[str, Any], output: Path) -> None:
     lines.extend(["", "## 可用 sim2real mimic 模型", ""])
     for item in manifest["sim2real_mimic_models"]:
         lines.append(f"- `{item['path']}`: {', '.join(item['tags'])}")
+    priors = manifest.get("algorithm_priors", {})
+    lines.extend(["", "## ASAP 算法先验", ""])
+    lines.append(f"- 状态：`{priors.get('status', 'unknown')}`")
+    lines.append(f"- 文件：`{priors.get('path', '')}`")
+    for item in priors.get("llm_constraints", []):
+        lines.append(f"- {item}")
     lines.extend(["", "## 复杂动作候选", ""])
     complex_tags = {
         "aerial",

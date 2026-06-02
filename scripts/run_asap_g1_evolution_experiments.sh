@@ -29,6 +29,7 @@ export LD_LIBRARY_PATH="/tmp/nvidia-vulkan-full-550.54.14:/usr/lib/x86_64-linux-
 export VK_ICD_FILENAMES="/tmp/nvidia-vulkan-full-550.54.14/nvidia_icd_abs.json"
 
 python scripts/index_asap_motion_catalog.py
+python scripts/extract_asap_algorithm_priors.py
 python scripts/index_asap_assets.py
 python scripts/create_asap_evolution_configs.py
 python scripts/create_asap_task_profiles.py

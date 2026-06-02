@@ -146,6 +146,14 @@ def build_profile(spec: dict[str, Any], catalog: dict[str, Any]) -> dict[str, An
             "baseline_eval_json": f"artifacts/{task['name']}/eval/baseline_beyondmimic.json",
             "comparison_protocol": "motion-start evaluation, >=50 episodes for final claims",
         },
+        "algorithm_priors": {
+            "source": "evolution/algorithm_priors/asap_algorithm_priors.json",
+            "usage": [
+                "phase motion tracking priors guide imitation naturalness and safety penalties",
+                "history observation and domain randomization guide robustness and sim2real preparation",
+                "delta-action priors are reserved for second-stage sim2real residual adaptation",
+            ],
+        },
     }
     return profile
 

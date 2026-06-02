@@ -31,6 +31,7 @@ scripts/evolution/
 scripts/asap_g1_task_suite.py
 scripts/index_asap_motion_catalog.py
 scripts/index_asap_assets.py
+scripts/extract_asap_algorithm_priors.py
 scripts/select_asap_evolution_tasks.py
 scripts/create_asap_evolution_configs.py
 scripts/create_asap_task_profiles.py
@@ -45,11 +46,24 @@ evolution/action_catalog/asap_task_adaptive_roadmap.json
 evolution/action_catalog/asap_task_adaptive_roadmap_zh.md
 evolution/action_catalog/asap_asset_manifest.json
 evolution/action_catalog/asap_asset_manifest_zh.md
+evolution/algorithm_priors/asap_algorithm_priors.json
+evolution/algorithm_priors/asap_algorithm_priors_zh.md
 evolution/task_profiles/*.json
 evolution/task_feature_schema.json
 evolution/algorithm_patch_schema.json
 evolution/examples/crawl_ceiling_zone_reward_v1.json
 ```
+
+## ASAP 算法先验层
+
+`scripts/extract_asap_algorithm_priors.py` 会从 `/root/ASAP-main` 中提取 ASAP 的 motion tracking reward、history observation、domain randomization、delta-action sim2real 和 PPO 配置，输出给 Mimimax M3 使用的结构化先验：
+
+```text
+evolution/algorithm_priors/asap_algorithm_priors.json
+evolution/algorithm_priors/asap_algorithm_priors_zh.md
+```
+
+这些先验只作为搜索约束和迁移参考，不作为当前任务成功证据。对于 ASAP 包中没有真实后空翻、翻墙或钻洞动作的情况，框架会把 `single_foot_jump`、`jump_degree`、`squat`、`SpiderMan` 等动作标记为 proxy/pretraining，最终结论仍必须使用真实目标动作、目标碰撞几何和不少于 50 次 motion-start 评估。
 
 ## 本地密钥配置
 
@@ -262,6 +276,7 @@ cd /root/whole_body_tracking-main
 source /base/mambaforge/etc/profile.d/conda.sh
 conda activate /root/shared-nvme/conda_envs/isaaclab210
 python scripts/index_asap_motion_catalog.py
+python scripts/extract_asap_algorithm_priors.py
 python scripts/index_asap_assets.py
 python scripts/create_asap_evolution_configs.py
 python scripts/create_asap_task_profiles.py

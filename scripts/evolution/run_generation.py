@@ -100,6 +100,25 @@ def load_asset_manifest(config: dict[str, Any]) -> dict[str, Any]:
         "tag_counts": manifest.get("tag_counts", {}),
         "sim2real_mimic_models": manifest.get("sim2real_mimic_models", []),
         "sim2real_locomotion_models": manifest.get("sim2real_locomotion_models", []),
+        "algorithm_priors": manifest.get("algorithm_priors", {}),
+    }
+
+
+def load_algorithm_priors(config: dict[str, Any]) -> dict[str, Any]:
+    priors_path = config.get("task", {}).get("algorithm_priors") or config.get("algorithm_priors")
+    if not priors_path:
+        priors_path = "evolution/algorithm_priors/asap_algorithm_priors.json"
+    path = Path(str(priors_path))
+    if not path.exists():
+        return {"missing_algorithm_priors": str(path)}
+    priors = load_json(path)
+    return {
+        "schema_version": priors.get("schema_version"),
+        "asap_root": priors.get("asap_root"),
+        "purpose": priors.get("purpose"),
+        "priors": priors.get("priors", {}),
+        "task_family_guidance": priors.get("task_family_guidance", {}),
+        "llm_constraints": priors.get("llm_constraints", []),
     }
 
 
@@ -109,12 +128,14 @@ def render_prompt(config: dict[str, Any], history: dict[str, Any], population_si
     motion_catalog = load_motion_catalog(config)
     task_profile = load_task_profile(config)
     asset_manifest = load_asset_manifest(config)
+    algorithm_priors = load_algorithm_priors(config)
     return (
         template.replace("{{CONFIG_JSON}}", json.dumps(config, indent=2, ensure_ascii=False))
         .replace("{{TASK_PROFILE_JSON}}", json.dumps(task_profile, indent=2, ensure_ascii=False))
         .replace("{{HISTORY_JSON}}", json.dumps(history, indent=2, ensure_ascii=False))
         .replace("{{MOTION_CATALOG_JSON}}", json.dumps(motion_catalog, indent=2, ensure_ascii=False))
         .replace("{{ASSET_MANIFEST_JSON}}", json.dumps(asset_manifest, indent=2, ensure_ascii=False))
+        .replace("{{ALGORITHM_PRIORS_JSON}}", json.dumps(algorithm_priors, indent=2, ensure_ascii=False))
         .replace("{{REQUESTED_POPULATION_SIZE}}", str(population_size))
     )
 

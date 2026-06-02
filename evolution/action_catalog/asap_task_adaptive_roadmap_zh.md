@@ -19,7 +19,7 @@
 
 | 任务 | 动作ID | 类型 | baseline | adapted | best evolved | 说明 |
 | --- | --- | --- | ---: | ---: | ---: | --- |
-| `g1_asap_spiderman_l2` | `0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass` | `wall_contact_proxy` |  |  |  | proxy for wall-contact coordination, not a final wall-vault claim |
+| `g1_asap_spiderman_l2` | `0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass` | `wall_contact_proxy` | 0.984 | 0.984 |  | proxy for wall-contact coordination, not a final wall-vault claim |
 | `g1_asap_turn_jump_l5` | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass` | `aerial_turn_jump` | 0.000 | 0.000 | 0.000 | relax aerial orientation termination while keeping final yaw recovery strict |
 | `g1_asap_single_foot_jump_l2` | `0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass` | `flip_proxy_single_foot_jump` |  |  |  | use only as flip pretraining or stress testing until true flip motion is added |
 | `g1_asap_jump_forward_l5` | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass` | `aerial_jump` | 0.000 | 0.000 | 0.125 | use displacement, apex height, and landing stability as the screening metrics |

@@ -28,6 +28,7 @@
 14. 每个 `rationale` 最多 2 条，每条不超过 40 个中文字符或 25 个英文单词。
 15. 如果 `TASK_PROFILE_JSON` 非空，必须遵守其中的 `legal_contacts`、`risk_controls.must_preserve` 和 `success_criteria`；不得弱化最终评估标准。
 16. 如果反馈包含 `runtime_sigbus`、`tensorboard_writer_failure`、`runtime_gpu_memory_pressure` 或 `runtime_train_failed`，必须把它视为资源/运行时失败；至少一个修复候选应考虑 `resource.disable_logger=true` 或降低 `resource.num_envs`，不要只改变 reward。
+17. 如果 `ALGORITHM_PRIORS_JSON` 非空，必须把 ASAP 的 phase motion tracking、history observation、domain randomization 和 delta-action sim2real 机制作为搜索先验；不得把外部 proxy 动作或 ONNX 模型当作本任务成功证据。
 
 # 当前任务摘要
 
@@ -46,6 +47,8 @@
 
 `{{FEEDBACK_JSON}}`
 
+`{{ALGORITHM_PRIORS_JSON}}`
+
 # 反馈使用要求
 
 如果 `FEEDBACK_JSON` 非空，必须优先响应其中的 `llm_feedback_brief.must_address` 和候选级 `failure_tags`：
@@ -58,6 +61,13 @@
 6. 如果 `llm_feedback_brief.runtime_failures` 非空，必须优先生成至少一个运行时修复候选，且不能降低最终评估 episode 数或成功标准。
 
 如果 `TASK_PROFILE_JSON` 非空，必须使用其中的任务类型、合法接触、风险控制和基线评估协议，确保候选只改变可搜索算法基因，不改变最终考核标准。
+
+如果 `ALGORITHM_PRIORS_JSON` 非空，必须优先吸收其中的：
+
+1. phase motion tracking 的身体/足端跟踪、动作平滑和安全惩罚先验。
+2. history observation 对高动态动作、延迟鲁棒性和落地恢复的价值。
+3. domain randomization 中摩擦、质量、COM、PD、控制延迟和扰动的 sim2real 轴。
+4. delta-action 只能作为第二阶段 sim2real residual adapter，不得替代当前 sim2sim 的 policy 成功率评估。
 
 # 本次候选数量
 

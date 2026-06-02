@@ -1692,5 +1692,75 @@
         "unclassified"
       ]
     }
-  ]
+  ],
+  "algorithm_priors": {
+    "status": "available",
+    "path": "evolution/algorithm_priors/asap_algorithm_priors.json",
+    "purpose": "Reusable ASAP algorithm priors for task-adaptive BeyondMimic evolution.",
+    "task_family_guidance": {
+      "backflip_or_flip_like": {
+        "required_real_data": "A true flip motion is required for final backflip claims.",
+        "proxy_sources": [
+          "single_foot_jump",
+          "jump_forward",
+          "side_jump"
+        ],
+        "search_focus": [
+          "apex_height",
+          "mid-air orientation tolerance",
+          "landing_stability",
+          "contact_force"
+        ],
+        "risk_gates": [
+          "final angular speed",
+          "landing impact",
+          "joint/torque limits"
+        ]
+      },
+      "wall_vault_or_wall_turn": {
+        "required_real_data": "Wall contact/vault motion and wall collision geometry are required for final claims.",
+        "proxy_sources": [
+          "jump_degree",
+          "SpiderMan",
+          "jump_forward"
+        ],
+        "search_focus": [
+          "task_progress",
+          "yaw_alignment",
+          "clearance",
+          "legal hand/foot contact"
+        ],
+        "risk_gates": [
+          "dangerous torso/head impact",
+          "contact force",
+          "final yaw and speed"
+        ]
+      },
+      "crawl_or_tunnel": {
+        "required_real_data": "Crawl/tunnel motion and ceiling collision geometry are required for final claims.",
+        "proxy_sources": [
+          "squat",
+          "SpiderMan",
+          "low posture transitions"
+        ],
+        "search_focus": [
+          "ceiling_clearance",
+          "low-posture progress",
+          "legal knee/hand support",
+          "exit recovery"
+        ],
+        "risk_gates": [
+          "head/torso ceiling collision",
+          "progress stall",
+          "low-height termination mistakes"
+        ]
+      }
+    },
+    "llm_constraints": [
+      "Use ASAP priors as search constraints, not as direct proof of task success.",
+      "Never weaken final success criteria to make a candidate look better.",
+      "For proxy tasks, optimize quality/robustness or curriculum value when baseline success is already near ceiling.",
+      "For final claims, require at least 50 motion-start episodes and baseline-vs-evolved comparison."
+    ]
+  }
 }

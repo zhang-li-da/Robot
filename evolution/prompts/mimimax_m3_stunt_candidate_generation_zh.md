@@ -27,6 +27,8 @@
 21. 如果 `HISTORY_JSON.baseline.success_rate` 或 `FEEDBACK_JSON.baseline.success_rate` 大于等于 0.90，当前任务属于高成功率 baseline 场景；候选必须是 baseline-adjacent repair、鲁棒性提升或质量改进，不能从零大幅改动 sampling/termination 导致成功率退化。
 22. 高成功率 proxy 任务中，`fixed_start_probability` 不应低于 0.80，除非反馈明确要求扩大 phase exploration；`anchor_pos_z_threshold` 和 `ee_body_pos_z_threshold` 不得比 baseline-adjacent 候选更严格到阻断 motion-start 完成。
 23. 对 `target_x <= 0.10` 的小位移 proxy 任务，不要把 `task_progress_weight` 作为主要优化杠杆；优先保持 motion tracking、phase_progress、合法接触和落地/最终姿态稳定。
+24. 如果 `ALGORITHM_PRIORS_JSON` 非空，必须把 ASAP 的 phase motion tracking、history observation、domain randomization 和 delta-action sim2real 机制作为搜索先验；但不得把 ASAP ONNX 或 proxy 动作当作本任务成功证据。
+25. 如果候选涉及未来 sim2real 迁移，只能通过 action smoothness、torque/joint/contact risk、delay/randomization/history 这些可搜索项体现；不能改变当前 sim2sim 的最终评价协议。
 
 # 任务特征提示
 
@@ -63,6 +65,8 @@
 
 `{{ASSET_MANIFEST_JSON}}`
 
+`{{ALGORITHM_PRIORS_JSON}}`
+
 # 反馈使用要求
 
 如果 `FEEDBACK_JSON` 非空，必须优先响应其中的 `llm_feedback_brief.must_address` 和候选级 `failure_tags`。候选必须解释其针对的失败标签；不得重复已经导致严重退化的参数组合。对接触型特技，需要明确区分合法支撑接触、危险冲击和跟踪误差。
@@ -92,6 +96,14 @@
 - `known_limitations` 判断目标动作是否缺少真实数据。
 - `tag_counts` 判断当前数据集主要覆盖的动作类型。
 - `sim2real_mimic_models` 仅作为迁移参考，不得替代当前任务的成功率评估。
+
+如果 `ALGORITHM_PRIORS_JSON` 非空，必须利用其中的：
+
+- `phase_motion_tracking.reward_2real` 作为模仿自然度、足端跟踪和安全惩罚的先验。
+- `history_observation` 作为高动态动作落地恢复、延迟鲁棒性和 sim2real 迁移的先验。
+- `domain_randomization` 作为摩擦、质量、COM、PD、延迟和扰动鲁棒性的先验。
+- `delta_action_sim2real` 只能作为第二阶段 residual adapter 设计依据，不得在当前 sim2sim 成功率中替代 policy 评估。
+- `task_family_guidance` 判断后空翻、翻墙转身、钻洞分别应该优先搜索哪些 reward、sampling 和 termination 杠杆。
 
 # 本次候选数量
 

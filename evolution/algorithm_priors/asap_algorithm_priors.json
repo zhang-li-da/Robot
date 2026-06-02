@@ -1,0 +1,744 @@
+{
+  "schema_version": "1.0",
+  "asap_root": "/root/ASAP-main",
+  "purpose": "Reusable ASAP algorithm priors for task-adaptive BeyondMimic evolution.",
+  "source_configs": {
+    "motion_tracking_reward_2real": "humanoidverse/config/rewards/motion_tracking/reward_motion_tracking_dm_2real.yaml",
+    "motion_tracking_reward_simfinetuning": "humanoidverse/config/rewards/motion_tracking/reward_motion_tracking_dm_simfinetuning.yaml",
+    "delta_action_reward_2real": "humanoidverse/config/rewards/motion_tracking/delta_a/reward_motion_tracking_use_deltaA_to_train_2real.yaml",
+    "deepmimic_history_obs": "humanoidverse/config/obs/motion_tracking/deepmimic_a2c_nolinvel_LARGEnoise_history.yaml",
+    "domain_randomization_base": "humanoidverse/config/domain_rand/domain_rand_base.yaml",
+    "delta_action_domain_rand_finetune": "humanoidverse/config/domain_rand/NO_domain_rand_finetune_with_deltaA.yaml",
+    "motion_tracking_env": "humanoidverse/config/env/motion_tracking.yaml",
+    "delta_action_closed_loop_env": "humanoidverse/config/env/delta_a_closed_loop.yaml",
+    "ppo": "humanoidverse/config/algo/ppo.yaml",
+    "ppo_train_delta_a": "humanoidverse/config/algo/ppo_train_delta_a.yaml",
+    "sim2real_g1_history": "sim2real/config/g1_29dof_hist.yaml"
+  },
+  "missing_source_configs": [],
+  "priors": {
+    "phase_motion_tracking": {
+      "reward_2real": {
+        "reward_scales": {
+          "teleop_body_position_extend": 1.0,
+          "teleop_vr_3point": 1.6,
+          "teleop_body_position_feet": 2.1,
+          "teleop_body_rotation_extend": 0.5,
+          "teleop_body_ang_velocity_extend": 0.5,
+          "teleop_body_velocity_extend": 0.5,
+          "teleop_joint_position": 0.75,
+          "teleop_joint_velocity": 0.5,
+          "penalty_torques": -1e-06,
+          "penalty_action_rate": -0.5,
+          "penalty_feet_ori": -2.0,
+          "feet_heading_alignment": -0.1,
+          "penalty_slippage": -1.0,
+          "limits_dof_pos": -10.0,
+          "limits_dof_vel": -5.0,
+          "limits_torque": -5.0,
+          "termination": -200.0
+        },
+        "tracking_sigma": {
+          "teleop_upper_body_pos": 0.03,
+          "teleop_lower_body_pos": 0.1,
+          "teleop_vr_3point_pos": 0.03,
+          "teleop_feet_pos": 0.03,
+          "teleop_body_rot": 1.0,
+          "teleop_body_vel": 1.0,
+          "teleop_body_ang_vel": 1.0,
+          "teleop_joint_pos": 1.0,
+          "teleop_joint_vel": 1.0
+        },
+        "body_position_weights": {
+          "lowerbody": 0.5,
+          "upperbody": 1.0
+        },
+        "desired_feet_max_height_for_this_air": 0.2,
+        "reward_penalty_curriculum": false,
+        "reward_limit": {
+          "soft_dof_pos_limit": 0.9,
+          "soft_dof_vel_limit": 0.9,
+          "soft_torque_limit": 0.825,
+          "reward_limits_curriculum": {
+            "soft_dof_pos_curriculum": true,
+            "soft_dof_pos_initial_limit": 1.15,
+            "soft_dof_pos_max_limit": 1.15,
+            "soft_dof_pos_min_limit": 0.95,
+            "soft_dof_pos_curriculum_degree": 2.5e-07,
+            "soft_dof_pos_curriculum_level_down_threshold": 40,
+            "soft_dof_pos_curriculum_level_up_threshold": 42,
+            "soft_dof_vel_curriculum": true,
+            "soft_dof_vel_initial_limit": 1.15,
+            "soft_dof_vel_max_limit": 1.25,
+            "soft_dof_vel_min_limit": 0.95,
+            "soft_dof_vel_curriculum_degree": 2.5e-07,
+            "soft_dof_vel_curriculum_level_down_threshold": 40,
+            "soft_dof_vel_curriculum_level_up_threshold": 42,
+            "soft_torque_curriculum": true,
+            "soft_torque_initial_limit": 1.15,
+            "soft_torque_max_limit": 1.25,
+            "soft_torque_min_limit": 0.85,
+            "soft_torque_curriculum_degree": 2.5e-07,
+            "soft_torque_curriculum_level_down_threshold": 40,
+            "soft_torque_curriculum_level_up_threshold": 42
+          }
+        },
+        "penalty_reward_names": [
+          "penalty_torques",
+          "penalty_dof_acc",
+          "penalty_dof_vel",
+          "penalty_action_rate",
+          "limits_dof_pos",
+          "limits_dof_vel",
+          "limits_torque",
+          "feet_heading_alignment",
+          "penalty_feet_ori",
+          "penalty_slippage"
+        ]
+      },
+      "reward_simfinetuning": {
+        "reward_scales": {
+          "teleop_body_position_extend": 1.0,
+          "teleop_vr_3point": 1.6,
+          "teleop_body_position_feet": 2.1,
+          "teleop_body_rotation_extend": 0.5,
+          "teleop_body_ang_velocity_extend": 0.5,
+          "teleop_body_velocity_extend": 0.5,
+          "teleop_joint_position": 0.75,
+          "teleop_joint_velocity": 0.5,
+          "penalty_torques": -1e-06,
+          "penalty_action_rate": -0.2,
+          "penalty_feet_ori": -2.0,
+          "feet_heading_alignment": -0.1,
+          "penalty_slippage": -1.0,
+          "limits_dof_pos": -10.0,
+          "limits_dof_vel": -5.0,
+          "limits_torque": -5.0,
+          "termination": -200.0
+        },
+        "tracking_sigma": {
+          "teleop_upper_body_pos": 0.03,
+          "teleop_lower_body_pos": 0.1,
+          "teleop_vr_3point_pos": 0.03,
+          "teleop_feet_pos": 0.03,
+          "teleop_body_rot": 1.0,
+          "teleop_body_vel": 1.0,
+          "teleop_body_ang_vel": 1.0,
+          "teleop_joint_pos": 1.0,
+          "teleop_joint_vel": 1.0
+        },
+        "body_position_weights": {
+          "lowerbody": 0.5,
+          "upperbody": 1.0
+        },
+        "desired_feet_max_height_for_this_air": 0.2,
+        "reward_penalty_curriculum": false,
+        "reward_limit": {
+          "soft_dof_pos_limit": 0.9,
+          "soft_dof_vel_limit": 0.9,
+          "soft_torque_limit": 0.825,
+          "reward_limits_curriculum": {
+            "soft_dof_pos_curriculum": true,
+            "soft_dof_pos_initial_limit": 1.15,
+            "soft_dof_pos_max_limit": 1.15,
+            "soft_dof_pos_min_limit": 0.95,
+            "soft_dof_pos_curriculum_degree": 2.5e-07,
+            "soft_dof_pos_curriculum_level_down_threshold": 40,
+            "soft_dof_pos_curriculum_level_up_threshold": 42,
+            "soft_dof_vel_curriculum": true,
+            "soft_dof_vel_initial_limit": 1.15,
+            "soft_dof_vel_max_limit": 1.25,
+            "soft_dof_vel_min_limit": 0.95,
+            "soft_dof_vel_curriculum_degree": 2.5e-07,
+            "soft_dof_vel_curriculum_level_down_threshold": 40,
+            "soft_dof_vel_curriculum_level_up_threshold": 42,
+            "soft_torque_curriculum": true,
+            "soft_torque_initial_limit": 1.15,
+            "soft_torque_max_limit": 1.25,
+            "soft_torque_min_limit": 0.85,
+            "soft_torque_curriculum_degree": 2.5e-07,
+            "soft_torque_curriculum_level_down_threshold": 40,
+            "soft_torque_curriculum_level_up_threshold": 42
+          }
+        },
+        "penalty_reward_names": [
+          "penalty_torques",
+          "penalty_dof_acc",
+          "penalty_dof_vel",
+          "penalty_action_rate",
+          "limits_dof_pos",
+          "limits_dof_vel",
+          "limits_torque",
+          "feet_heading_alignment",
+          "penalty_feet_ori",
+          "penalty_slippage"
+        ]
+      },
+      "env": {
+        "target_class": "humanoidverse.envs.motion_tracking.motion_tracking.LeggedRobotMotionTracking",
+        "termination": {
+          "terminate_by_contact": false,
+          "terminate_by_gravity": true,
+          "terminate_by_low_height": false,
+          "terminate_when_motion_end": true,
+          "terminate_when_motion_far": false,
+          "terminate_when_close_to_dof_pos_limit": false,
+          "terminate_when_close_to_dof_vel_limit": false,
+          "terminate_when_close_to_torque_limit": false
+        },
+        "termination_scales": {
+          "termination_min_base_height": 0.2,
+          "termination_gravity_x": 0.8,
+          "termination_gravity_y": 0.8,
+          "termination_motion_far_threshold": 1.5,
+          "termination_close_to_dof_pos_limit": 0.98,
+          "termination_close_to_dof_vel_limit": 0.98,
+          "termination_close_to_torque_limit": 0.98
+        },
+        "termination_curriculum": {
+          "terminate_when_motion_far_curriculum": false,
+          "terminate_when_motion_far_initial_threshold": 1.5,
+          "terminate_when_motion_far_threshold_max": 2.0,
+          "terminate_when_motion_far_threshold_min": 0.25,
+          "terminate_when_motion_far_curriculum_degree": 2.5e-06,
+          "terminate_when_motion_far_curriculum_level_down_threshold": 40,
+          "terminate_when_motion_far_curriculum_level_up_threshold": 42
+        },
+        "resample_motion_when_training": true,
+        "resample_time_interval_s": 2000,
+        "init_noise_scale": {
+          "dof_pos": 0.1,
+          "dof_vel": 0.15,
+          "root_pos": 0.05,
+          "root_rot": 10,
+          "root_vel": 0.01,
+          "root_ang_vel": 0.01
+        },
+        "enforce_randomize_motion_start_eval": false,
+        "add_extra_action": null
+      },
+      "ppo": {
+        "algorithm_class": "humanoidverse.agents.ppo.ppo.PPO",
+        "num_learning_epochs": 5,
+        "num_mini_batches": 4,
+        "clip_param": 0.2,
+        "gamma": 0.99,
+        "lam": 0.95,
+        "entropy_coef": 0.01,
+        "actor_learning_rate": 0.001,
+        "critic_learning_rate": 0.001,
+        "desired_kl": 0.01,
+        "num_steps_per_env": 24,
+        "init_noise_std": 0.8,
+        "actor_hidden_dims": [
+          512,
+          256,
+          128
+        ],
+        "critic_hidden_dims": [
+          512,
+          256,
+          128
+        ],
+        "activation": "ELU"
+      },
+      "llm_usage": [
+        "Use strong body/feet tracking as the base prior for motion naturalness.",
+        "For high-dynamic stunts, relax mid-air orientation termination before relaxing final success gates.",
+        "Keep torque, joint-limit, action-rate, foot orientation, slippage and contact-force terms visible for sim2real safety."
+      ]
+    },
+    "delta_action_sim2real": {
+      "reward_2real": {
+        "reward_scales": {
+          "teleop_body_position_extend": 1.0,
+          "teleop_vr_3point": 1.0,
+          "teleop_body_position_feet": 1.0,
+          "teleop_body_rotation_extend": 0.5,
+          "teleop_body_ang_velocity_extend": 0.5,
+          "teleop_body_velocity_extend": 0.5,
+          "teleop_joint_position": 0.5,
+          "teleop_joint_velocity": 0.5,
+          "penalty_torques": -1e-06,
+          "penalty_action_rate": -0.001,
+          "limits_dof_pos": -1.0,
+          "limits_dof_vel": -0.5,
+          "limits_torque": -0.01,
+          "termination": -200.0
+        },
+        "tracking_sigma": {
+          "teleop_upper_body_pos": 0.03,
+          "teleop_lower_body_pos": 0.1,
+          "teleop_vr_3point_pos": 0.03,
+          "teleop_feet_pos": 0.03,
+          "teleop_body_rot": 1.0,
+          "teleop_body_vel": 1.0,
+          "teleop_body_ang_vel": 1.0,
+          "teleop_joint_pos": 1.0,
+          "teleop_joint_vel": 1.0
+        },
+        "body_position_weights": {
+          "lowerbody": 0.5,
+          "upperbody": 1.0
+        },
+        "desired_feet_max_height_for_this_air": 0.2,
+        "reward_penalty_curriculum": false,
+        "reward_limit": {
+          "soft_dof_pos_limit": 0.9,
+          "soft_dof_vel_limit": 0.9,
+          "soft_torque_limit": 0.825,
+          "reward_limits_curriculum": {
+            "soft_dof_pos_curriculum": true,
+            "soft_dof_pos_initial_limit": 1.25,
+            "soft_dof_pos_max_limit": 1.25,
+            "soft_dof_pos_min_limit": 0.95,
+            "soft_dof_pos_curriculum_degree": 1e-06,
+            "soft_dof_pos_curriculum_level_down_threshold": 40,
+            "soft_dof_pos_curriculum_level_up_threshold": 42,
+            "soft_dof_vel_curriculum": true,
+            "soft_dof_vel_initial_limit": 1.25,
+            "soft_dof_vel_max_limit": 1.25,
+            "soft_dof_vel_min_limit": 0.95,
+            "soft_dof_vel_curriculum_degree": 1e-06,
+            "soft_dof_vel_curriculum_level_down_threshold": 40,
+            "soft_dof_vel_curriculum_level_up_threshold": 42,
+            "soft_torque_curriculum": true,
+            "soft_torque_initial_limit": 1.25,
+            "soft_torque_max_limit": 1.25,
+            "soft_torque_min_limit": 0.85,
+            "soft_torque_curriculum_degree": 1e-06,
+            "soft_torque_curriculum_level_down_threshold": 40,
+            "soft_torque_curriculum_level_up_threshold": 42
+          }
+        },
+        "penalty_reward_names": [
+          "penalty_torques",
+          "penalty_dof_acc",
+          "penalty_dof_vel",
+          "penalty_action_rate",
+          "limits_dof_pos",
+          "limits_dof_vel",
+          "limits_torque"
+        ]
+      },
+      "env_closed_loop": {
+        "target_class": "humanoidverse.envs.delta_a.delta_a_closed_loop.DeltaA_ClosedLoop",
+        "termination": {
+          "terminate_by_contact": false,
+          "terminate_by_gravity": true,
+          "terminate_by_low_height": false,
+          "terminate_when_motion_end": true,
+          "terminate_when_motion_far": false
+        },
+        "termination_scales": {
+          "termination_min_base_height": 0.3,
+          "termination_gravity_x": 0.8,
+          "termination_gravity_y": 0.8,
+          "termination_motion_far_threshold": 0.5
+        },
+        "termination_curriculum": {},
+        "resample_motion_when_training": true,
+        "resample_time_interval_s": 2000,
+        "init_noise_scale": {},
+        "enforce_randomize_motion_start_eval": false,
+        "add_extra_action": true
+      },
+      "ppo_delta_a": {
+        "algorithm_class": "humanoidverse.agents.delta_a.train_delta_a.PPODeltaA",
+        "num_learning_epochs": 5,
+        "num_mini_batches": 4,
+        "clip_param": 0.2,
+        "gamma": 0.99,
+        "lam": 0.95,
+        "entropy_coef": 0.01,
+        "actor_learning_rate": 0.001,
+        "critic_learning_rate": 0.001,
+        "desired_kl": 0.01,
+        "num_steps_per_env": 24,
+        "init_noise_std": 0.8,
+        "actor_hidden_dims": [
+          512,
+          256,
+          128
+        ],
+        "critic_hidden_dims": [
+          512,
+          256,
+          128
+        ],
+        "activation": "ELU"
+      },
+      "domain_rand_finetune": {
+        "push_robots": false,
+        "push_interval_s": [
+          5,
+          10
+        ],
+        "max_push_vel_xy": 1.0,
+        "randomize_base_com": false,
+        "base_com_range": {
+          "x": [
+            -0.1,
+            0.1
+          ],
+          "y": [
+            -0.1,
+            0.1
+          ],
+          "z": [
+            -0.01,
+            0.01
+          ]
+        },
+        "randomize_link_mass": false,
+        "link_mass_range": [
+          0.7,
+          1.3
+        ],
+        "randomize_pd_gain": false,
+        "kp_range": [
+          0.75,
+          1.25
+        ],
+        "kd_range": [
+          0.75,
+          1.25
+        ],
+        "randomize_friction": false,
+        "friction_range": [
+          -0.6,
+          1.2
+        ],
+        "randomize_torque_rfi": false,
+        "rfi_lim": 0.1,
+        "randomize_rfi_lim": false,
+        "rfi_lim_range": [
+          0.5,
+          1.5
+        ],
+        "randomize_ctrl_delay": false,
+        "ctrl_delay_step_range": [
+          0,
+          2
+        ],
+        "randomize_motion_ref_xyz": false,
+        "motion_ref_xyz_range": [
+          [
+            -0.02,
+            0.02
+          ],
+          [
+            -0.02,
+            0.02
+          ],
+          [
+            -0.1,
+            0.1
+          ]
+        ],
+        "motion_package_loss": false,
+        "package_loss_range": [
+          1,
+          10
+        ],
+        "cotrain_with_without_delta_a": false,
+        "without_delta_a_ratio": 0.5,
+        "rescale_delta_a": false,
+        "delta_a_scale_range": [
+          0.5,
+          1.5
+        ]
+      },
+      "sim2real_config_available": true,
+      "llm_usage": [
+        "Treat delta-action as a second-stage sim2real residual adapter, not a replacement for task imitation success.",
+        "When sim2real begins, search over residual scale, delay/package-loss robustness and co-training ratio.",
+        "Do not use released ASAP ONNX policies as evidence for this project's task success without local evaluation."
+      ]
+    },
+    "history_observation": {
+      "deepmimic_history_obs": {
+        "actor_obs": [
+          "base_ang_vel",
+          "projected_gravity",
+          "dof_pos",
+          "dof_vel",
+          "actions",
+          "ref_motion_phase",
+          "history_actor"
+        ],
+        "critic_obs": [
+          "base_lin_vel",
+          "base_ang_vel",
+          "projected_gravity",
+          "dof_pos",
+          "dof_vel",
+          "actions",
+          "ref_motion_phase",
+          "dif_local_rigid_body_pos",
+          "local_ref_rigid_body_pos",
+          "history_critic"
+        ],
+        "history_actor": {
+          "base_ang_vel": 4,
+          "projected_gravity": 4,
+          "dof_pos": 4,
+          "dof_vel": 4,
+          "actions": 4,
+          "ref_motion_phase": 4
+        },
+        "history_critic": {
+          "base_lin_vel": 4,
+          "base_ang_vel": 4,
+          "projected_gravity": 4,
+          "dof_pos": 4,
+          "dof_vel": 4,
+          "actions": 4,
+          "ref_motion_phase": 4
+        },
+        "obs_scales": {
+          "base_lin_vel": 2.0,
+          "base_ang_vel": 0.25,
+          "projected_gravity": 1.0,
+          "dof_pos": 1.0,
+          "dof_vel": 0.05,
+          "actions": 1.0,
+          "dif_local_rigid_body_pos": 1.0,
+          "local_ref_rigid_body_pos": 1.0,
+          "ref_motion_phase": 1.0,
+          "history_actor": 1.0,
+          "history_critic": 1.0
+        },
+        "noise_scales": {
+          "base_lin_vel": 0.0,
+          "base_ang_vel": 0.3,
+          "projected_gravity": 0.2,
+          "dof_pos": 0.01,
+          "dof_vel": 1.0,
+          "actions": 0.0,
+          "dif_local_rigid_body_pos": 0.0,
+          "local_ref_rigid_body_pos": 0.0,
+          "ref_motion_phase": 0.0,
+          "history_actor": 0.0,
+          "history_critic": 0.0
+        },
+        "history_horizon_steps": {
+          "actor": 4,
+          "critic": 4
+        }
+      },
+      "llm_usage": [
+        "History observations are important for partial observability, delay and high-dynamic landing recovery.",
+        "Actor may omit base linear velocity while critic keeps privileged local reference terms.",
+        "For sim2real-sensitive policies, prefer history over direct noisy velocity dependence when possible."
+      ]
+    },
+    "domain_randomization": {
+      "base": {
+        "push_robots": true,
+        "push_interval_s": [
+          5,
+          10
+        ],
+        "max_push_vel_xy": 1.0,
+        "randomize_base_com": true,
+        "base_com_range": {
+          "x": [
+            "-0.1.",
+            "0.1."
+          ],
+          "y": [
+            "-0.1.",
+            "0.1."
+          ],
+          "z": [
+            -0.1,
+            0.1
+          ]
+        },
+        "randomize_link_mass": true,
+        "link_mass_range": [
+          0.8,
+          1.2
+        ],
+        "randomize_pd_gain": true,
+        "kp_range": [
+          0.75,
+          1.25
+        ],
+        "kd_range": [
+          0.75,
+          1.25
+        ],
+        "randomize_friction": true,
+        "friction_range": [
+          0.5,
+          1.25
+        ],
+        "randomize_torque_rfi": true,
+        "rfi_lim": 0.1,
+        "randomize_rfi_lim": true,
+        "rfi_lim_range": [
+          0.5,
+          1.5
+        ],
+        "randomize_ctrl_delay": true,
+        "ctrl_delay_step_range": [
+          0,
+          2
+        ]
+      },
+      "finetune_with_delta_a": {
+        "push_robots": false,
+        "push_interval_s": [
+          5,
+          10
+        ],
+        "max_push_vel_xy": 1.0,
+        "randomize_base_com": false,
+        "base_com_range": {
+          "x": [
+            -0.1,
+            0.1
+          ],
+          "y": [
+            -0.1,
+            0.1
+          ],
+          "z": [
+            -0.01,
+            0.01
+          ]
+        },
+        "randomize_link_mass": false,
+        "link_mass_range": [
+          0.7,
+          1.3
+        ],
+        "randomize_pd_gain": false,
+        "kp_range": [
+          0.75,
+          1.25
+        ],
+        "kd_range": [
+          0.75,
+          1.25
+        ],
+        "randomize_friction": false,
+        "friction_range": [
+          -0.6,
+          1.2
+        ],
+        "randomize_torque_rfi": false,
+        "rfi_lim": 0.1,
+        "randomize_rfi_lim": false,
+        "rfi_lim_range": [
+          0.5,
+          1.5
+        ],
+        "randomize_ctrl_delay": false,
+        "ctrl_delay_step_range": [
+          0,
+          2
+        ],
+        "randomize_motion_ref_xyz": false,
+        "motion_ref_xyz_range": [
+          [
+            -0.02,
+            0.02
+          ],
+          [
+            -0.02,
+            0.02
+          ],
+          [
+            -0.1,
+            0.1
+          ]
+        ],
+        "motion_package_loss": false,
+        "package_loss_range": [
+          1,
+          10
+        ],
+        "cotrain_with_without_delta_a": false,
+        "without_delta_a_ratio": 0.5,
+        "rescale_delta_a": false,
+        "delta_a_scale_range": [
+          0.5,
+          1.5
+        ]
+      },
+      "llm_usage": [
+        "Use wide randomization for robustness training; reduce it during delta-action finetuning if it destabilizes imitation.",
+        "Control delay, friction, link mass, COM and torque RFI are the key sim2real axes.",
+        "Do not increase random pushes before a high-dynamic motion has stable takeoff and landing."
+      ]
+    }
+  },
+  "task_family_guidance": {
+    "backflip_or_flip_like": {
+      "required_real_data": "A true flip motion is required for final backflip claims.",
+      "proxy_sources": [
+        "single_foot_jump",
+        "jump_forward",
+        "side_jump"
+      ],
+      "search_focus": [
+        "apex_height",
+        "mid-air orientation tolerance",
+        "landing_stability",
+        "contact_force"
+      ],
+      "risk_gates": [
+        "final angular speed",
+        "landing impact",
+        "joint/torque limits"
+      ]
+    },
+    "wall_vault_or_wall_turn": {
+      "required_real_data": "Wall contact/vault motion and wall collision geometry are required for final claims.",
+      "proxy_sources": [
+        "jump_degree",
+        "SpiderMan",
+        "jump_forward"
+      ],
+      "search_focus": [
+        "task_progress",
+        "yaw_alignment",
+        "clearance",
+        "legal hand/foot contact"
+      ],
+      "risk_gates": [
+        "dangerous torso/head impact",
+        "contact force",
+        "final yaw and speed"
+      ]
+    },
+    "crawl_or_tunnel": {
+      "required_real_data": "Crawl/tunnel motion and ceiling collision geometry are required for final claims.",
+      "proxy_sources": [
+        "squat",
+        "SpiderMan",
+        "low posture transitions"
+      ],
+      "search_focus": [
+        "ceiling_clearance",
+        "low-posture progress",
+        "legal knee/hand support",
+        "exit recovery"
+      ],
+      "risk_gates": [
+        "head/torso ceiling collision",
+        "progress stall",
+        "low-height termination mistakes"
+      ]
+    }
+  },
+  "llm_constraints": [
+    "Use ASAP priors as search constraints, not as direct proof of task success.",
+    "Never weaken final success criteria to make a candidate look better.",
+    "For proxy tasks, optimize quality/robustness or curriculum value when baseline success is already near ceiling.",
+    "For final claims, require at least 50 motion-start episodes and baseline-vs-evolved comparison."
+  ]
+}
