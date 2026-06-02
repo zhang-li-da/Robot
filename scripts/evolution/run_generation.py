@@ -365,6 +365,57 @@ def _apply_nonzero_baseline_guard(
     return guarded
 
 
+def _feedback_failure_tags(feedback: dict[str, Any]) -> set[str]:
+    tags: set[str] = set()
+    for item in feedback.get("candidates", []):
+        if isinstance(item, dict):
+            tags.update(str(tag) for tag in item.get("failure_tags", []))
+    for item in feedback.get("population_feedback", {}).get("top_failure_tags", []):
+        if isinstance(item, dict) and item.get("tag"):
+            tags.add(str(item["tag"]))
+    for tag in feedback.get("llm_feedback_brief", {}).get("baseline_failure_tags", []):
+        tags.add(str(tag))
+    return tags
+
+
+def _apply_feedback_failure_guard(
+    genome: AlgorithmGenome,
+    config: dict[str, Any],
+    feedback: dict[str, Any],
+) -> AlgorithmGenome:
+    """Convert repeated evaluator failure tags into hard candidate floors/caps."""
+
+    guarded = genome
+    tags = _feedback_failure_tags(feedback)
+    if "yaw_recovery_failure" not in tags:
+        return guarded
+
+    guarded.reward.yaw_alignment_weight = _clip_context_value(
+        config,
+        "reward.yaw_alignment_weight",
+        max(float(guarded.reward.yaw_alignment_weight), 1.10),
+    )
+    guarded.reward.landing_stability_weight = _clip_context_value(
+        config,
+        "reward.landing_stability_weight",
+        max(float(guarded.reward.landing_stability_weight), 0.85),
+    )
+    guarded.reward.task_progress_weight = _clip_context_value(
+        config,
+        "reward.task_progress_weight",
+        min(float(guarded.reward.task_progress_weight), 0.35),
+    )
+    guarded.termination.anchor_ori_threshold = _clip_context_value(
+        config,
+        "termination.anchor_ori_threshold",
+        max(float(guarded.termination.anchor_ori_threshold), 1.15),
+    )
+    note = "yaw失败保护：限制progress主导并提高yaw/landing修复压力"
+    if note not in guarded.rationale:
+        guarded.rationale = list(guarded.rationale) + [note]
+    return guarded
+
+
 def _normalize_with_context(
     genome: AlgorithmGenome,
     config: dict[str, Any],
@@ -374,6 +425,7 @@ def _normalize_with_context(
     genome = normalize_genome_for_config(genome, config)
     genome = _apply_high_baseline_guard(genome, config, history, feedback)
     genome = _apply_nonzero_baseline_guard(genome, config, history, feedback)
+    genome = _apply_feedback_failure_guard(genome, config, feedback)
     return normalize_genome_for_config(genome, config)
 
 
