@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import sys
 from datetime import datetime
@@ -161,12 +162,54 @@ def load_task_evolution_pack(config: dict[str, Any]) -> dict[str, Any]:
     return {"missing_task_evolution_pack_candidates": inferred} if inferred else {}
 
 
+def _runtime_baseline_from_context(history: dict[str, Any], feedback: dict[str, Any]) -> dict[str, Any]:
+    for source_name, source in (
+        ("feedback.baseline", feedback.get("baseline", {})),
+        ("history.baseline", history.get("baseline", {})),
+        ("feedback.population_feedback", feedback.get("population_feedback", {})),
+    ):
+        if not isinstance(source, dict):
+            continue
+        success_rate = source.get("success_rate", source.get("baseline_success_rate"))
+        if success_rate is None:
+            continue
+        return {
+            "source": source_name,
+            "success_rate": success_rate,
+            "fitness": source.get("fitness"),
+            "episodes": source.get("episodes"),
+            "mean_return": source.get("mean_return"),
+            "mean_max_torso_x": source.get("mean_max_torso_x"),
+            "mean_final_speed": source.get("mean_final_speed"),
+            "mean_final_ang_speed": source.get("mean_final_ang_speed"),
+            "mean_final_yaw_error": source.get("mean_final_yaw_error"),
+            "termination_counts": source.get("termination_counts", {}),
+            "eval_path": source.get("eval_path"),
+        }
+    return {}
+
+
+def config_with_runtime_context(config: dict[str, Any], history: dict[str, Any], feedback: dict[str, Any]) -> dict[str, Any]:
+    """Add measured baseline context to the prompt without mutating the source config."""
+
+    runtime_config = copy.deepcopy(config)
+    baseline = _runtime_baseline_from_context(history, feedback)
+    if not baseline:
+        return runtime_config
+    task = runtime_config.setdefault("task", {})
+    task["baseline_success_rate"] = baseline.get("success_rate")
+    task["runtime_baseline_context"] = baseline
+    return runtime_config
+
+
 def render_prompt(
     config: dict[str, Any],
     history: dict[str, Any],
     population_size: int,
     feedback: dict[str, Any] | None = None,
 ) -> str:
+    feedback = feedback or {}
+    prompt_config = config_with_runtime_context(config, history, feedback)
     template_path = Path(config["llm"]["prompt_template"])
     template = template_path.read_text(encoding="utf-8")
     motion_catalog = load_motion_catalog(config)
@@ -175,10 +218,10 @@ def render_prompt(
     algorithm_priors = load_algorithm_priors(config)
     task_evolution_pack = load_task_evolution_pack(config)
     return (
-        template.replace("{{CONFIG_JSON}}", json.dumps(config, indent=2, ensure_ascii=False))
+        template.replace("{{CONFIG_JSON}}", json.dumps(prompt_config, indent=2, ensure_ascii=False))
         .replace("{{TASK_PROFILE_JSON}}", json.dumps(task_profile, indent=2, ensure_ascii=False))
         .replace("{{HISTORY_JSON}}", json.dumps(history, indent=2, ensure_ascii=False))
-        .replace("{{FEEDBACK_JSON}}", json.dumps(feedback or {}, indent=2, ensure_ascii=False))
+        .replace("{{FEEDBACK_JSON}}", json.dumps(feedback, indent=2, ensure_ascii=False))
         .replace("{{MOTION_CATALOG_JSON}}", json.dumps(motion_catalog, indent=2, ensure_ascii=False))
         .replace("{{ASSET_MANIFEST_JSON}}", json.dumps(asset_manifest, indent=2, ensure_ascii=False))
         .replace("{{ALGORITHM_PRIORS_JSON}}", json.dumps(algorithm_priors, indent=2, ensure_ascii=False))
@@ -345,6 +388,12 @@ def main() -> int:
     if feedback:
         (output_dir / "feedback_snapshot.json").write_text(
             json.dumps(feedback, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+    prompt_config = config_with_runtime_context(config, history, feedback)
+    if prompt_config != config:
+        (output_dir / "prompt_config_snapshot.json").write_text(
+            json.dumps(prompt_config, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
     if motion_catalog:
