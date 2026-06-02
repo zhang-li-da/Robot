@@ -381,6 +381,7 @@ def parse_llm_candidates(
     payload: dict[str, Any],
     config: dict[str, Any],
     population_size: int,
+    generation: int,
     history: dict[str, Any],
     feedback: dict[str, Any],
 ) -> list[AlgorithmGenome]:
@@ -389,18 +390,24 @@ def parse_llm_candidates(
         raise ValueError("Mimimax payload must contain a candidates list")
 
     accepted: list[AlgorithmGenome] = []
+    seen_ids: set[str] = set()
     for index, raw in enumerate(raw_candidates):
         try:
             genome = AlgorithmGenome.from_dict(raw)
         except (TypeError, ValueError) as exc:
             print(f"[WARN] reject candidate[{index}] schema error: {exc}")
             continue
+        genome.metadata.generation = generation
+        expected_prefix = f"gen{generation}_"
+        if not str(genome.metadata.genome_id).startswith(expected_prefix) or genome.metadata.genome_id in seen_ids:
+            genome.metadata.genome_id = f"gen{generation}_m3_{index:03d}"
         genome = _normalize_with_context(genome, config, history, feedback)
         errors = validate_genome(genome, config)
         if errors:
             print(f"[WARN] reject {genome.metadata.genome_id}: {'; '.join(errors)}")
             continue
         accepted.append(genome)
+        seen_ids.add(genome.metadata.genome_id)
         if len(accepted) >= population_size:
             break
     return accepted
@@ -489,7 +496,7 @@ def main() -> int:
                 json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
                 encoding="utf-8",
             )
-            genomes = parse_llm_candidates(payload, config, population_size, history, feedback)
+            genomes = parse_llm_candidates(payload, config, population_size, args.generation, history, feedback)
         except MimimaxJSONError as exc:
             (output_dir / "llm_raw_text.txt").write_text(exc.raw_text, encoding="utf-8")
             if exc.raw_response:
