@@ -28,18 +28,10 @@ export PYTHONPATH="${ROOT_DIR}/source/whole_body_tracking:${PYTHONPATH:-}"
 export LD_LIBRARY_PATH="/tmp/nvidia-vulkan-full-550.54.14:/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH:-}"
 export VK_ICD_FILENAMES="/tmp/nvidia-vulkan-full-550.54.14/nvidia_icd_abs.json"
 
-python scripts/index_asap_motion_catalog.py
-python scripts/extract_asap_algorithm_priors.py
-python scripts/index_asap_assets.py
-python scripts/create_asap_evolution_configs.py
-python scripts/create_asap_task_profiles.py
-python scripts/select_asap_evolution_tasks.py --limit 24
-python scripts/build_asap_task_adaptive_roadmap.py --limit 18
-python scripts/evolution/build_task_evolution_pack.py --goal backflip --limit 10
-python scripts/evolution/build_task_evolution_pack.py --goal wall_vault --limit 10
-python scripts/evolution/build_task_evolution_pack.py --goal crawl_tunnel --limit 10
-python scripts/evolution/build_task_evolution_pack.py --goal wall_turn --limit 10
-python scripts/evolution/build_task_evolution_pack.py --goal jump_leap --limit 10
+python scripts/sync_asap_evolution_context.py \
+  --queue_limit 24 \
+  --roadmap_limit 18 \
+  --task_pack_limit 10
 
 if [[ -z "${TASK_IDS}" ]]; then
   TASK_IDS="$(python scripts/asap_g1_task_suite.py --list-default)"

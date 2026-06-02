@@ -32,6 +32,7 @@ scripts/asap_g1_task_suite.py
 scripts/index_asap_motion_catalog.py
 scripts/index_asap_assets.py
 scripts/extract_asap_algorithm_priors.py
+scripts/sync_asap_evolution_context.py
 scripts/select_asap_evolution_tasks.py
 scripts/create_asap_evolution_configs.py
 scripts/create_asap_task_profiles.py
@@ -47,6 +48,8 @@ evolution/action_catalog/asap_task_adaptive_roadmap.json
 evolution/action_catalog/asap_task_adaptive_roadmap_zh.md
 evolution/action_catalog/asap_asset_manifest.json
 evolution/action_catalog/asap_asset_manifest_zh.md
+evolution/action_catalog/asap_context_sync_summary.json
+evolution/action_catalog/asap_context_sync_summary_zh.md
 evolution/algorithm_priors/asap_algorithm_priors.json
 evolution/algorithm_priors/asap_algorithm_priors_zh.md
 evolution/task_packs/*.json
@@ -69,25 +72,33 @@ evolution/algorithm_priors/asap_algorithm_priors_zh.md
 
 ## 新增动作数据的接入路径
 
-当前 `/root/ASAP-main.zip` 已进入数据索引。每次新增动作数据后，按下面顺序刷新框架状态：
+当前 `/root/ASAP-main.zip` 已进入数据索引。每次新增动作数据后，优先用统一同步入口刷新框架状态：
 
 ```bash
 cd /root/whole_body_tracking-main
-/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/index_asap_motion_catalog.py \
-  --input_dir /root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles
-/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/extract_asap_algorithm_priors.py \
-  --asap_root /root/ASAP-main
-/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/index_asap_assets.py \
-  --asap_root /root/ASAP-main
-/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/create_asap_evolution_configs.py
-/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/create_asap_task_profiles.py
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/sync_asap_evolution_context.py \
+  --asap_root /root/ASAP-main \
+  --queue_limit 24 \
+  --roadmap_limit 18 \
+  --task_pack_limit 10
+```
+
+该入口只做 CPU 侧同步，不启动 Isaac 训练。它会顺序刷新 motion catalog、ASAP 算法先验、资产清单、任务配置、任务画像、候选队列、任务路线图和五类 task pack，并额外输出：
+
+```text
+evolution/action_catalog/asap_context_sync_summary.json
+evolution/action_catalog/asap_context_sync_summary_zh.md
+```
+
+如需调试单个阶段，仍可单独运行下列脚本：
+
+```bash
+cd /root/whole_body_tracking-main
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/index_asap_motion_catalog.py
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/extract_asap_algorithm_priors.py
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/index_asap_assets.py
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/select_asap_evolution_tasks.py --limit 24
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/build_asap_task_adaptive_roadmap.py --limit 18
-/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/evolution/build_task_evolution_pack.py --goal backflip --limit 10
-/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/evolution/build_task_evolution_pack.py --goal wall_vault --limit 10
-/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/evolution/build_task_evolution_pack.py --goal crawl_tunnel --limit 10
-/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/evolution/build_task_evolution_pack.py --goal wall_turn --limit 10
-/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/evolution/build_task_evolution_pack.py --goal jump_leap --limit 10
 ```
 
 生成物职责如下：

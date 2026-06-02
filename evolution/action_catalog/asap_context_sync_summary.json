@@ -1,0 +1,546 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-06-02T20:52:46.457037+00:00",
+  "purpose": "CPU-only ASAP dataset and algorithm-prior synchronization for LLM-assisted stunt imitation evolution.",
+  "asap_root": "/root/ASAP-main",
+  "motion_dir": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles",
+  "steps": [
+    {
+      "label": "index_motion_catalog",
+      "argv": [
+        "scripts/index_asap_motion_catalog.py",
+        "--input_dir",
+        "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles"
+      ],
+      "returncode": 0,
+      "stdout_json": {
+        "clip_count": 52,
+        "json_output": "evolution/action_catalog/asap_motion_catalog.json"
+      }
+    },
+    {
+      "label": "extract_algorithm_priors",
+      "argv": [
+        "scripts/extract_asap_algorithm_priors.py",
+        "--asap_root",
+        "/root/ASAP-main"
+      ],
+      "returncode": 0,
+      "stdout_json": {
+        "output_json": "evolution/algorithm_priors/asap_algorithm_priors.json",
+        "output_md": "evolution/algorithm_priors/asap_algorithm_priors_zh.md"
+      }
+    },
+    {
+      "label": "index_assets",
+      "argv": [
+        "scripts/index_asap_assets.py",
+        "--asap_root",
+        "/root/ASAP-main"
+      ],
+      "returncode": 0,
+      "stdout_json": {
+        "asap_root": "/root/ASAP-main",
+        "counts": {
+          "retargeted_g1_motion_pkl": 52,
+          "raw_smpl_motion_npz": 51,
+          "sim2real_mimic_onnx": 14,
+          "sim2real_locomotion_onnx": 1,
+          "config_yaml_indexed": 61
+        }
+      }
+    },
+    {
+      "label": "create_evolution_configs",
+      "argv": [
+        "scripts/create_asap_evolution_configs.py"
+      ],
+      "returncode": 0,
+      "stdout_json": {}
+    },
+    {
+      "label": "create_task_profiles",
+      "argv": [
+        "scripts/create_asap_task_profiles.py"
+      ],
+      "returncode": 0,
+      "stdout_json": {}
+    },
+    {
+      "label": "select_evolution_tasks",
+      "argv": [
+        "scripts/select_asap_evolution_tasks.py",
+        "--limit",
+        "24"
+      ],
+      "returncode": 0,
+      "stdout_json": {
+        "selected": 24,
+        "output_json": "evolution/action_catalog/asap_evolution_candidate_queue.json"
+      }
+    },
+    {
+      "label": "build_task_adaptive_roadmap",
+      "argv": [
+        "scripts/build_asap_task_adaptive_roadmap.py",
+        "--limit",
+        "18"
+      ],
+      "returncode": 0,
+      "stdout_json": {
+        "output_json": "evolution/action_catalog/asap_task_adaptive_roadmap.json",
+        "output_md": "evolution/action_catalog/asap_task_adaptive_roadmap_zh.md"
+      }
+    },
+    {
+      "label": "build_task_pack_backflip",
+      "argv": [
+        "scripts/evolution/build_task_evolution_pack.py",
+        "--goal",
+        "backflip",
+        "--limit",
+        "10"
+      ],
+      "returncode": 0,
+      "stdout_json": {
+        "output_json": "evolution/task_packs/backflip_v1.json",
+        "output_md": "evolution/task_packs/backflip_v1_zh.md"
+      }
+    },
+    {
+      "label": "build_task_pack_wall_vault",
+      "argv": [
+        "scripts/evolution/build_task_evolution_pack.py",
+        "--goal",
+        "wall_vault",
+        "--limit",
+        "10"
+      ],
+      "returncode": 0,
+      "stdout_json": {
+        "output_json": "evolution/task_packs/wall_vault_v1.json",
+        "output_md": "evolution/task_packs/wall_vault_v1_zh.md"
+      }
+    },
+    {
+      "label": "build_task_pack_crawl_tunnel",
+      "argv": [
+        "scripts/evolution/build_task_evolution_pack.py",
+        "--goal",
+        "crawl_tunnel",
+        "--limit",
+        "10"
+      ],
+      "returncode": 0,
+      "stdout_json": {
+        "output_json": "evolution/task_packs/crawl_tunnel_v1.json",
+        "output_md": "evolution/task_packs/crawl_tunnel_v1_zh.md"
+      }
+    },
+    {
+      "label": "build_task_pack_wall_turn",
+      "argv": [
+        "scripts/evolution/build_task_evolution_pack.py",
+        "--goal",
+        "wall_turn",
+        "--limit",
+        "10"
+      ],
+      "returncode": 0,
+      "stdout_json": {
+        "output_json": "evolution/task_packs/wall_turn_v1.json",
+        "output_md": "evolution/task_packs/wall_turn_v1_zh.md"
+      }
+    },
+    {
+      "label": "build_task_pack_jump_leap",
+      "argv": [
+        "scripts/evolution/build_task_evolution_pack.py",
+        "--goal",
+        "jump_leap",
+        "--limit",
+        "10"
+      ],
+      "returncode": 0,
+      "stdout_json": {
+        "output_json": "evolution/task_packs/jump_leap_v1.json",
+        "output_md": "evolution/task_packs/jump_leap_v1_zh.md"
+      }
+    }
+  ],
+  "dataset": {
+    "clip_count": 52,
+    "task_counts": {
+      "g1_crawl_tunnel": 3,
+      "g1_dynamic_balance": 23,
+      "g1_jump_leap": 20,
+      "g1_recovery": 16,
+      "g1_roll_vault": 1,
+      "g1_wall_turn": 10
+    },
+    "tag_counts": {
+      "aerial": 14,
+      "balance": 6,
+      "direction_change": 4,
+      "dynamic_leg": 3,
+      "forward_jump": 5,
+      "forward_step": 4,
+      "gait": 4,
+      "in_place_high_dynamic": 5,
+      "kick": 3,
+      "landing": 11,
+      "landing_recovery": 8,
+      "large_height_transition": 5,
+      "large_joint_excursion": 18,
+      "large_limb_range": 1,
+      "large_vertical_motion": 20,
+      "lateral_jump": 4,
+      "locomotion": 29,
+      "long_sequence": 15,
+      "low_dynamic_pose": 1,
+      "low_posture": 3,
+      "low_posture_transition": 3,
+      "low_root_height": 25,
+      "recovery_step": 8,
+      "single_foot_balance": 4,
+      "single_foot_jump": 2,
+      "single_leg_support": 9,
+      "sports_motion": 13,
+      "squat": 3,
+      "stability_pretraining": 4,
+      "strength_pose": 3,
+      "turn_jump": 5,
+      "upper_lower_coordination": 13,
+      "walk": 4,
+      "wall_turn_proxy": 1,
+      "yaw_control": 5
+    },
+    "asset_counts": {
+      "retargeted_g1_motion_pkl": 52,
+      "raw_smpl_motion_npz": 51,
+      "sim2real_mimic_onnx": 14,
+      "sim2real_locomotion_onnx": 1,
+      "config_yaml_indexed": 61
+    },
+    "known_limitations": [
+      "No explicit backflip filename is present in the current ASAP package.",
+      "No explicit crawl/tunnel or wall-vault filename is present in the current ASAP package.",
+      "Single-foot jump and high-dynamic sports clips are proxy/pretraining data for flip-like tasks.",
+      "Squat and low-pose clips are low-posture pretraining data, not final tunnel traversal evidence.",
+      "ASAP sim2real ONNX files are useful references but are not a substitute for task-specific policy validation."
+    ]
+  },
+  "algorithm_priors": {
+    "path": "evolution/algorithm_priors/asap_algorithm_priors.json",
+    "source_config_count": 11,
+    "missing_source_configs": [],
+    "available_priors": [
+      "delta_action_sim2real",
+      "domain_randomization",
+      "history_observation",
+      "phase_motion_tracking"
+    ],
+    "task_family_guidance": [
+      "backflip_or_flip_like",
+      "crawl_or_tunnel",
+      "wall_vault_or_wall_turn"
+    ]
+  },
+  "task_pack_readiness": {
+    "backflip": {
+      "status": "proxy_only",
+      "real_motion_available": false,
+      "real_motion_count": 0,
+      "proxy_motion_count": 10,
+      "selected_motion_ids": [
+        "0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level1_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_side_jump_level4_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass"
+      ],
+      "path": "evolution/task_packs/backflip_v1.json"
+    },
+    "wall_vault": {
+      "status": "proxy_only",
+      "real_motion_available": false,
+      "real_motion_count": 0,
+      "proxy_motion_count": 10,
+      "selected_motion_ids": [
+        "0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass"
+      ],
+      "path": "evolution/task_packs/wall_vault_v1.json"
+    },
+    "crawl_tunnel": {
+      "status": "proxy_only",
+      "real_motion_available": false,
+      "real_motion_count": 0,
+      "proxy_motion_count": 10,
+      "selected_motion_ids": [
+        "0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level4_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level3_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level3_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level2_filter_amass"
+      ],
+      "path": "evolution/task_packs/crawl_tunnel_v1.json"
+    },
+    "wall_turn": {
+      "status": "proxy_only",
+      "real_motion_available": false,
+      "real_motion_count": 0,
+      "proxy_motion_count": 10,
+      "selected_motion_ids": [
+        "0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level4_filter_amass"
+      ],
+      "path": "evolution/task_packs/wall_turn_v1.json"
+    },
+    "jump_leap": {
+      "status": "real_motion_available",
+      "real_motion_available": true,
+      "real_motion_count": 10,
+      "proxy_motion_count": 0,
+      "selected_motion_ids": [
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass",
+        "0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass"
+      ],
+      "path": "evolution/task_packs/jump_leap_v1.json"
+    }
+  },
+  "candidate_preview": [
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass",
+      "archetype": "low_posture_pretraining",
+      "rank_score": 322.048,
+      "already_configured": true,
+      "tags": [
+        "in_place_high_dynamic",
+        "large_height_transition",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "long_sequence",
+        "low_posture",
+        "low_posture_transition",
+        "low_root_height",
+        "squat",
+        "strength_pose"
+      ],
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass.pkl"
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass",
+      "archetype": "wall_contact_proxy",
+      "rank_score": 311.464,
+      "already_configured": true,
+      "tags": [
+        "in_place_high_dynamic",
+        "large_height_transition",
+        "large_joint_excursion",
+        "large_limb_range",
+        "large_vertical_motion",
+        "long_sequence",
+        "low_dynamic_pose",
+        "low_root_height",
+        "wall_turn_proxy"
+      ],
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass.pkl"
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass",
+      "archetype": "aerial_turn_jump",
+      "rank_score": 300.076,
+      "already_configured": true,
+      "tags": [
+        "aerial",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "locomotion",
+        "low_root_height",
+        "turn_jump",
+        "yaw_control"
+      ],
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass.pkl"
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass",
+      "archetype": "aerial_turn_jump",
+      "rank_score": 295.762,
+      "already_configured": true,
+      "tags": [
+        "aerial",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "locomotion",
+        "low_root_height",
+        "turn_jump",
+        "yaw_control"
+      ],
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass.pkl"
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass",
+      "archetype": "aerial_turn_jump",
+      "rank_score": 287.178,
+      "already_configured": false,
+      "tags": [
+        "aerial",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "low_root_height",
+        "turn_jump",
+        "yaw_control"
+      ],
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass.pkl"
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass",
+      "archetype": "aerial_turn_jump",
+      "rank_score": 281.326,
+      "already_configured": false,
+      "tags": [
+        "aerial",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "low_root_height",
+        "turn_jump",
+        "yaw_control"
+      ],
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass.pkl"
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass",
+      "archetype": "low_posture_pretraining",
+      "rank_score": 281.111,
+      "already_configured": false,
+      "tags": [
+        "in_place_high_dynamic",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "long_sequence",
+        "low_posture",
+        "low_posture_transition",
+        "low_root_height",
+        "squat",
+        "strength_pose"
+      ],
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass.pkl"
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass",
+      "archetype": "aerial_turn_jump",
+      "rank_score": 279.445,
+      "already_configured": false,
+      "tags": [
+        "aerial",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "low_root_height",
+        "turn_jump",
+        "yaw_control"
+      ],
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass.pkl"
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass",
+      "archetype": "flip_proxy_single_foot_jump",
+      "rank_score": 245.547,
+      "already_configured": true,
+      "tags": [
+        "balance",
+        "landing",
+        "large_height_transition",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "long_sequence",
+        "low_root_height",
+        "single_foot_jump",
+        "single_leg_support"
+      ],
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass.pkl"
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass",
+      "archetype": "aerial_jump",
+      "rank_score": 233.394,
+      "already_configured": true,
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "locomotion",
+        "low_root_height"
+      ],
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass.pkl"
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level1_filter_amass",
+      "archetype": "flip_proxy_single_foot_jump",
+      "rank_score": 221.379,
+      "already_configured": false,
+      "tags": [
+        "balance",
+        "in_place_high_dynamic",
+        "landing",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "long_sequence",
+        "single_foot_jump",
+        "single_leg_support"
+      ],
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level1_filter_amass.pkl"
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass",
+      "archetype": "aerial_jump",
+      "rank_score": 209.611,
+      "already_configured": true,
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing",
+        "large_vertical_motion",
+        "locomotion",
+        "low_root_height"
+      ],
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass.pkl"
+    }
+  ],
+  "roadmap": {
+    "path": "evolution/action_catalog/asap_task_adaptive_roadmap.json",
+    "configured_task_count": 9,
+    "next_candidate_count": 18
+  },
+  "execution_policy": {
+    "gpu_policy": "single Isaac training job on the RTX 3090; CPU-only catalog/report jobs may run in parallel",
+    "evaluation_contract": "final claims require >=50 motion-start episodes and baseline vs evolved comparison",
+    "proxy_contract": "proxy/pretraining clips may guide reward search but cannot be reported as real backflip/wall-vault/tunnel success"
+  }
+}
