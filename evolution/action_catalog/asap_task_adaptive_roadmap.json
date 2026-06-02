@@ -85,8 +85,8 @@
         "task_name": "g1_asap_spiderman_l2",
         "baseline_success_rate": 0.984375,
         "adapted_success_rate": 0.984375,
-        "best_evolved_success_rate": null,
-        "best_evolved_fitness": null,
+        "best_evolved_success_rate": 1.0,
+        "best_evolved_fitness": 112.99312372803688,
         "has_eval": true,
         "eval_dir": "artifacts/g1_asap_spiderman_l2/eval"
       }

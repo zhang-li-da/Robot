@@ -56,11 +56,12 @@ def summarize_files(root: Path, pattern: str, limit: int | None = None) -> list[
     for path in sorted(root.glob(pattern)):
         if not path.is_file():
             continue
+        relative_path = rel(root, path)
         item = {
-            "path": rel(root, path),
+            "path": relative_path,
             "name": path.stem,
             "size_bytes": path.stat().st_size,
-            "tags": classify_name(path.name),
+            "tags": classify_name(relative_path),
         }
         items.append(item)
         if limit is not None and len(items) >= limit:

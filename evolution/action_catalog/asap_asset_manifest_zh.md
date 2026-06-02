@@ -16,49 +16,48 @@
 
 ## 动作标签分布
 
-- `aerial`: 28
+- `aerial`: 34
 - `balance`: 12
 - `direction_change`: 8
-- `forward_jump`: 10
+- `forward_jump`: 13
 - `forward_step`: 8
-- `kick`: 6
-- `landing`: 22
+- `kick`: 9
+- `landing`: 25
 - `landing_recovery`: 24
 - `large_limb_range`: 2
-- `lateral_balance`: 8
+- `lateral_balance`: 11
 - `locomotion`: 24
 - `low_pose`: 2
 - `low_posture`: 6
 - `low_posture_transition`: 6
 - `recovery_step`: 24
-- `side_jump`: 8
+- `side_jump`: 11
 - `single_foot`: 12
-- `single_leg_support`: 14
-- `sports_motion`: 25
+- `single_leg_support`: 17
+- `sports_motion`: 30
 - `stability_pretraining`: 8
 - `strength_pose`: 6
 - `turn_jump`: 10
-- `unclassified`: 14
 - `wall_contact_proxy`: 2
-- `whole_body_coordination`: 25
+- `whole_body_coordination`: 30
 - `yaw_control`: 10
 
 ## 可用 sim2real mimic 模型
 
-- `sim2real/models/mimic/APT_level1/model_176500.onnx`: unclassified
-- `sim2real/models/mimic/CR7_level1/model_191500.onnx`: unclassified
-- `sim2real/models/mimic/Kobe_level1/model_193000.onnx`: unclassified
-- `sim2real/models/mimic/jump_forward_level1/model_191500.onnx`: unclassified
-- `sim2real/models/mimic/jump_forward_level2/model_130500.onnx`: unclassified
-- `sim2real/models/mimic/jump_forward_level3/model_149000.onnx`: unclassified
-- `sim2real/models/mimic/kick_level1/model_168000.onnx`: unclassified
-- `sim2real/models/mimic/kick_level2/model_293000.onnx`: unclassified
-- `sim2real/models/mimic/kick_level3/model_240000.onnx`: unclassified
-- `sim2real/models/mimic/lebron_level1/model_233500.onnx`: unclassified
-- `sim2real/models/mimic/lebron_level2/model_190000.onnx`: unclassified
-- `sim2real/models/mimic/side_jump_level1/model_135000.onnx`: unclassified
-- `sim2real/models/mimic/side_jump_level2/model_131500.onnx`: unclassified
-- `sim2real/models/mimic/side_jump_level3/model_245000.onnx`: unclassified
+- `sim2real/models/mimic/APT_level1/model_176500.onnx`: sports_motion, whole_body_coordination
+- `sim2real/models/mimic/CR7_level1/model_191500.onnx`: sports_motion, whole_body_coordination
+- `sim2real/models/mimic/Kobe_level1/model_193000.onnx`: sports_motion, whole_body_coordination
+- `sim2real/models/mimic/jump_forward_level1/model_191500.onnx`: aerial, forward_jump, landing
+- `sim2real/models/mimic/jump_forward_level2/model_130500.onnx`: aerial, forward_jump, landing
+- `sim2real/models/mimic/jump_forward_level3/model_149000.onnx`: aerial, forward_jump, landing
+- `sim2real/models/mimic/kick_level1/model_168000.onnx`: kick, single_leg_support
+- `sim2real/models/mimic/kick_level2/model_293000.onnx`: kick, single_leg_support
+- `sim2real/models/mimic/kick_level3/model_240000.onnx`: kick, single_leg_support
+- `sim2real/models/mimic/lebron_level1/model_233500.onnx`: sports_motion, whole_body_coordination
+- `sim2real/models/mimic/lebron_level2/model_190000.onnx`: sports_motion, whole_body_coordination
+- `sim2real/models/mimic/side_jump_level1/model_135000.onnx`: aerial, lateral_balance, side_jump
+- `sim2real/models/mimic/side_jump_level2/model_131500.onnx`: aerial, lateral_balance, side_jump
+- `sim2real/models/mimic/side_jump_level3/model_245000.onnx`: aerial, lateral_balance, side_jump
 
 ## ASAP 算法先验
 

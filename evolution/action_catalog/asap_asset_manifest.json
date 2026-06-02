@@ -17,31 +17,30 @@
     "ASAP sim2real ONNX files are useful references but are not a substitute for task-specific policy validation."
   ],
   "tag_counts": {
-    "aerial": 28,
+    "aerial": 34,
     "balance": 12,
     "direction_change": 8,
-    "forward_jump": 10,
+    "forward_jump": 13,
     "forward_step": 8,
-    "kick": 6,
-    "landing": 22,
+    "kick": 9,
+    "landing": 25,
     "landing_recovery": 24,
     "large_limb_range": 2,
-    "lateral_balance": 8,
+    "lateral_balance": 11,
     "locomotion": 24,
     "low_pose": 2,
     "low_posture": 6,
     "low_posture_transition": 6,
     "recovery_step": 24,
-    "side_jump": 8,
+    "side_jump": 11,
     "single_foot": 12,
-    "single_leg_support": 14,
-    "sports_motion": 25,
+    "single_leg_support": 17,
+    "sports_motion": 30,
     "stability_pretraining": 8,
     "strength_pose": 6,
     "turn_jump": 10,
-    "unclassified": 14,
     "wall_contact_proxy": 2,
-    "whole_body_coordination": 25,
+    "whole_body_coordination": 30,
     "yaw_control": 10
   },
   "retargeted_g1_motions": [
@@ -1085,7 +1084,8 @@
       "name": "model_176500",
       "size_bytes": 1477413,
       "tags": [
-        "unclassified"
+        "sports_motion",
+        "whole_body_coordination"
       ]
     },
     {
@@ -1093,7 +1093,8 @@
       "name": "model_191500",
       "size_bytes": 1477413,
       "tags": [
-        "unclassified"
+        "sports_motion",
+        "whole_body_coordination"
       ]
     },
     {
@@ -1101,7 +1102,8 @@
       "name": "model_193000",
       "size_bytes": 1477413,
       "tags": [
-        "unclassified"
+        "sports_motion",
+        "whole_body_coordination"
       ]
     },
     {
@@ -1109,7 +1111,9 @@
       "name": "model_191500",
       "size_bytes": 1477413,
       "tags": [
-        "unclassified"
+        "aerial",
+        "forward_jump",
+        "landing"
       ]
     },
     {
@@ -1117,7 +1121,9 @@
       "name": "model_130500",
       "size_bytes": 1477413,
       "tags": [
-        "unclassified"
+        "aerial",
+        "forward_jump",
+        "landing"
       ]
     },
     {
@@ -1125,7 +1131,9 @@
       "name": "model_149000",
       "size_bytes": 1477413,
       "tags": [
-        "unclassified"
+        "aerial",
+        "forward_jump",
+        "landing"
       ]
     },
     {
@@ -1133,7 +1141,8 @@
       "name": "model_168000",
       "size_bytes": 1477413,
       "tags": [
-        "unclassified"
+        "kick",
+        "single_leg_support"
       ]
     },
     {
@@ -1141,7 +1150,8 @@
       "name": "model_293000",
       "size_bytes": 1477413,
       "tags": [
-        "unclassified"
+        "kick",
+        "single_leg_support"
       ]
     },
     {
@@ -1149,7 +1159,8 @@
       "name": "model_240000",
       "size_bytes": 1477413,
       "tags": [
-        "unclassified"
+        "kick",
+        "single_leg_support"
       ]
     },
     {
@@ -1157,7 +1168,8 @@
       "name": "model_233500",
       "size_bytes": 1477413,
       "tags": [
-        "unclassified"
+        "sports_motion",
+        "whole_body_coordination"
       ]
     },
     {
@@ -1165,7 +1177,8 @@
       "name": "model_190000",
       "size_bytes": 1477413,
       "tags": [
-        "unclassified"
+        "sports_motion",
+        "whole_body_coordination"
       ]
     },
     {
@@ -1173,7 +1186,9 @@
       "name": "model_135000",
       "size_bytes": 1477413,
       "tags": [
-        "unclassified"
+        "aerial",
+        "lateral_balance",
+        "side_jump"
       ]
     },
     {
@@ -1181,7 +1196,9 @@
       "name": "model_131500",
       "size_bytes": 1477413,
       "tags": [
-        "unclassified"
+        "aerial",
+        "lateral_balance",
+        "side_jump"
       ]
     },
     {
@@ -1189,7 +1206,9 @@
       "name": "model_245000",
       "size_bytes": 1477413,
       "tags": [
-        "unclassified"
+        "aerial",
+        "lateral_balance",
+        "side_jump"
       ]
     }
   ],
