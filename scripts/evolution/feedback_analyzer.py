@@ -462,7 +462,18 @@ def _aggregate(candidate_feedback: list[dict[str, Any]], config: dict[str, Any],
     absolute_delta = best_success - baseline_success
     relative_delta = absolute_delta / max(abs(baseline_success), 1.0e-6) if baseline_success else best_success
     target_relative = float(config.get("task", {}).get("target_relative_improvement", 0.08))
-    target_met = bool(evaluated) and relative_delta >= target_relative and best_success > baseline_success
+    max_possible_absolute_delta = max(0.0, 1.0 - baseline_success)
+    max_possible_relative_delta = (
+        max_possible_absolute_delta / max(abs(baseline_success), 1.0e-6) if baseline_success else 1.0
+    )
+    target_improvement_feasible = baseline_success <= 0.0 or target_relative <= max_possible_relative_delta
+    target_met = (
+        bool(evaluated)
+        and target_improvement_feasible
+        and relative_delta >= target_relative
+        and best_success > baseline_success
+    )
+    proxy_note = str(config.get("task", {}).get("success_criteria", {}).get("proxy_note", ""))
 
     focus: list[str] = []
     top_tags = sorted(tag_counts.items(), key=lambda item: (-item[1], item[0]))
@@ -489,6 +500,10 @@ def _aggregate(candidate_feedback: list[dict[str, Any]], config: dict[str, Any],
         focus.append("increase behavior diversity through entropy, phase sampling, or warm-start curriculum")
     if "severe_regression_vs_baseline" in tag_names:
         focus.append("prefer repairing baseline-adjacent candidates over training short from-scratch candidates")
+    if not target_improvement_feasible:
+        focus.append("success-rate improvement target is infeasible at the current baseline; switch to harder tasks or quality/robustness metrics")
+    if proxy_note and baseline_success >= 0.90:
+        focus.append("treat this as a proxy quality task, not a final stunt success-rate benchmark")
     if not focus:
         focus.append("exploit best candidate while preserving stage-gated validation")
 
@@ -496,6 +511,10 @@ def _aggregate(candidate_feedback: list[dict[str, Any]], config: dict[str, Any],
         population_status = "target_met"
     elif not evaluated and runtime_failures:
         population_status = "needs_runtime_repair"
+    elif evaluated and not target_improvement_feasible and best_success >= baseline_success:
+        population_status = "success_ceiling_quality_task"
+    elif evaluated and proxy_note and baseline_success >= 0.90 and best_success >= baseline_success:
+        population_status = "proxy_quality_task"
     else:
         population_status = "needs_iteration"
 
@@ -507,6 +526,11 @@ def _aggregate(candidate_feedback: list[dict[str, Any]], config: dict[str, Any],
         "success_rate_absolute_delta": absolute_delta,
         "success_rate_relative_delta": relative_delta,
         "target_relative_improvement": target_relative,
+        "target_improvement_feasible": target_improvement_feasible,
+        "max_possible_success_rate_delta": max_possible_absolute_delta,
+        "max_possible_success_rate_relative_delta": max_possible_relative_delta,
+        "success_ceiling_limited": not target_improvement_feasible,
+        "proxy_note": proxy_note,
         "target_met": target_met,
         "evaluation_count": len(evaluated),
         "runtime_failure_count": len(runtime_failures),

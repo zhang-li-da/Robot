@@ -228,17 +228,28 @@ def main() -> int:
     if final_eval and baseline:
         required_trials = int(config.get("evolution", {}).get("minimum_final_trials", 50))
         required_delta = float(config.get("task", {}).get("target_relative_improvement", 0.08))
-        delta = float(final_eval.get("success_rate", 0.0)) - float(baseline.get("success_rate", 0.0))
+        baseline_success = float(baseline.get("success_rate", 0.0))
+        final_success = float(final_eval.get("success_rate", 0.0))
+        delta = final_success - baseline_success
+        max_possible_delta = max(0.0, 1.0 - baseline_success)
+        target_improvement_feasible = required_delta <= max_possible_delta
         final_target_check = {
             "label": args.final_label,
             "eval_path": str(args.final_eval),
             "success_rate_delta_vs_baseline": delta,
             "required_delta": required_delta,
+            "baseline_success_rate": baseline_success,
+            "final_success_rate": final_success,
+            "max_possible_success_rate_delta": max_possible_delta,
+            "target_improvement_feasible": target_improvement_feasible,
+            "success_ceiling_limited": not target_improvement_feasible,
             "episodes": final_eval.get("episodes"),
             "required_trials": required_trials,
             "minimum_trials_met": int(final_eval.get("episodes", 0)) >= required_trials,
-            "target_improvement_met": delta > required_delta,
-            "target_met": int(final_eval.get("episodes", 0)) >= required_trials and delta > required_delta,
+            "target_improvement_met": target_improvement_feasible and delta > required_delta,
+            "target_met": int(final_eval.get("episodes", 0)) >= required_trials
+            and target_improvement_feasible
+            and delta > required_delta,
         }
     summary = {
         "schema_version": "1.0",
