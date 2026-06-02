@@ -34,6 +34,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--initial_feedback", type=Path, default=None, help="Optional feedback JSON to seed generation 0.")
     parser.add_argument("--skip_execute", action="store_true", help="Generate plans and feedback wiring without training.")
     parser.add_argument("--stop_on_target", action="store_true", help="Stop when feedback target_met is true.")
+    parser.add_argument(
+        "--continue_on_success_ceiling",
+        action="store_true",
+        help="Keep evolving even when success-rate improvement is mathematically capped by a near-perfect baseline.",
+    )
     parser.add_argument("--enable_stage2", action="store_true", help="Allow execute_generation.py to promote strong candidates.")
     parser.add_argument("--stage2_min_success_delta", type=float, default=0.05)
     parser.add_argument("--stage2_min_fitness_delta", type=float, default=5.0)
@@ -256,11 +261,24 @@ def main() -> int:
         record["best_genome_id"] = feedback["population_feedback"].get("best_genome_id")
         record["best_success_rate"] = feedback["population_feedback"].get("best_success_rate")
         record["target_met"] = bool(feedback["population_feedback"].get("target_met", False))
+        stop_on_success_ceiling = (
+            not args.continue_on_success_ceiling
+            and bool(config.get("evolution", {}).get("stop_on_success_ceiling", True))
+            and record["population_status"] == "success_ceiling_quality_task"
+        )
+        if stop_on_success_ceiling:
+            record["stop_reason"] = "success_ceiling_quality_task"
+            state["stop_reason"] = (
+                "success-rate target is infeasible for this high-baseline proxy task; "
+                "transfer resources to harder tasks or quality-specific final evaluation"
+            )
         if record.get("status") == "generated":
             record["status"] = "feedback_ready"
 
         write_loop_state(state_path, state, record)
         if args.stop_on_target and record["target_met"]:
+            break
+        if stop_on_success_ceiling:
             break
 
     return 0

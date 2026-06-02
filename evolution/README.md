@@ -239,6 +239,17 @@ python scripts/evolution/closed_loop.py \
   --stop_on_target
 ```
 
+当 baseline 已经接近满分且 `feedback_analyzer.py` 标记 `success_ceiling_quality_task` 时，`closed_loop.py` 默认停止该任务后续代数，把 GPU 资源转给更难动作或最终质量复评。若确实要继续优化 proxy 任务的质量指标，可以显式加：
+
+```bash
+python scripts/evolution/closed_loop.py \
+  --config evolution/configs/g1_asap_spiderman_l2_v1.json \
+  --baseline_eval artifacts/g1_asap_spiderman_l2/eval/baseline_beyondmimic.json \
+  --baseline_id baseline_beyondmimic \
+  --use_llm \
+  --continue_on_success_ceiling
+```
+
 最终报告不要只使用 stage1 小预算评估。候选选定后应追加不少于 50 回合复评，并通过 `--final_eval` 写入摘要：
 
 ```bash
