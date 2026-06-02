@@ -241,6 +241,34 @@ python scripts/select_asap_evolution_tasks.py --limit 24
 python scripts/build_asap_task_adaptive_roadmap.py --limit 18
 ```
 
+## V1.4 多动作数据驱动的任务族进化
+
+新增动作数据不能只作为“更多 motion clip”使用，否则 LLM 仍然只能围绕单个实验做局部调参。V1.4 将 ASAP 动作包接入为任务族级别的上下文：
+
+```text
+ASAP/AMASS/自采集动作数据
+        -> motion catalog: 统计位移、高度、时长、动作标签
+        -> asset manifest: 记录 retargeted motion、raw motion、ONNX、配置先验
+        -> candidate queue: 按后空翻、登墙转身、翻墙、钻洞等任务族排序
+        -> task profile: 写入任务几何、合法接触、风险门限、评价协议
+        -> LLM prompt: 结合 baseline 失败诊断和 ASAP 算法先验生成候选算法基因
+        -> closed loop: 训练、评估、淘汰、反馈、下一代
+        -> final report: 不少于 50 次 motion-start 对比评估和视频证据
+```
+
+当前 `/root/ASAP-main.zip` 已被索引为 52 个 G1 retargeted 动作、51 个 raw SMPL 动作、14 个 mimic ONNX 和 1 个 locomotion ONNX。候选队列会把动作分为：
+
+1. `aerial_jump`：`jump_forward`、`side_jump`，用于跨越、腾空和落地稳定。
+2. `aerial_turn_jump`：`jump_degree`，用于登墙转身和空中转体。
+3. `flip_proxy_single_foot_jump`：`single_foot_jump`，用于后空翻前的起跳/落地代理训练。
+4. `wall_contact_proxy`：`SpiderMan`，用于墙面接触协调代理训练。
+5. `low_posture_pretraining`：`squat`，用于钻洞低姿态进入/保持/退出的预训练。
+6. `dynamic_balance`：`CR7`、`Kobe`、`lebron`、`kick` 等，用于高动态全身协调和鲁棒性压力测试。
+
+这个分类直接影响 LLM 的搜索范围：对于腾空类动作，优先搜索 `apex_height`、`landing_stability`、`contact_force`、空中 orientation 容忍和 phase sampling；对于低姿态/钻洞类动作，优先搜索 `ceiling_clearance`、低 root height 终止豁免、合法手膝支撑和出口恢复；对于墙接触类动作，优先区分合法手脚支撑和危险躯干/头部碰撞。
+
+重要边界：ASAP 当前包没有真实后空翻、真实翻矮墙或真实钻洞动作，所以 `single_foot_jump`、`SpiderMan`、`squat` 的实验只能作为 proxy/pretraining 或算法搜索压力测试。最终对任务书的考核结论必须等待真实目标动作和碰撞几何加入后重新生成 task profile，并进行不少于 50 次 baseline vs evolved 评估。
+
 ## V1 到 V2 的扩展方向
 
 1. 把受限 patch schema 落成自动代码生成器：从 JSON patch 生成 reward/termination 模板代码，并自动注册到 IsaacLab config。

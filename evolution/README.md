@@ -65,6 +65,34 @@ evolution/algorithm_priors/asap_algorithm_priors_zh.md
 
 这些先验只作为搜索约束和迁移参考，不作为当前任务成功证据。对于 ASAP 包中没有真实后空翻、翻墙或钻洞动作的情况，框架会把 `single_foot_jump`、`jump_degree`、`squat`、`SpiderMan` 等动作标记为 proxy/pretraining，最终结论仍必须使用真实目标动作、目标碰撞几何和不少于 50 次 motion-start 评估。
 
+## 新增动作数据的接入路径
+
+当前 `/root/ASAP-main.zip` 已进入数据索引。每次新增动作数据后，按下面顺序刷新框架状态：
+
+```bash
+cd /root/whole_body_tracking-main
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/index_asap_motion_catalog.py \
+  --input_dir /root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/extract_asap_algorithm_priors.py \
+  --asap_root /root/ASAP-main
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/index_asap_assets.py \
+  --asap_root /root/ASAP-main
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/create_asap_evolution_configs.py
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/create_asap_task_profiles.py
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/select_asap_evolution_tasks.py --limit 24
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/build_asap_task_adaptive_roadmap.py --limit 18
+```
+
+生成物职责如下：
+
+- `asap_motion_catalog.json`：记录每个动作的位移、高度、时长、DoF 和语义标签。
+- `asap_asset_manifest.json`：记录 retargeted motion、raw SMPL、ASAP ONNX 和源配置。
+- `asap_evolution_candidate_queue.json`：把动作按后空翻、登墙转身、翻墙、钻洞等任务族排序。
+- `asap_task_adaptive_roadmap.json`：给实验调度和报告使用，显示已配置任务、当前评估状态和下一批候选。
+- `task_profiles/*.json`：给 Mimimax M3 的任务特征输入，约束 reward、termination、sampling 和评估协议。
+
+真实后空翻、翻矮墙、钻洞或新机器人数据到位后，先检查 candidate queue 是否被正确归入 `true_flip`、`wall_vault`、`crawl_tunnel` 或对应新任务族；如果仍被归入 `manual_review`，先补充标签/任务规格，再启动正式闭环。
+
 ## 本地密钥配置
 
 推荐使用环境变量：
