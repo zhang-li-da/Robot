@@ -122,20 +122,67 @@ def load_algorithm_priors(config: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def render_prompt(config: dict[str, Any], history: dict[str, Any], population_size: int) -> str:
+def _inferred_task_pack_paths(config: dict[str, Any]) -> list[Path]:
+    task = config.get("task", {})
+    explicit = task.get("task_evolution_pack") or config.get("task_evolution_pack")
+    paths: list[Path] = []
+    if explicit:
+        paths.append(Path(str(explicit)))
+
+    name = str(task.get("name", "")).lower()
+    isaac_task = str(task.get("isaac_task", "")).lower()
+    success_type = str(task.get("success_type", "")).lower()
+    if "backflip" in success_type or "backflip" in isaac_task or "backflip" in name:
+        paths.append(Path("evolution/task_packs/backflip_v1.json"))
+    if any(token in success_type for token in ("crawl", "low_posture")) or "crawl" in isaac_task:
+        paths.append(Path("evolution/task_packs/crawl_tunnel_v1.json"))
+    if any(token in name for token in ("turn_jump", "spiderman", "wall")) or "wallturn" in isaac_task:
+        paths.append(Path("evolution/task_packs/wall_turn_v1.json"))
+    if "jumpleap" in isaac_task or "jump_forward" in name or "side_jump" in name:
+        paths.append(Path("evolution/task_packs/jump_leap_v1.json"))
+
+    unique: list[Path] = []
+    seen: set[str] = set()
+    for path in paths:
+        key = str(path)
+        if key not in seen:
+            unique.append(path)
+            seen.add(key)
+    return unique
+
+
+def load_task_evolution_pack(config: dict[str, Any]) -> dict[str, Any]:
+    for path in _inferred_task_pack_paths(config):
+        if path.exists():
+            payload = load_json(path)
+            payload["_source_path"] = str(path)
+            return payload
+    inferred = [str(path) for path in _inferred_task_pack_paths(config)]
+    return {"missing_task_evolution_pack_candidates": inferred} if inferred else {}
+
+
+def render_prompt(
+    config: dict[str, Any],
+    history: dict[str, Any],
+    population_size: int,
+    feedback: dict[str, Any] | None = None,
+) -> str:
     template_path = Path(config["llm"]["prompt_template"])
     template = template_path.read_text(encoding="utf-8")
     motion_catalog = load_motion_catalog(config)
     task_profile = load_task_profile(config)
     asset_manifest = load_asset_manifest(config)
     algorithm_priors = load_algorithm_priors(config)
+    task_evolution_pack = load_task_evolution_pack(config)
     return (
         template.replace("{{CONFIG_JSON}}", json.dumps(config, indent=2, ensure_ascii=False))
         .replace("{{TASK_PROFILE_JSON}}", json.dumps(task_profile, indent=2, ensure_ascii=False))
         .replace("{{HISTORY_JSON}}", json.dumps(history, indent=2, ensure_ascii=False))
+        .replace("{{FEEDBACK_JSON}}", json.dumps(feedback or {}, indent=2, ensure_ascii=False))
         .replace("{{MOTION_CATALOG_JSON}}", json.dumps(motion_catalog, indent=2, ensure_ascii=False))
         .replace("{{ASSET_MANIFEST_JSON}}", json.dumps(asset_manifest, indent=2, ensure_ascii=False))
         .replace("{{ALGORITHM_PRIORS_JSON}}", json.dumps(algorithm_priors, indent=2, ensure_ascii=False))
+        .replace("{{TASK_EVOLUTION_PACK_JSON}}", json.dumps(task_evolution_pack, indent=2, ensure_ascii=False))
         .replace("{{REQUESTED_POPULATION_SIZE}}", str(population_size))
     )
 
@@ -146,10 +193,7 @@ def render_prompt_with_feedback(
     feedback: dict[str, Any],
     population_size: int,
 ) -> str:
-    return render_prompt(config, history, population_size).replace(
-        "{{FEEDBACK_JSON}}",
-        json.dumps(feedback, indent=2, ensure_ascii=False),
-    )
+    return render_prompt(config, history, population_size, feedback=feedback)
 
 
 def _context_baseline_success(history: dict[str, Any], feedback: dict[str, Any]) -> float:
@@ -318,6 +362,12 @@ def main() -> int:
     if task_profile:
         (output_dir / "task_profile_snapshot.json").write_text(
             json.dumps(task_profile, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+    task_evolution_pack = load_task_evolution_pack(config)
+    if task_evolution_pack:
+        (output_dir / "task_evolution_pack_snapshot.json").write_text(
+            json.dumps(task_evolution_pack, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
 

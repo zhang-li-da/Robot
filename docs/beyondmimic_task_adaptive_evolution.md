@@ -239,6 +239,10 @@ python scripts/create_asap_evolution_configs.py
 python scripts/create_asap_task_profiles.py
 python scripts/select_asap_evolution_tasks.py --limit 24
 python scripts/build_asap_task_adaptive_roadmap.py --limit 18
+python scripts/evolution/build_task_evolution_pack.py --goal backflip --limit 10
+python scripts/evolution/build_task_evolution_pack.py --goal wall_vault --limit 10
+python scripts/evolution/build_task_evolution_pack.py --goal crawl_tunnel --limit 10
+python scripts/evolution/build_task_evolution_pack.py --goal wall_turn --limit 10
 ```
 
 ## V1.4 多动作数据驱动的任务族进化
@@ -250,6 +254,7 @@ ASAP/AMASS/自采集动作数据
         -> motion catalog: 统计位移、高度、时长、动作标签
         -> asset manifest: 记录 retargeted motion、raw motion、ONNX、配置先验
         -> candidate queue: 按后空翻、登墙转身、翻墙、钻洞等任务族排序
+        -> task evolution pack: 为每个目标动作写入数据就绪状态、代理/真实动作边界、LLM 搜索杠杆
         -> task profile: 写入任务几何、合法接触、风险门限、评价协议
         -> LLM prompt: 结合 baseline 失败诊断和 ASAP 算法先验生成候选算法基因
         -> closed loop: 训练、评估、淘汰、反馈、下一代

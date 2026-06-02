@@ -36,6 +36,7 @@ scripts/select_asap_evolution_tasks.py
 scripts/create_asap_evolution_configs.py
 scripts/create_asap_task_profiles.py
 scripts/build_asap_task_adaptive_roadmap.py
+scripts/evolution/build_task_evolution_pack.py
 scripts/run_asap_g1_evolution_experiments.sh
 docs/beyondmimic_task_adaptive_evolution.md
 evolution/action_catalog/stunt_motion_sources_zh.md
@@ -48,6 +49,7 @@ evolution/action_catalog/asap_asset_manifest.json
 evolution/action_catalog/asap_asset_manifest_zh.md
 evolution/algorithm_priors/asap_algorithm_priors.json
 evolution/algorithm_priors/asap_algorithm_priors_zh.md
+evolution/task_packs/*.json
 evolution/task_profiles/*.json
 evolution/task_feature_schema.json
 evolution/algorithm_patch_schema.json
@@ -81,6 +83,10 @@ cd /root/whole_body_tracking-main
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/create_asap_task_profiles.py
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/select_asap_evolution_tasks.py --limit 24
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/build_asap_task_adaptive_roadmap.py --limit 18
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/evolution/build_task_evolution_pack.py --goal backflip --limit 10
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/evolution/build_task_evolution_pack.py --goal wall_vault --limit 10
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/evolution/build_task_evolution_pack.py --goal crawl_tunnel --limit 10
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/evolution/build_task_evolution_pack.py --goal wall_turn --limit 10
 ```
 
 生成物职责如下：
@@ -89,6 +95,7 @@ cd /root/whole_body_tracking-main
 - `asap_asset_manifest.json`：记录 retargeted motion、raw SMPL、ASAP ONNX 和源配置。
 - `asap_evolution_candidate_queue.json`：把动作按后空翻、登墙转身、翻墙、钻洞等任务族排序。
 - `asap_task_adaptive_roadmap.json`：给实验调度和报告使用，显示已配置任务、当前评估状态和下一批候选。
+- `task_packs/*.json`：按后空翻、翻墙、钻洞、登墙转身等目标动作聚合动作证据、LLM 搜索约束和闭环执行规则。
 - `task_profiles/*.json`：给 Mimimax M3 的任务特征输入，约束 reward、termination、sampling 和评估协议。
 
 真实后空翻、翻矮墙、钻洞或新机器人数据到位后，先检查 candidate queue 是否被正确归入 `true_flip`、`wall_vault`、`crawl_tunnel` 或对应新任务族；如果仍被归入 `manual_review`，先补充标签/任务规格，再启动正式闭环。

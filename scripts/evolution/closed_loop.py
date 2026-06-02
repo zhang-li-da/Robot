@@ -217,9 +217,21 @@ def main() -> int:
     config = load_json(args.config)
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
-    max_generations = int(args.generations or config.get("evolution", {}).get("max_generations", 1))
-    population_size = int(args.population_size or config.get("evolution", {}).get("population_size", 4))
-    llm_timeout = float(args.llm_timeout or config.get("llm", {}).get("timeout_seconds", 300.0))
+    max_generations = int(
+        config.get("evolution", {}).get("max_generations", 1)
+        if args.generations is None
+        else args.generations
+    )
+    population_size = int(
+        config.get("evolution", {}).get("population_size", 4)
+        if args.population_size is None
+        else args.population_size
+    )
+    llm_timeout = float(
+        config.get("llm", {}).get("timeout_seconds", 300.0)
+        if args.llm_timeout is None
+        else args.llm_timeout
+    )
 
     loop_dir = output_root / f"closed_loop_{time.strftime('%Y%m%d_%H%M%S')}"
     loop_dir.mkdir(parents=True, exist_ok=False)

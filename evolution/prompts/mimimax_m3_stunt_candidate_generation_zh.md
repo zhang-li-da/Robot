@@ -29,6 +29,7 @@
 23. 对 `target_x <= 0.10` 的小位移 proxy 任务，不要把 `task_progress_weight` 作为主要优化杠杆；优先保持 motion tracking、phase_progress、合法接触和落地/最终姿态稳定。
 24. 如果 `ALGORITHM_PRIORS_JSON` 非空，必须把 ASAP 的 phase motion tracking、history observation、domain randomization 和 delta-action sim2real 机制作为搜索先验；但不得把 ASAP ONNX 或 proxy 动作当作本任务成功证据。
 25. 如果候选涉及未来 sim2real 迁移，只能通过 action smoothness、torque/joint/contact risk、delay/randomization/history 这些可搜索项体现；不能改变当前 sim2sim 的最终评价协议。
+26. 如果 `TASK_EVOLUTION_PACK_JSON` 非空，必须优先使用其中的 `data_readiness`、`selected_motions`、`llm_evolution_context` 和 `closed_loop_execution`。若 `data_readiness.status` 为 `proxy_only` 或 `missing_motion`，候选只能声明 proxy/pretraining/stress-test 目标，不得声称已经完成真实后空翻、翻墙、钻洞或登墙转身。
 
 # 任务特征提示
 
@@ -66,6 +67,8 @@
 `{{ASSET_MANIFEST_JSON}}`
 
 `{{ALGORITHM_PRIORS_JSON}}`
+
+`{{TASK_EVOLUTION_PACK_JSON}}`
 
 # 反馈使用要求
 
