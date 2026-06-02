@@ -46,3 +46,58 @@ class G1FlatLowFreqPPORunnerCfg(G1FlatPPORunnerCfg):
 @configclass
 class G1KneeClimbPPORunnerCfg(G1FlatPPORunnerCfg):
     experiment_name = "g1_knee_climb"
+
+
+@configclass
+class G1JumpLeapPPORunnerCfg(G1FlatPPORunnerCfg):
+    experiment_name = "g1_jump_leap"
+
+
+@configclass
+class G1BackflipPPORunnerCfg(G1FlatPPORunnerCfg):
+    experiment_name = "g1_backflip"
+
+
+@configclass
+class G1WallTurnPPORunnerCfg(G1FlatPPORunnerCfg):
+    experiment_name = "g1_wall_turn"
+
+
+@configclass
+class G1CrawlTunnelPPORunnerCfg(G1FlatPPORunnerCfg):
+    experiment_name = "g1_crawl_tunnel"
+
+
+@configclass
+class G1RollVaultPPORunnerCfg(G1FlatPPORunnerCfg):
+    experiment_name = "g1_roll_vault"
+
+
+@configclass
+class G1RollVaultV2PPORunnerCfg(G1FlatPPORunnerCfg):
+    experiment_name = "g1_roll_vault_v2"
+
+
+@configclass
+class G1RollVaultV3PPORunnerCfg(G1FlatPPORunnerCfg):
+    experiment_name = "g1_roll_vault_v3"
+
+
+@configclass
+class G1RollVaultV4PPORunnerCfg(G1FlatPPORunnerCfg):
+    experiment_name = "g1_roll_vault_v4"
+
+
+@configclass
+class G1DiveRollPPORunnerCfg(G1FlatPPORunnerCfg):
+    experiment_name = "g1_dive_roll"
+
+
+@configclass
+class G1DiveRollV2PPORunnerCfg(G1FlatPPORunnerCfg):
+    experiment_name = "g1_dive_roll_v2"
+
+
+@configclass
+class G1DiveRollV3PPORunnerCfg(G1FlatPPORunnerCfg):
+    experiment_name = "g1_dive_roll_v3"

@@ -9,6 +9,7 @@
 - planner 将合法 genome 渲染成训练命令、评估命令和资源计划。
 - scoreboard 读取评估 JSON，计算 fitness 并记录淘汰依据。
 - API key 只从环境变量或 `/root/Mimimax` 读取，绝不提交到 Git。
+- ASAP 数据根目录优先读取 `ASAP_DATASET_ROOT`，未设置时自动回退到 `/root/ASAP-main` 和 `/root/shared-nvme/datasets/ASAP-main`。
 
 ## 文件结构
 
@@ -27,8 +28,18 @@ scripts/evolution/
   run_generation.py
   execute_generation.py
   closed_loop.py
+scripts/asap_g1_task_suite.py
+scripts/index_asap_motion_catalog.py
+scripts/index_asap_assets.py
+scripts/create_asap_evolution_configs.py
+scripts/create_asap_task_profiles.py
+scripts/run_asap_g1_evolution_experiments.sh
 docs/beyondmimic_task_adaptive_evolution.md
 evolution/action_catalog/stunt_motion_sources_zh.md
+evolution/action_catalog/asap_motion_catalog.json
+evolution/action_catalog/asap_asset_manifest.json
+evolution/action_catalog/asap_asset_manifest_zh.md
+evolution/task_profiles/*.json
 evolution/task_feature_schema.json
 evolution/algorithm_patch_schema.json
 evolution/examples/crawl_ceiling_zone_reward_v1.json
@@ -44,7 +55,7 @@ export MINIMAX_API_KEY="你的 key"
 export MINIMAX_MODEL="MiniMax-M3"
 ```
 
-如果不设置环境变量，脚本会尝试读取 `/root/Mimimax`。脚本只打印 key 是否存在和尾部短指纹，不打印完整 key。
+如果不设置环境变量，脚本会尝试读取 `/root/Mimimax`。脚本只打印 API URL、接口模式和模型名，不打印 key 或 key 前后缀。
 
 注意：MiniMax 官方 M3 示例使用标准 `chatcompletion_v2` 接口；如果 `/root/Mimimax` 中仍是 `/anthropic` URL，客户端在 `api_mode=auto` 且模型为 `MiniMax-M3` 时会自动切换到同域名的 `/v1/text/chatcompletion_v2`。
 
@@ -176,6 +187,7 @@ outputs/evolution/<run_id>/feedback.json
 `feedback.json` 会记录：
 
 - `failure_tags`：例如 `ee_body_pos_dominant`、`early_progress_failure`、`insufficient_clearance`。
+- `runtime_failures`：例如 `runtime_sigbus`、`tensorboard_writer_failure`、`runtime_gpu_memory_pressure`。
 - `hypotheses`：候选失败的算法原因假设。
 - `suggested_levers`：下一代应修改的 reward、termination、sampling 或 PPO 方向。
 - `next_generation_focus`：传给 Mimimax M3 的硬约束改进重点。
@@ -207,6 +219,36 @@ python scripts/evolution/closed_loop.py \
   --stop_on_target
 ```
 
+最终报告不要只使用 stage1 小预算评估。候选选定后应追加不少于 50 回合复评，并通过 `--final_eval` 写入摘要：
+
+```bash
+python scripts/evolution/summarize_task_evolution.py \
+  --config evolution/configs/g1_jump_leap_v1.json \
+  --evolution_root outputs/evolution_amass/jump_leap \
+  --baseline_eval artifacts/g1_jump_leap/eval/baseline_beyondmimic.json \
+  --adapted_eval artifacts/g1_jump_leap/eval/adapted_task_rewards.json \
+  --final_eval artifacts/g1_jump_leap/eval/best_evolved_64ep.json \
+  --final_label gen0_m3_001_final64 \
+  --output_json artifacts/g1_jump_leap/eval/evolution_summary.json \
+  --output_md artifacts/g1_jump_leap/eval/evolution_summary_zh.md
+```
+
+ASAP finalizer 会在复评和摘要后自动渲染 best evolved policy 的视频：
+
+```text
+artifacts/<task>/eval/best_evolved_64ep.json
+artifacts/<task>/eval/evolution_summary_zh.md
+artifacts/<task>/video/best_evolved_<genome_id>/rl-video-step-0.mp4
+artifacts/<task>/video/best_evolved_<genome_id>/play_metrics.json
+artifacts/<task>/video/best_evolved_video_manifest.json
+```
+
+对应入口：
+
+```bash
+bash scripts/finalize_asap_evolution_results.sh
+```
+
 如果只想检查闭环目录、prompt 和反馈接线，不启动训练：
 
 ```bash
@@ -218,6 +260,77 @@ python scripts/evolution/closed_loop.py \
   --generations 2 \
   --population_size 2 \
   --skip_execute
+```
+
+## 运行时资源控制
+
+候选训练失败不一定代表算法失败。`execute_generation.py` 会为每个候选写出：
+
+```text
+outputs/evolution*/<task>/<generation>/<genome_id>/status.json
+```
+
+如果状态为 `train_failed`、`eval_failed`、`train_exception` 或 `eval_exception`，`feedback_analyzer.py` 会把它并入下一代反馈。常见标签：
+
+```text
+runtime_sigbus
+tensorboard_writer_failure
+runtime_gpu_memory_pressure
+runtime_disk_space
+```
+
+资源基因中已经加入：
+
+```json
+"resource": {
+  "disable_logger": true
+}
+```
+
+当该字段为 `true` 时，planner 会生成 `--disable_logger`，训练入口会使用 no-op summary writer。checkpoint、终端训练日志和最终评估不受影响，但不会启动 TensorBoard/W&B/Neptune 写线程。ASAP 进化配置默认使用该设置，以提高长队列稳定性。
+
+正式脚本也支持：
+
+```bash
+DISABLE_LOGGER=1 bash scripts/run_asap_g1_evolution_experiments.sh
+DISABLE_LOGGER=1 bash scripts/run_amass_g1_evolution_experiments.sh
+```
+
+## 动态资源晋级
+
+V1.5 增加 stage2 晋级机制。`planner.py` 会为每个候选同时渲染 `train_stage1/eval_stage1` 与 `train_stage2/eval_stage2`。默认正式队列只执行 stage1；打开 `--enable_stage2` 后，执行器会先进行小预算训练和 16 回合评估，只有候选满足以下任一条件才继续投入 stage2 预算：
+
+```text
+stage1_success_rate >= evolution.stage1_success_threshold
+success_delta_vs_baseline >= --stage2_min_success_delta
+fitness_delta_vs_baseline >= --stage2_min_fitness_delta
+```
+
+未晋级候选会记录为 `evaluated_stage1_only`，不再消耗更大训练预算。同一 genome 同时存在 `eval_stage1.json` 与 `eval_stage2.json` 时，`scoreboard.py` 和 `feedback_analyzer.py` 优先使用 stage2 结果。
+
+正式 ASAP 队列启用方式：
+
+```bash
+ENABLE_STAGE2=1 bash scripts/run_asap_g1_evolution_experiments.sh
+```
+
+扩展 ASAP 队列 `scripts/run_asap_g1_extended_experiments_after_default.sh` 默认启用 stage2，可在 default 队列结束后继续执行 `jump_forward_l4 / side_jump_l4 / CR7_dynamic` 等相邻高动态动作。
+
+## LLM 输出抢救
+
+MiniMax M3 在长 prompt 或多候选输出时可能出现后半段 JSON 截断。V1.5 的 `minimax_client.py` 增加了 complete-candidate salvage：如果顶层 JSON 无法解析，客户端会扫描 `candidates` 数组并保留已经闭合的完整 candidate 对象，再由本地 seed 补足剩余种群。
+
+这样可以把“第二个候选截断”从整代失败降级为“部分候选可用”，对应任务书中对复杂算法生成可执行性差的约束修复。
+
+已经产生 `llm_raw_text.txt` 的旧输出目录也可以离线恢复：
+
+```bash
+python scripts/evolution/recover_llm_candidates.py \
+  --config evolution/configs/g1_asap_jump_forward_l5_v1.json \
+  --raw_text outputs/evolution_asap/<task>/<generation>/llm_raw_text.txt \
+  --output_dir outputs/evolution_asap_recovered/<task>/<generation> \
+  --population_size 2 \
+  --fill_with_local
 ```
 
 ## 算法级改动包
@@ -291,6 +404,7 @@ evolution/prompts/mimimax_m3_stunt_candidate_generation_zh.md
 
 ```text
 reward.apex_height_weight
+reward.phase_progress_weight
 reward.landing_stability_weight
 reward.ceiling_clearance_weight
 reward.yaw_alignment_weight
@@ -301,6 +415,45 @@ reward.contact_force_weight
 
 ```text
 evolution/action_catalog/stunt_motion_sources_zh.md
+```
+
+ASAP G1 retargeted 数据已接入为任务套件：
+
+```text
+scripts/asap_g1_task_suite.py
+scripts/create_asap_task_profiles.py
+evolution/configs/g1_asap_jump_forward_l5_v1.json
+evolution/configs/g1_asap_turn_jump_l5_v1.json
+evolution/configs/g1_asap_spiderman_l2_v1.json
+evolution/configs/g1_asap_single_foot_jump_l2_v1.json
+```
+
+默认 ASAP 正式队列：
+
+```bash
+cd /root/whole_body_tracking-main
+TASK_IDS="$(python scripts/asap_g1_task_suite.py --list-default)" \
+bash scripts/prepare_asap_g1_stunt_motions.sh
+
+nohup bash scripts/run_asap_g1_evolution_experiments.sh \
+  > logs/background/asap_g1_evolution_formal_$(date +%Y%m%d_%H%M).log 2>&1 &
+```
+
+队列完成后，finalizer 会为每个任务选择跨 generation 的最佳候选，执行 64 episode 复评、渲染视频，并生成 suite 级总表：
+
+```bash
+bash scripts/finalize_asap_evolution_results.sh
+python scripts/evolution/summarize_asap_suite.py \
+  --task_ids g1_asap_jump_forward_l5 g1_asap_turn_jump_l5 g1_asap_spiderman_l2 g1_asap_single_foot_jump_l2 \
+  --include_interim
+```
+
+输出位置：
+
+```text
+artifacts/<task>/eval/evolution_summary_zh.md
+artifacts/<task>/video/best_evolved_<genome_id>/rl-video-step-0.mp4
+artifacts/asap_suite/evolution_suite_summary_zh.md
 ```
 
 拿到后空翻 motion 后，可以先生成候选计划：

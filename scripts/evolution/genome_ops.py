@@ -82,6 +82,76 @@ def _clip_to_search_space(dotted: str, value: Any, config: dict[str, Any]) -> An
     return max(float(lo), min(float(hi), float(value)))
 
 
+def _clip_genome_to_search_space(genome: AlgorithmGenome, config: dict[str, Any]) -> AlgorithmGenome:
+    """Clamp default baseline values so fallback genomes are valid for task-specific ranges."""
+
+    clipped = copy.deepcopy(genome)
+    for section, section_cls in SECTION_CLASSES.items():
+        values = _section_dict(section, clipped)
+        for key, value in list(values.items()):
+            dotted = f"{section}.{key}"
+            if dotted in config.get("search_space", {}):
+                values[key] = _clip_to_search_space(dotted, value, config)
+        setattr(clipped, section, section_cls(**values))
+    return clipped
+
+
+def _set_clipped(genome: AlgorithmGenome, config: dict[str, Any], dotted: str, value: Any) -> None:
+    section, key = dotted.split(".", 1)
+    section_obj = getattr(genome, section)
+    setattr(section_obj, key, _clip_to_search_space(dotted, value, config))
+
+
+def apply_task_reward_prior(genome: AlgorithmGenome, config: dict[str, Any]) -> AlgorithmGenome:
+    """Add conservative task-specific priors for local fallback candidates."""
+
+    reward_terms = set(config.get("task", {}).get("reward_terms", []))
+    priors = {
+        "task_progress": ("reward.task_progress_weight", 0.35),
+        "phase_progress": ("reward.phase_progress_weight", 0.3),
+        "clearance": ("reward.clearance_weight", 0.35),
+        "apex_height": ("reward.apex_height_weight", 0.25),
+        "landing_stability": ("reward.landing_stability_weight", 0.3),
+        "ceiling_clearance": ("reward.ceiling_clearance_weight", 0.45),
+        "yaw_alignment": ("reward.yaw_alignment_weight", 0.35),
+        "contact_force": ("reward.contact_force_weight", -0.05),
+    }
+    for term, (dotted, value) in priors.items():
+        if term in reward_terms:
+            _set_clipped(genome, config, dotted, value)
+    if any(term in reward_terms for term in ("task_progress", "phase_progress", "clearance", "ceiling_clearance")):
+        _set_clipped(genome, config, "termination.anchor_pos_z_threshold", 0.32)
+        _set_clipped(genome, config, "termination.ee_body_pos_z_threshold", 0.32)
+    if any(term in reward_terms for term in ("apex_height", "yaw_alignment", "landing_stability")):
+        _set_clipped(genome, config, "termination.anchor_ori_threshold", 1.1)
+    return genome
+
+
+def normalize_genome_for_config(genome: AlgorithmGenome, config: dict[str, Any]) -> AlgorithmGenome:
+    """Apply safe task-specific repairs before strict validation."""
+
+    normalized = _clip_genome_to_search_space(genome, config)
+    dr = normalized.domain_randomization
+    if dr.friction_static_min > dr.friction_static_max:
+        dr.friction_static_min, dr.friction_static_max = dr.friction_static_max, dr.friction_static_min
+    if dr.friction_dynamic_min > dr.friction_dynamic_max:
+        dr.friction_dynamic_min, dr.friction_dynamic_max = dr.friction_dynamic_max, dr.friction_dynamic_min
+    if dr.push_interval_min > dr.push_interval_max:
+        dr.push_interval_min, dr.push_interval_max = dr.push_interval_max, dr.push_interval_min
+
+    resource = normalized.resource
+    if resource.stage1_iterations > resource.stage2_iterations:
+        resource.stage2_iterations = resource.stage1_iterations
+    if resource.stage2_iterations > resource.full_iterations:
+        resource.full_iterations = resource.stage2_iterations
+    minimum_final_trials = int(config.get("evolution", {}).get("minimum_final_trials", 50))
+    if resource.final_eval_episodes < minimum_final_trials:
+        resource.final_eval_episodes = minimum_final_trials
+    if bool(config.get("resource_defaults", {}).get("disable_logger", False)):
+        resource.disable_logger = True
+    return normalized
+
+
 def _section_dict(section: str, genome: AlgorithmGenome) -> dict[str, Any]:
     return asdict(getattr(genome, section))
 
@@ -121,6 +191,11 @@ def seed_population(config: dict[str, Any], population_size: int, generation: in
     baseline.resource.stage1_eval_episodes = int(config["resource_defaults"]["stage1_eval_episodes"])
     baseline.resource.stage2_eval_episodes = int(config["resource_defaults"]["stage2_eval_episodes"])
     baseline.resource.final_eval_episodes = int(config["resource_defaults"]["final_eval_episodes"])
+    baseline.resource.disable_logger = bool(config.get("resource_defaults", {}).get("disable_logger", False))
+    baseline = apply_task_reward_prior(baseline, config)
+    baseline.metadata.description = "Task-prior local fallback seed for BeyondMimic evolution."
+    baseline.rationale = ["本地 fallback 使用任务先验，避免退回零任务奖励 baseline。"]
+    baseline = normalize_genome_for_config(baseline, config)
     require_valid_genome(baseline, config)
     population.append(baseline)
 
@@ -130,6 +205,7 @@ def seed_population(config: dict[str, Any], population_size: int, generation: in
             "sampling.fixed_start_probability": 0.98,
             "sampling.fixed_start_time_steps": 0,
             "sampling.adaptive_uniform_ratio": 1.15,
+            "reward.phase_progress_weight": 0.25,
             "termination.ee_body_pos_z_threshold": 0.34,
             "termination.anchor_pos_z_threshold": 0.32,
         },
@@ -140,6 +216,7 @@ def seed_population(config: dict[str, Any], population_size: int, generation: in
             "reward.motion_body_ori_weight": 1.15,
             "reward.motion_body_lin_vel_weight": 0.75,
             "reward.motion_body_ang_vel_weight": 0.75,
+            "reward.phase_progress_weight": 0.35,
         },
         {
             "description": "增加探索和较宽 KL，服务翻墙/钻洞前期动作变体搜索。",

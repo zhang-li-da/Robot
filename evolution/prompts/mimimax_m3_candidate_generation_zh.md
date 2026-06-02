@@ -26,6 +26,8 @@
 12. 输出必须以 `{` 开始，以 `}` 结束。
 13. 本次只允许生成 `{{REQUESTED_POPULATION_SIZE}}` 个候选，不能超过该数量。
 14. 每个 `rationale` 最多 2 条，每条不超过 40 个中文字符或 25 个英文单词。
+15. 如果 `TASK_PROFILE_JSON` 非空，必须遵守其中的 `legal_contacts`、`risk_controls.must_preserve` 和 `success_criteria`；不得弱化最终评估标准。
+16. 如果反馈包含 `runtime_sigbus`、`tensorboard_writer_failure`、`runtime_gpu_memory_pressure` 或 `runtime_train_failed`，必须把它视为资源/运行时失败；至少一个修复候选应考虑 `resource.disable_logger=true` 或降低 `resource.num_envs`，不要只改变 reward。
 
 # 当前任务摘要
 
@@ -37,6 +39,8 @@
 # 输入占位
 
 `{{CONFIG_JSON}}`
+
+`{{TASK_PROFILE_JSON}}`
 
 `{{HISTORY_JSON}}`
 
@@ -51,6 +55,9 @@
 3. 如果出现 `early_progress_failure`，必须至少有一个候选强化前进/接近阶段，而不是只增加姿态跟踪。
 4. 如果出现 `deterministic_collapse`，必须至少有一个候选提高探索或拓宽 phase sampling。
 5. 对已经高成功率的基线，不要用短预算从零训练候选替代长期基线，除非候选明确是 baseline-adjacent repair。
+6. 如果 `llm_feedback_brief.runtime_failures` 非空，必须优先生成至少一个运行时修复候选，且不能降低最终评估 episode 数或成功标准。
+
+如果 `TASK_PROFILE_JSON` 非空，必须使用其中的任务类型、合法接触、风险控制和基线评估协议，确保候选只改变可搜索算法基因，不改变最终考核标准。
 
 # 本次候选数量
 
@@ -86,7 +93,13 @@
         "joint_limit_weight": -10.0,
         "undesired_contacts_weight": -0.1,
         "task_progress_weight": 0.0,
-        "clearance_weight": 0.0
+        "phase_progress_weight": 0.0,
+        "clearance_weight": 0.0,
+        "apex_height_weight": 0.0,
+        "landing_stability_weight": 0.0,
+        "ceiling_clearance_weight": 0.0,
+        "yaw_alignment_weight": 0.0,
+        "contact_force_weight": 0.0
       },
       "sampling": {
         "adaptive_uniform_ratio": 1.0,
@@ -135,7 +148,8 @@
         "save_interval": 400,
         "stage1_eval_episodes": 16,
         "stage2_eval_episodes": 32,
-        "final_eval_episodes": 64
+        "final_eval_episodes": 64,
+        "disable_logger": false
       },
       "rationale": [
         "说明为什么这个候选能改善当前任务",

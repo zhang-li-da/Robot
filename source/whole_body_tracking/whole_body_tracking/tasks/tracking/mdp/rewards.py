@@ -96,6 +96,18 @@ def motion_anchor_progress(
     return torch.clamp(progress, min=0.0, max=max_reward)
 
 
+def motion_phase_progress(
+    env: ManagerBasedRLEnv,
+    command_name: str,
+    start_phase: float = 0.0,
+    end_phase: float = 1.0,
+) -> torch.Tensor:
+    """Dense reward for reaching later phases of a long stunt clip."""
+    command: MotionCommand = env.command_manager.get_term(command_name)
+    phase = command.time_steps.float() / max(command.motion.time_step_total - 1, 1)
+    return torch.clamp((phase - start_phase) / max(end_phase - start_phase, 1.0e-6), min=0.0, max=1.0)
+
+
 def body_clearance_over_height(
     env: ManagerBasedRLEnv,
     command_name: str,

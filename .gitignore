@@ -45,7 +45,7 @@ source/whole_body_tracking/whole_body_tracking/assets/unitree_description/
 *.tar.gz
 
 # Generated local datasets/checkpoints/videos are ignored by default.
-# Curated deliverables under artifacts/ are explicitly tracked below.
+# Curated lightweight reports under artifacts/ are explicitly tracked below.
 *.npz
 *.pt
 *.mp4
@@ -55,9 +55,12 @@ source/whole_body_tracking/whole_body_tracking/assets/unitree_description/
 
 !artifacts/
 !artifacts/**
-!artifacts/**/*.npz
-!artifacts/**/*.pt
-!artifacts/**/*.mp4
+artifacts/**/*.npz
+artifacts/**/*.pt
+artifacts/**/*.mp4
+artifacts/**/*.pkl
+artifacts/**/*.zarr
+artifacts/**/*.csv
 
 # Keep reports, including PDFs, tracked.
 !reports/

@@ -1,0 +1,390 @@
+{
+  "schema_version": "1.0",
+  "task": {
+    "name": "g1_crawl_tunnel",
+    "isaac_task": "Tracking-CrawlTunnel-G1-v0",
+    "robot": "unitree_g1_29dof",
+    "motion_file": "artifacts/g1_crawl_tunnel/motion/motion.npz",
+    "baseline_checkpoint": "artifacts/g1_crawl_tunnel/checkpoints/baseline.pt",
+    "target_x": 1.5,
+    "obstacle_height": 0.85,
+    "min_root_height": 0.35,
+    "baseline_success_rate": 0.0,
+    "target_relative_improvement": 0.08,
+    "final_eval_episodes": 64,
+    "reward_terms": [
+      "motion_global_anchor_pos",
+      "motion_global_anchor_ori",
+      "motion_body_pos",
+      "motion_body_ori",
+      "motion_body_lin_vel",
+      "motion_body_ang_vel",
+      "action_rate_l2",
+      "joint_limit",
+      "undesired_contacts",
+      "task_progress",
+      "ceiling_clearance",
+      "landing_stability"
+    ],
+    "success_criteria": {
+      "description": "低姿态钻过洞口/通道且不撞顶部",
+      "min_progress_x": 1.5,
+      "max_head_or_torso_height": 0.85,
+      "allow_knee_hand_contact": true,
+      "ceiling_min_x": 0.3,
+      "ceiling_max_x": 1.9
+    },
+    "eval_script": "scripts/rsl_rl/eval_stunt.py",
+    "success_type": "crawl"
+  },
+  "baseline": {
+    "genome_id": "baseline",
+    "fitness": -0.05432172411431879,
+    "success_rate": 0.0,
+    "episodes": 64,
+    "mean_return": 8.354341428726912,
+    "mean_max_torso_x": 0.10485210083425045,
+    "mean_clearance": 0.0,
+    "termination_counts": {
+      "anchor_ori": 0,
+      "anchor_pos": 0,
+      "ee_body_pos": 44,
+      "time_out": 21
+    },
+    "eval_path": "artifacts/g1_crawl_tunnel/eval/baseline_beyondmimic.json",
+    "mean_final_speed": 0.13241339622618398,
+    "mean_final_ang_speed": 1.0528784326743335,
+    "mean_final_yaw_error": 1.7005776762962341,
+    "mean_max_body_height": -9.841158276190981,
+    "mean_flip_rotation": null
+  },
+  "adapted": {
+    "genome_id": "adapted_task_rewards",
+    "fitness": -0.5693839302907386,
+    "success_rate": 0.0,
+    "episodes": 64,
+    "mean_return": 7.108530975878239,
+    "mean_max_torso_x": 0.107848035171628,
+    "mean_clearance": 0.0,
+    "termination_counts": {
+      "anchor_ori": 0,
+      "anchor_pos": 0,
+      "ee_body_pos": 64,
+      "time_out": 0
+    },
+    "eval_path": "artifacts/g1_crawl_tunnel/eval/adapted_task_rewards.json",
+    "mean_final_speed": 0.32168990559875965,
+    "mean_final_ang_speed": 1.9687043968588114,
+    "mean_final_yaw_error": 1.5349680501967669,
+    "mean_max_body_height": -10.0,
+    "mean_flip_rotation": null
+  },
+  "best_evolved": {
+    "genome_id": "gen1_m3_000",
+    "fitness": 9.995661087830861,
+    "success_rate": 0.0,
+    "episodes": 16,
+    "mean_return": 18.89600133895874,
+    "mean_max_torso_x": 0.9470364414155483,
+    "mean_clearance": 0.6236477730795741,
+    "termination_counts": {
+      "anchor_ori": 0,
+      "anchor_pos": 0,
+      "ee_body_pos": 0,
+      "time_out": 16
+    },
+    "eval_path": "outputs/evolution_amass/crawl_tunnel/20260602_153156_521231_gen01/gen1_m3_000/eval_stage1.json",
+    "success_rate_delta_vs_baseline": 0.0,
+    "fitness_delta_vs_baseline": 10.04998281194518
+  },
+  "best_generation": {
+    "generation_dir": "outputs/evolution_amass/crawl_tunnel/20260602_153156_521231_gen01",
+    "scoreboard": "outputs/evolution_amass/crawl_tunnel/20260602_153156_521231_gen01/scoreboard.json",
+    "best": {
+      "genome_id": "gen1_m3_000",
+      "fitness": 9.995661087830861,
+      "success_rate": 0.0,
+      "episodes": 16,
+      "mean_return": 18.89600133895874,
+      "mean_max_torso_x": 0.9470364414155483,
+      "mean_clearance": 0.6236477730795741,
+      "termination_counts": {
+        "anchor_ori": 0,
+        "anchor_pos": 0,
+        "ee_body_pos": 0,
+        "time_out": 16
+      },
+      "eval_path": "outputs/evolution_amass/crawl_tunnel/20260602_153156_521231_gen01/gen1_m3_000/eval_stage1.json",
+      "success_rate_delta_vs_baseline": 0.0,
+      "fitness_delta_vs_baseline": 10.04998281194518
+    },
+    "baseline": {
+      "genome_id": "baseline_beyondmimic",
+      "fitness": -0.05432172411431879,
+      "success_rate": 0.0,
+      "episodes": 64,
+      "mean_return": 8.354341428726912,
+      "mean_max_torso_x": 0.10485210083425045,
+      "mean_clearance": 0.0,
+      "termination_counts": {
+        "anchor_ori": 0,
+        "anchor_pos": 0,
+        "ee_body_pos": 44,
+        "time_out": 21
+      },
+      "eval_path": "artifacts/g1_crawl_tunnel/eval/baseline_beyondmimic.json"
+    },
+    "population_feedback": {
+      "population_status": "needs_iteration",
+      "best_genome_id": "gen1_m3_000",
+      "best_success_rate": 0.0,
+      "baseline_success_rate": 0.0,
+      "success_rate_absolute_delta": 0.0,
+      "success_rate_relative_delta": 0.0,
+      "target_relative_improvement": 0.08,
+      "target_met": false,
+      "top_failure_tags": [
+        {
+          "tag": "crawl_progress_stall",
+          "count": 2
+        },
+        {
+          "tag": "deterministic_collapse",
+          "count": 2
+        },
+        {
+          "tag": "mid_phase_progress_failure",
+          "count": 2
+        },
+        {
+          "tag": "no_success",
+          "count": 2
+        }
+      ],
+      "dominant_termination_rates": [
+        [
+          "time_out",
+          2.0
+        ],
+        [
+          "anchor_ori",
+          0.0
+        ],
+        [
+          "anchor_pos",
+          0.0
+        ],
+        [
+          "ee_body_pos",
+          0.0
+        ]
+      ],
+      "next_generation_focus": [
+        "increase behavior diversity through entropy, phase sampling, or warm-start curriculum"
+      ],
+      "promotion_candidates": [],
+      "repair_candidates": [],
+      "elimination_candidates": [
+        "gen1_m3_000",
+        "gen1_m3_001"
+      ]
+    },
+    "llm_must_address": [
+      "increase behavior diversity through entropy, phase sampling, or warm-start curriculum"
+    ]
+  },
+  "generations": [
+    {
+      "generation_dir": "outputs/evolution_amass/crawl_tunnel/20260602_143004_713836_gen00",
+      "scoreboard": "outputs/evolution_amass/crawl_tunnel/20260602_143004_713836_gen00/scoreboard.json",
+      "best": {
+        "genome_id": "gen0_m3_001",
+        "fitness": 9.408980419238407,
+        "success_rate": 0.0,
+        "episodes": 16,
+        "mean_return": 19.11284863948822,
+        "mean_max_torso_x": 0.8350008726119995,
+        "mean_clearance": 0.6151204308494925,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 0,
+          "time_out": 16
+        },
+        "eval_path": "outputs/evolution_amass/crawl_tunnel/20260602_143004_713836_gen00/gen0_m3_001/eval_stage1.json",
+        "success_rate_delta_vs_baseline": 0.0,
+        "fitness_delta_vs_baseline": 9.463302143352726
+      },
+      "baseline": {
+        "genome_id": "baseline_beyondmimic",
+        "fitness": -0.05432172411431879,
+        "success_rate": 0.0,
+        "episodes": 64,
+        "mean_return": 8.354341428726912,
+        "mean_max_torso_x": 0.10485210083425045,
+        "mean_clearance": 0.0,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 44,
+          "time_out": 21
+        },
+        "eval_path": "artifacts/g1_crawl_tunnel/eval/baseline_beyondmimic.json"
+      },
+      "population_feedback": {
+        "population_status": "needs_iteration",
+        "best_genome_id": "gen0_m3_001",
+        "best_success_rate": 0.0,
+        "baseline_success_rate": 0.0,
+        "success_rate_absolute_delta": 0.0,
+        "success_rate_relative_delta": 0.0,
+        "target_relative_improvement": 0.08,
+        "target_met": false,
+        "top_failure_tags": [
+          {
+            "tag": "crawl_progress_stall",
+            "count": 2
+          },
+          {
+            "tag": "deterministic_collapse",
+            "count": 2
+          },
+          {
+            "tag": "mid_phase_progress_failure",
+            "count": 2
+          },
+          {
+            "tag": "no_success",
+            "count": 2
+          }
+        ],
+        "dominant_termination_rates": [
+          [
+            "time_out",
+            2.0
+          ],
+          [
+            "anchor_ori",
+            0.0
+          ],
+          [
+            "anchor_pos",
+            0.0
+          ],
+          [
+            "ee_body_pos",
+            0.0
+          ]
+        ],
+        "next_generation_focus": [
+          "increase behavior diversity through entropy, phase sampling, or warm-start curriculum"
+        ],
+        "promotion_candidates": [],
+        "repair_candidates": [],
+        "elimination_candidates": [
+          "gen0_m3_001",
+          "gen0_m3_000"
+        ]
+      },
+      "llm_must_address": [
+        "increase behavior diversity through entropy, phase sampling, or warm-start curriculum"
+      ]
+    },
+    {
+      "generation_dir": "outputs/evolution_amass/crawl_tunnel/20260602_153156_521231_gen01",
+      "scoreboard": "outputs/evolution_amass/crawl_tunnel/20260602_153156_521231_gen01/scoreboard.json",
+      "best": {
+        "genome_id": "gen1_m3_000",
+        "fitness": 9.995661087830861,
+        "success_rate": 0.0,
+        "episodes": 16,
+        "mean_return": 18.89600133895874,
+        "mean_max_torso_x": 0.9470364414155483,
+        "mean_clearance": 0.6236477730795741,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 0,
+          "time_out": 16
+        },
+        "eval_path": "outputs/evolution_amass/crawl_tunnel/20260602_153156_521231_gen01/gen1_m3_000/eval_stage1.json",
+        "success_rate_delta_vs_baseline": 0.0,
+        "fitness_delta_vs_baseline": 10.04998281194518
+      },
+      "baseline": {
+        "genome_id": "baseline_beyondmimic",
+        "fitness": -0.05432172411431879,
+        "success_rate": 0.0,
+        "episodes": 64,
+        "mean_return": 8.354341428726912,
+        "mean_max_torso_x": 0.10485210083425045,
+        "mean_clearance": 0.0,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 44,
+          "time_out": 21
+        },
+        "eval_path": "artifacts/g1_crawl_tunnel/eval/baseline_beyondmimic.json"
+      },
+      "population_feedback": {
+        "population_status": "needs_iteration",
+        "best_genome_id": "gen1_m3_000",
+        "best_success_rate": 0.0,
+        "baseline_success_rate": 0.0,
+        "success_rate_absolute_delta": 0.0,
+        "success_rate_relative_delta": 0.0,
+        "target_relative_improvement": 0.08,
+        "target_met": false,
+        "top_failure_tags": [
+          {
+            "tag": "crawl_progress_stall",
+            "count": 2
+          },
+          {
+            "tag": "deterministic_collapse",
+            "count": 2
+          },
+          {
+            "tag": "mid_phase_progress_failure",
+            "count": 2
+          },
+          {
+            "tag": "no_success",
+            "count": 2
+          }
+        ],
+        "dominant_termination_rates": [
+          [
+            "time_out",
+            2.0
+          ],
+          [
+            "anchor_ori",
+            0.0
+          ],
+          [
+            "anchor_pos",
+            0.0
+          ],
+          [
+            "ee_body_pos",
+            0.0
+          ]
+        ],
+        "next_generation_focus": [
+          "increase behavior diversity through entropy, phase sampling, or warm-start curriculum"
+        ],
+        "promotion_candidates": [],
+        "repair_candidates": [],
+        "elimination_candidates": [
+          "gen1_m3_000",
+          "gen1_m3_001"
+        ]
+      },
+      "llm_must_address": [
+        "increase behavior diversity through entropy, phase sampling, or warm-start curriculum"
+      ]
+    }
+  ]
+}

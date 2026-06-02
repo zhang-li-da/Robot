@@ -6,6 +6,7 @@
     "isaac_task": "Tracking-WallTurn-G1-v0",
     "robot": "unitree_g1_29dof",
     "motion_file": "artifacts/g1_wall_turn/motion/motion.npz",
+    "motion_catalog": "evolution/action_catalog/asap_motion_catalog.json",
     "baseline_checkpoint": "artifacts/g1_wall_turn/checkpoints/baseline.pt",
     "target_x": 1.2,
     "obstacle_height": 0.9,
@@ -24,6 +25,7 @@
       "joint_limit",
       "undesired_contacts",
       "task_progress",
+      "phase_progress",
       "clearance",
       "yaw_alignment",
       "landing_stability",
@@ -71,7 +73,8 @@
     "stage1_eval_episodes": 16,
     "stage2_eval_episodes": 32,
     "final_eval_episodes": 64,
-    "poll_seconds": 60
+    "poll_seconds": 60,
+    "disable_logger": true
   },
   "search_space": {
     "reward.motion_global_anchor_pos_weight": [
@@ -273,6 +276,10 @@
     "domain_randomization.push_interval_max": [
       2.5,
       6.0
+    ],
+    "reward.phase_progress_weight": [
+      0.0,
+      1.2
     ]
   }
 }

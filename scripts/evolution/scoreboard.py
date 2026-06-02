@@ -46,7 +46,7 @@ def score_eval_json(genome_id: str, eval_path: Path, config: dict[str, Any]) -> 
     success_rate = float(data.get("success_rate", 0.0))
     mean_return = float(data.get("mean_return", 0.0))
     mean_x = float(data.get("mean_max_torso_x", 0.0))
-    mean_clearance = float(data.get("mean_max_clearance_over_obstacle", 0.0))
+    mean_clearance = _task_margin(data, task)
     termination_counts = {str(k): int(v) for k, v in data.get("termination_counts", {}).items()}
 
     denom = max(episodes, 1)
@@ -73,15 +73,59 @@ def score_eval_json(genome_id: str, eval_path: Path, config: dict[str, Any]) -> 
     )
 
 
+def _task_margin(data: dict[str, Any], task: dict[str, Any]) -> float:
+    """Return a signed task geometry margin from the available eval schema."""
+
+    if "mean_max_clearance_over_obstacle" in data:
+        return float(data.get("mean_max_clearance_over_obstacle", 0.0))
+
+    success_type = str(task.get("success_type", "progress"))
+    criteria = task.get("success_criteria", {}) or {}
+    if success_type == "crawl":
+        ceiling = float(criteria.get("max_head_or_torso_height", task.get("obstacle_height", 0.85)))
+        body_height = float(data.get("mean_max_body_height", data.get("mean_max_torso_height", 0.0)))
+        # eval_stunt keeps body height at -10 for episodes that never enter the
+        # ceiling zone. Treat this as no clearance evidence instead of granting
+        # a large positive margin.
+        if body_height < -1.0:
+            return 0.0
+        return ceiling - body_height
+
+    if success_type in {"progress", "backflip"}:
+        required_height = float(criteria.get("min_apex_height", task.get("min_root_height", 0.0)))
+        torso_height = float(data.get("mean_max_torso_height", 0.0))
+        return torso_height - required_height
+
+    obstacle_height = float(task.get("obstacle_height", 0.0))
+    torso_height = float(data.get("mean_max_torso_height", 0.0))
+    return torso_height - obstacle_height
+
+
 def discover_scores(output_dir: Path, config: dict[str, Any]) -> list[CandidateScore]:
-    scores: list[CandidateScore] = []
+    scores_by_genome: dict[str, tuple[int, float, CandidateScore]] = {}
     for eval_path in output_dir.glob("*/eval_*.json"):
         genome_id = eval_path.parent.name
         try:
-            scores.append(score_eval_json(genome_id, eval_path, config))
+            score = score_eval_json(genome_id, eval_path, config)
         except (json.JSONDecodeError, OSError, ValueError, TypeError):
             continue
-    return sorted(scores, key=lambda item: item.fitness, reverse=True)
+        priority = _eval_priority(eval_path)
+        current = scores_by_genome.get(genome_id)
+        rank = (priority, eval_path.stat().st_mtime)
+        if current is None or rank > (current[0], current[1]):
+            scores_by_genome[genome_id] = (priority, eval_path.stat().st_mtime, score)
+    return sorted((item[2] for item in scores_by_genome.values()), key=lambda item: item.fitness, reverse=True)
+
+
+def _eval_priority(path: Path) -> int:
+    name = path.stem
+    if "final" in name:
+        return 3
+    if "stage2" in name:
+        return 2
+    if "stage1" in name:
+        return 1
+    return 0
 
 
 def write_scoreboard(scores: list[CandidateScore], output_dir: Path) -> Path:

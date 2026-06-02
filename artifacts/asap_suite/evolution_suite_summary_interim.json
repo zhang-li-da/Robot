@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0",
+  "task_ids": [
+    "g1_asap_jump_forward_l5",
+    "g1_asap_turn_jump_l5",
+    "g1_asap_spiderman_l2",
+    "g1_asap_single_foot_jump_l2"
+  ],
+  "task_count": 4,
+  "final_count": 0,
+  "interim_count": 1,
+  "missing_count": 3,
+  "target_met_count": 1,
+  "records": [
+    {
+      "task_id": "g1_asap_jump_forward_l5",
+      "status": "interim",
+      "summary_path": "artifacts/g1_asap_jump_forward_l5/eval/evolution_summary_interim.json",
+      "baseline": {
+        "genome_id": "baseline",
+        "fitness": 1.3687692583021192,
+        "success_rate": 0.0,
+        "episodes": 64,
+        "mean_return": 6.063464500010014,
+        "mean_max_torso_x": 0.0568256750702858,
+        "mean_clearance": 0.1308862488716841,
+        "termination_counts": {
+          "anchor_ori": 1,
+          "anchor_pos": 36,
+          "ee_body_pos": 29,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_jump_forward_l5/eval/baseline_beyondmimic.json",
+        "mean_final_speed": 2.7002329509705305,
+        "mean_final_ang_speed": 3.6050167605280876,
+        "mean_final_yaw_error": 0.25671615563169325,
+        "mean_max_body_height": 1.2164130192250013,
+        "mean_flip_rotation": 1.6234207060188055,
+        "successes": 0,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_jump_forward_l5_baseline/2026-06-02_18-09-54_baseline_beyondmimic/model_799.pt"
+      },
+      "adapted": {
+        "genome_id": "adapted_task_rewards",
+        "fitness": 2.9839623701655205,
+        "success_rate": 0.0,
+        "episodes": 64,
+        "mean_return": 8.649853117763996,
+        "mean_max_torso_x": 0.3225925490260124,
+        "mean_clearance": 0.1308862525969744,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 64,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_jump_forward_l5/eval/adapted_task_rewards.json",
+        "mean_final_speed": 1.3010939909145236,
+        "mean_final_ang_speed": 3.1792572513222694,
+        "mean_final_yaw_error": 0.1077024529222399,
+        "mean_max_body_height": 1.2164130192250013,
+        "mean_flip_rotation": 1.9008659329265356,
+        "successes": 0,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_jump_forward_l5/2026-06-02_18-34-30_adapted_task_rewards/model_799.pt"
+      },
+      "best_evolved": {
+        "genome_id": "gen0_m3_000",
+        "fitness": 23.501502461565863,
+        "success_rate": 0.125,
+        "episodes": 16,
+        "mean_return": 14.114447712898254,
+        "mean_max_torso_x": 1.4165505170822144,
+        "mean_clearance": 0.24642740339040758,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "/root/whole_body_tracking-main/outputs/evolution_asap/g1_asap_jump_forward_l5/20260602_185815_100995_gen00/gen0_m3_000/eval_stage1.json",
+        "success_rate_delta_vs_baseline": 0.125,
+        "fitness_delta_vs_baseline": 22.132733203263744
+      },
+      "final_eval": null,
+      "comparison_label": "best_evolved_stage1",
+      "success_rate_improvement": 0.125,
+      "required_improvement": 0.08,
+      "target_met": true,
+      "dominant_termination": {
+        "baseline": "anchor_pos",
+        "adapted": "ee_body_pos",
+        "comparison": "anchor_ori"
+      }
+    },
+    {
+      "task_id": "g1_asap_turn_jump_l5",
+      "status": "missing_summary"
+    },
+    {
+      "task_id": "g1_asap_spiderman_l2",
+      "status": "missing_summary"
+    },
+    {
+      "task_id": "g1_asap_single_foot_jump_l2",
+      "status": "missing_summary"
+    }
+  ]
+}

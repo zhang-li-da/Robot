@@ -146,6 +146,11 @@ class G1BackflipRewardsCfg(RewardsCfg):
         weight=0.0,
         params={"command_name": "motion", "min_height": 1.05, "target_margin": 0.35},
     )
+    phase_progress = RewTerm(
+        func=mdp.motion_phase_progress,
+        weight=0.0,
+        params={"command_name": "motion", "start_phase": 0.20, "end_phase": 0.85},
+    )
     landing_stability = RewTerm(
         func=mdp.landing_stability,
         weight=0.0,
@@ -168,11 +173,54 @@ class G1BackflipRewardsCfg(RewardsCfg):
 
 
 @configclass
+class G1JumpLeapRewardsCfg(RewardsCfg):
+    task_progress = RewTerm(
+        func=mdp.motion_anchor_progress,
+        weight=0.35,
+        params={"command_name": "motion", "target_x": 5.00, "min_x": 0.0, "max_reward": 1.0},
+    )
+    phase_progress = RewTerm(
+        func=mdp.motion_phase_progress,
+        weight=0.0,
+        params={"command_name": "motion", "start_phase": 0.15, "end_phase": 0.85},
+    )
+    apex_height = RewTerm(
+        func=mdp.anchor_height_over_min,
+        weight=0.25,
+        params={"command_name": "motion", "min_height": 0.85, "target_margin": 0.25},
+    )
+    landing_stability = RewTerm(
+        func=mdp.landing_stability,
+        weight=0.20,
+        params={
+            "command_name": "motion",
+            "landing_phase": 0.78,
+            "lin_vel_std": 0.8,
+            "ang_vel_std": 1.5,
+            "upright_std": 0.55,
+        },
+    )
+    contact_force = RewTerm(
+        func=mdp.contact_force_violation,
+        weight=-0.02,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*"]),
+            "threshold": 850.0,
+        },
+    )
+
+
+@configclass
 class G1WallTurnRewardsCfg(RewardsCfg):
     task_progress = RewTerm(
         func=mdp.motion_anchor_progress,
         weight=0.0,
         params={"command_name": "motion", "target_x": 1.20, "min_x": 0.0, "max_reward": 1.0},
+    )
+    phase_progress = RewTerm(
+        func=mdp.motion_phase_progress,
+        weight=0.0,
+        params={"command_name": "motion", "start_phase": 0.20, "end_phase": 0.85},
     )
     clearance = RewTerm(
         func=mdp.body_clearance_over_height,
@@ -189,6 +237,11 @@ class G1WallTurnRewardsCfg(RewardsCfg):
                 "right_ankle_roll_link",
             ],
         },
+    )
+    apex_height = RewTerm(
+        func=mdp.anchor_height_over_min,
+        weight=0.0,
+        params={"command_name": "motion", "min_height": 0.90, "target_margin": 0.30},
     )
     yaw_alignment = RewTerm(
         func=mdp.target_yaw_alignment,
@@ -220,12 +273,17 @@ class G1WallTurnRewardsCfg(RewardsCfg):
 class G1CrawlTunnelRewardsCfg(RewardsCfg):
     task_progress = RewTerm(
         func=mdp.motion_anchor_progress,
-        weight=0.0,
+        weight=0.35,
         params={"command_name": "motion", "target_x": 1.50, "min_x": 0.0, "max_reward": 1.0},
+    )
+    phase_progress = RewTerm(
+        func=mdp.motion_phase_progress,
+        weight=0.0,
+        params={"command_name": "motion", "start_phase": 0.10, "end_phase": 0.90},
     )
     ceiling_clearance = RewTerm(
         func=mdp.body_below_ceiling,
-        weight=0.0,
+        weight=0.25,
         params={
             "command_name": "motion",
             "ceiling_height": 0.85,
@@ -237,7 +295,7 @@ class G1CrawlTunnelRewardsCfg(RewardsCfg):
     )
     landing_stability = RewTerm(
         func=mdp.landing_stability,
-        weight=0.0,
+        weight=0.10,
         params={
             "command_name": "motion",
             "landing_phase": 0.82,
@@ -245,6 +303,173 @@ class G1CrawlTunnelRewardsCfg(RewardsCfg):
             "ang_vel_std": 1.0,
             "upright_std": 0.50,
         },
+    )
+
+
+@configclass
+class G1RollVaultRewardsCfg(RewardsCfg):
+    task_progress = RewTerm(
+        func=mdp.motion_anchor_progress,
+        weight=0.35,
+        params={"command_name": "motion", "target_x": 2.45, "min_x": 0.0, "max_reward": 1.0},
+    )
+    landing_stability = RewTerm(
+        func=mdp.landing_stability,
+        weight=0.20,
+        params={
+            "command_name": "motion",
+            "landing_phase": 0.78,
+            "lin_vel_std": 0.75,
+            "ang_vel_std": 1.4,
+            "upright_std": 0.55,
+        },
+    )
+    contact_force = RewTerm(
+        func=mdp.contact_force_violation,
+        weight=-0.02,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*"]),
+            "threshold": 900.0,
+        },
+    )
+
+
+@configclass
+class G1RollVaultV2RewardsCfg(G1RollVaultRewardsCfg):
+    task_progress = RewTerm(
+        func=mdp.motion_anchor_progress,
+        weight=0.55,
+        params={"command_name": "motion", "target_x": 2.45, "min_x": 0.0, "max_reward": 1.0},
+    )
+    phase_progress = RewTerm(
+        func=mdp.motion_phase_progress,
+        weight=0.25,
+        params={"command_name": "motion", "start_phase": 0.15, "end_phase": 0.75},
+    )
+    landing_stability = RewTerm(
+        func=mdp.landing_stability,
+        weight=0.15,
+        params={
+            "command_name": "motion",
+            "landing_phase": 0.72,
+            "lin_vel_std": 0.85,
+            "ang_vel_std": 1.8,
+            "upright_std": 0.70,
+        },
+    )
+
+
+@configclass
+class G1DiveRollRewardsCfg(RewardsCfg):
+    task_progress = RewTerm(
+        func=mdp.motion_anchor_progress,
+        weight=0.40,
+        params={"command_name": "motion", "target_x": 3.00, "min_x": 0.0, "max_reward": 1.0},
+    )
+    low_roll_phase = RewTerm(
+        func=mdp.body_below_ceiling,
+        weight=0.20,
+        params={
+            "command_name": "motion",
+            "ceiling_height": 0.95,
+            "target_margin": 0.35,
+            "min_x": 0.50,
+            "max_x": 2.40,
+            "body_names": ["pelvis", "torso_link", "left_shoulder_roll_link", "right_shoulder_roll_link"],
+        },
+    )
+    landing_stability = RewTerm(
+        func=mdp.landing_stability,
+        weight=0.20,
+        params={
+            "command_name": "motion",
+            "landing_phase": 0.82,
+            "lin_vel_std": 0.80,
+            "ang_vel_std": 1.6,
+            "upright_std": 0.60,
+        },
+    )
+    contact_force = RewTerm(
+        func=mdp.contact_force_violation,
+        weight=-0.015,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*"]),
+            "threshold": 1000.0,
+        },
+    )
+
+
+@configclass
+class G1DiveRollV2RewardsCfg(G1DiveRollRewardsCfg):
+    task_progress = RewTerm(
+        func=mdp.motion_anchor_progress,
+        weight=0.15,
+        params={"command_name": "motion", "target_x": 3.00, "min_x": 0.0, "max_reward": 1.0},
+    )
+    low_roll_phase = RewTerm(
+        func=mdp.body_below_ceiling,
+        weight=0.06,
+        params={
+            "command_name": "motion",
+            "ceiling_height": 1.05,
+            "target_margin": 0.35,
+            "min_x": 0.45,
+            "max_x": 2.40,
+            "body_names": ["pelvis", "torso_link", "left_shoulder_roll_link", "right_shoulder_roll_link"],
+        },
+    )
+    landing_stability = RewTerm(
+        func=mdp.landing_stability,
+        weight=0.08,
+        params={
+            "command_name": "motion",
+            "landing_phase": 0.82,
+            "lin_vel_std": 0.95,
+            "ang_vel_std": 2.2,
+            "upright_std": 0.85,
+        },
+    )
+    phase_progress = RewTerm(
+        func=mdp.motion_phase_progress,
+        weight=0.06,
+        params={"command_name": "motion", "start_phase": 0.20, "end_phase": 0.75},
+    )
+
+
+@configclass
+class G1DiveRollV3RewardsCfg(G1DiveRollV2RewardsCfg):
+    task_progress = RewTerm(
+        func=mdp.motion_anchor_progress,
+        weight=0.35,
+        params={"command_name": "motion", "target_x": 3.00, "min_x": 0.0, "max_reward": 1.0},
+    )
+    low_roll_phase = RewTerm(
+        func=mdp.body_below_ceiling,
+        weight=0.04,
+        params={
+            "command_name": "motion",
+            "ceiling_height": 1.10,
+            "target_margin": 0.45,
+            "min_x": 0.55,
+            "max_x": 2.65,
+            "body_names": ["pelvis", "torso_link", "left_shoulder_roll_link", "right_shoulder_roll_link"],
+        },
+    )
+    landing_stability = RewTerm(
+        func=mdp.landing_stability,
+        weight=0.10,
+        params={
+            "command_name": "motion",
+            "landing_phase": 0.76,
+            "lin_vel_std": 1.15,
+            "ang_vel_std": 2.6,
+            "upright_std": 0.90,
+        },
+    )
+    phase_progress = RewTerm(
+        func=mdp.motion_phase_progress,
+        weight=0.12,
+        params={"command_name": "motion", "start_phase": 0.18, "end_phase": 0.82},
     )
 
 
@@ -264,6 +489,32 @@ class G1BackflipEnvCfg(G1FlatEnvCfg):
         self.commands.motion.velocity_range["pitch"] = (-1.2, 1.2)
         self.terminations.anchor_ori.params["threshold"] = 1.40
         self.terminations.ee_body_pos.params["threshold"] = 0.45
+        self.rewards.undesired_contacts.params["sensor_cfg"].body_names = [
+            r"^(?!left_ankle_roll_link$)(?!right_ankle_roll_link$).+$"
+        ]
+
+
+@configclass
+class G1JumpLeapEnvCfg(G1FlatEnvCfg):
+    rewards: G1JumpLeapRewardsCfg = G1JumpLeapRewardsCfg()
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.scene.env_spacing = 8.0
+        self.episode_length_s = 7.0
+        self.commands.motion.fixed_start_probability = 0.90
+        self.commands.motion.fixed_start_time_steps = 5
+        self.commands.motion.adaptive_uniform_ratio = 1.05
+        self.commands.motion.pose_range["z"] = (-0.02, 0.02)
+        self.commands.motion.velocity_range["x"] = (-0.20, 0.30)
+        self.commands.motion.velocity_range["y"] = (-0.15, 0.15)
+        self.commands.motion.velocity_range["z"] = (-0.35, 0.35)
+        self.commands.motion.velocity_range["roll"] = (-0.45, 0.45)
+        self.commands.motion.velocity_range["pitch"] = (-0.55, 0.55)
+        self.commands.motion.velocity_range["yaw"] = (-0.35, 0.35)
+        self.terminations.anchor_pos.params["threshold"] = 0.55
+        self.terminations.anchor_ori.params["threshold"] = 1.35
+        self.terminations.ee_body_pos.params["threshold"] = 0.55
         self.rewards.undesired_contacts.params["sensor_cfg"].body_names = [
             r"^(?!left_ankle_roll_link$)(?!right_ankle_roll_link$).+$"
         ]
@@ -335,3 +586,261 @@ class G1CrawlTunnelEnvCfg(G1FlatEnvCfg):
             ),
             init_state=RigidObjectCfg.InitialStateCfg(pos=(1.10, 0.0, 0.89)),
         )
+
+
+@configclass
+class G1RollVaultEnvCfg(G1FlatEnvCfg):
+    rewards: G1RollVaultRewardsCfg = G1RollVaultRewardsCfg()
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.scene.env_spacing = 3.5
+        self.episode_length_s = 9.0
+        self.commands.motion.fixed_start_probability = 0.90
+        self.commands.motion.fixed_start_time_steps = 5
+        self.commands.motion.adaptive_uniform_ratio = 1.0
+        self.commands.motion.pose_range["z"] = (-0.02, 0.02)
+        self.commands.motion.velocity_range["z"] = (-0.5, 0.5)
+        self.terminations.anchor_pos.params["threshold"] = 0.45
+        self.terminations.anchor_ori.params["threshold"] = 1.35
+        self.terminations.ee_body_pos.params["threshold"] = 0.50
+        self.rewards.undesired_contacts.weight = -0.03
+        self.rewards.undesired_contacts.params["sensor_cfg"].body_names = [
+            (
+                r"^(?!left_ankle_roll_link$)(?!right_ankle_roll_link$)"
+                r"(?!left_knee_link$)(?!right_knee_link$)"
+                r"(?!left_wrist_yaw_link$)(?!right_wrist_yaw_link$)"
+                r"(?!left_elbow_link$)(?!right_elbow_link$)"
+                r"(?!left_shoulder_roll_link$)(?!right_shoulder_roll_link$).+$"
+            )
+        ]
+
+
+@configclass
+class G1RollVaultV2EnvCfg(G1RollVaultEnvCfg):
+    rewards: G1RollVaultV2RewardsCfg = G1RollVaultV2RewardsCfg()
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.episode_length_s = 11.0
+        self.commands.motion.fixed_start_probability = 0.55
+        self.commands.motion.fixed_start_time_steps = 12
+        self.commands.motion.adaptive_uniform_ratio = 3.0
+        self.commands.motion.adaptive_kernel_size = 3
+        self.commands.motion.velocity_range["x"] = (-0.25, 0.35)
+        self.commands.motion.velocity_range["y"] = (-0.20, 0.20)
+        self.commands.motion.velocity_range["z"] = (-0.35, 0.35)
+        self.commands.motion.velocity_range["roll"] = (-0.6, 0.6)
+        self.commands.motion.velocity_range["pitch"] = (-0.8, 0.8)
+        self.commands.motion.velocity_range["yaw"] = (-0.5, 0.5)
+        self.terminations.anchor_pos.params["threshold"] = 0.70
+        self.terminations.anchor_ori.params["threshold"] = 1.65
+        self.terminations.ee_body_pos.func = mdp.bad_motion_body_pos_z_phase_gated
+        self.terminations.ee_body_pos.params = {
+            "command_name": "motion",
+            "early_threshold": 0.70,
+            "late_threshold": 0.55,
+            "switch_phase": 0.42,
+            "body_names": [
+                "pelvis",
+                "torso_link",
+                "left_ankle_roll_link",
+                "right_ankle_roll_link",
+            ],
+        }
+        self.rewards.motion_body_pos.params["body_names"] = [
+            "pelvis",
+            "left_hip_roll_link",
+            "left_knee_link",
+            "left_ankle_roll_link",
+            "right_hip_roll_link",
+            "right_knee_link",
+            "right_ankle_roll_link",
+            "torso_link",
+        ]
+        self.rewards.motion_body_ori.params["body_names"] = [
+            "pelvis",
+            "left_hip_roll_link",
+            "left_knee_link",
+            "left_ankle_roll_link",
+            "right_hip_roll_link",
+            "right_knee_link",
+            "right_ankle_roll_link",
+            "torso_link",
+        ]
+
+
+@configclass
+class G1RollVaultV3EnvCfg(G1RollVaultV2EnvCfg):
+    def __post_init__(self):
+        super().__post_init__()
+        self.commands.motion.fixed_start_probability = 0.80
+        self.commands.motion.fixed_start_time_steps = 8
+        self.commands.motion.adaptive_uniform_ratio = 2.0
+        self.commands.motion.adaptive_kernel_size = 2
+        self.commands.motion.velocity_range["x"] = (-0.10, 0.20)
+        self.commands.motion.velocity_range["y"] = (-0.10, 0.10)
+        self.commands.motion.velocity_range["z"] = (-0.15, 0.15)
+        self.commands.motion.velocity_range["roll"] = (-0.25, 0.25)
+        self.commands.motion.velocity_range["pitch"] = (-0.30, 0.30)
+        self.commands.motion.velocity_range["yaw"] = (-0.25, 0.25)
+        self.terminations.anchor_pos.func = mdp.bad_anchor_pos_z_phase_gated
+        self.terminations.anchor_pos.params = {
+            "command_name": "motion",
+            "early_threshold": 1.20,
+            "late_threshold": 0.75,
+            "switch_phase": 0.45,
+        }
+        self.terminations.anchor_ori.params["threshold"] = 1.80
+        self.terminations.ee_body_pos.params["early_threshold"] = 0.90
+        self.terminations.ee_body_pos.params["late_threshold"] = 0.65
+        self.rewards.phase_progress.weight = 0.15
+
+
+@configclass
+class G1RollVaultV4EnvCfg(G1RollVaultV3EnvCfg):
+    def __post_init__(self):
+        super().__post_init__()
+        self.commands.motion.fixed_start_probability = 0.85
+        self.commands.motion.adaptive_uniform_ratio = 1.5
+        self.rewards.motion_global_anchor_pos.weight = 0.8
+        self.rewards.motion_global_anchor_ori.weight = 0.9
+        self.rewards.motion_body_pos.weight = 1.8
+        self.rewards.motion_body_pos.params["std"] = 0.38
+        self.rewards.motion_body_ori.weight = 1.6
+        self.rewards.motion_body_ori.params["std"] = 0.50
+        self.rewards.motion_body_lin_vel.weight = 0.8
+        self.rewards.motion_body_ang_vel.weight = 0.8
+        self.rewards.action_rate_l2.weight = -0.04
+        self.rewards.task_progress.weight = 0.35
+        self.rewards.phase_progress.weight = 0.08
+        self.terminations.ee_body_pos.params["early_threshold"] = 0.80
+        self.terminations.ee_body_pos.params["late_threshold"] = 0.60
+
+
+@configclass
+class G1DiveRollEnvCfg(G1FlatEnvCfg):
+    rewards: G1DiveRollRewardsCfg = G1DiveRollRewardsCfg()
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.scene.env_spacing = 4.0
+        self.episode_length_s = 9.0
+        self.commands.motion.fixed_start_probability = 0.90
+        self.commands.motion.fixed_start_time_steps = 5
+        self.commands.motion.adaptive_uniform_ratio = 1.0
+        self.commands.motion.pose_range["z"] = (-0.02, 0.02)
+        self.commands.motion.velocity_range["z"] = (-0.6, 0.6)
+        self.terminations.anchor_pos.params["threshold"] = 0.50
+        self.terminations.anchor_ori.params["threshold"] = 1.45
+        self.terminations.ee_body_pos.params["threshold"] = 0.55
+        self.rewards.undesired_contacts.weight = -0.02
+        self.rewards.undesired_contacts.params["sensor_cfg"].body_names = [
+            (
+                r"^(?!left_ankle_roll_link$)(?!right_ankle_roll_link$)"
+                r"(?!left_knee_link$)(?!right_knee_link$)"
+                r"(?!left_wrist_yaw_link$)(?!right_wrist_yaw_link$)"
+                r"(?!left_elbow_link$)(?!right_elbow_link$)"
+                r"(?!left_shoulder_roll_link$)(?!right_shoulder_roll_link$)"
+                r"(?!torso_link$).+$"
+            )
+        ]
+
+
+@configclass
+class G1DiveRollV2EnvCfg(G1DiveRollEnvCfg):
+    rewards: G1DiveRollV2RewardsCfg = G1DiveRollV2RewardsCfg()
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.commands.motion.fixed_start_probability = 0.70
+        self.commands.motion.fixed_start_time_steps = 3
+        self.commands.motion.adaptive_uniform_ratio = 3.0
+        self.commands.motion.adaptive_kernel_size = 3
+        self.commands.motion.velocity_range["x"] = (-0.15, 0.25)
+        self.commands.motion.velocity_range["y"] = (-0.12, 0.12)
+        self.commands.motion.velocity_range["z"] = (-0.20, 0.20)
+        self.commands.motion.velocity_range["roll"] = (-0.35, 0.35)
+        self.commands.motion.velocity_range["pitch"] = (-0.45, 0.45)
+        self.commands.motion.velocity_range["yaw"] = (-0.30, 0.30)
+        self.terminations.anchor_pos.func = mdp.bad_anchor_pos_z_phase_gated
+        self.terminations.anchor_pos.params = {
+            "command_name": "motion",
+            "early_threshold": 0.95,
+            "late_threshold": 0.65,
+            "switch_phase": 0.50,
+        }
+        self.terminations.anchor_ori.params["threshold"] = 1.75
+        self.terminations.ee_body_pos.func = mdp.bad_motion_body_pos_z_phase_gated
+        self.terminations.ee_body_pos.params = {
+            "command_name": "motion",
+            "early_threshold": 0.85,
+            "late_threshold": 0.62,
+            "switch_phase": 0.48,
+            "body_names": [
+                "pelvis",
+                "torso_link",
+                "left_ankle_roll_link",
+                "right_ankle_roll_link",
+            ],
+        }
+        self.rewards.motion_body_pos.weight = 1.25
+        self.rewards.motion_body_pos.params["std"] = 0.42
+        self.rewards.motion_body_ori.weight = 1.20
+        self.rewards.motion_body_ori.params["std"] = 0.55
+        self.rewards.motion_body_pos.params["body_names"] = [
+            "pelvis",
+            "left_hip_roll_link",
+            "left_knee_link",
+            "left_ankle_roll_link",
+            "right_hip_roll_link",
+            "right_knee_link",
+            "right_ankle_roll_link",
+            "torso_link",
+        ]
+        self.rewards.motion_body_ori.params["body_names"] = [
+            "pelvis",
+            "left_hip_roll_link",
+            "left_knee_link",
+            "left_ankle_roll_link",
+            "right_hip_roll_link",
+            "right_knee_link",
+            "right_ankle_roll_link",
+            "torso_link",
+        ]
+
+
+@configclass
+class G1DiveRollV3EnvCfg(G1DiveRollV2EnvCfg):
+    rewards: G1DiveRollV3RewardsCfg = G1DiveRollV3RewardsCfg()
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.episode_length_s = 10.0
+        self.commands.motion.fixed_start_probability = 0.82
+        self.commands.motion.fixed_start_time_steps = 2
+        self.commands.motion.adaptive_uniform_ratio = 2.2
+        self.commands.motion.adaptive_kernel_size = 2
+        self.commands.motion.velocity_range["x"] = (-0.08, 0.18)
+        self.commands.motion.velocity_range["y"] = (-0.08, 0.08)
+        self.commands.motion.velocity_range["z"] = (-0.14, 0.14)
+        self.commands.motion.velocity_range["roll"] = (-0.25, 0.25)
+        self.commands.motion.velocity_range["pitch"] = (-0.35, 0.35)
+        self.commands.motion.velocity_range["yaw"] = (-0.22, 0.22)
+        self.terminations.anchor_pos.params["early_threshold"] = 1.10
+        self.terminations.anchor_pos.params["late_threshold"] = 0.78
+        self.terminations.anchor_pos.params["switch_phase"] = 0.55
+        self.terminations.anchor_ori.params["threshold"] = 1.95
+        self.terminations.ee_body_pos.params["early_threshold"] = 1.15
+        self.terminations.ee_body_pos.params["late_threshold"] = 0.85
+        self.terminations.ee_body_pos.params["switch_phase"] = 0.72
+        self.rewards.motion_global_anchor_pos.weight = 0.75
+        self.rewards.motion_global_anchor_ori.weight = 0.75
+        self.rewards.motion_body_pos.weight = 1.60
+        self.rewards.motion_body_pos.params["std"] = 0.48
+        self.rewards.motion_body_ori.weight = 1.45
+        self.rewards.motion_body_ori.params["std"] = 0.62
+        self.rewards.motion_body_lin_vel.weight = 0.90
+        self.rewards.motion_body_ang_vel.weight = 0.80
+        self.rewards.action_rate_l2.weight = -0.045
+        self.rewards.undesired_contacts.weight = -0.015

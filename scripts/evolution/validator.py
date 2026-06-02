@@ -30,6 +30,7 @@ ALLOWED_HIDDEN_DIMS = {
     (512, 512, 256),
     (1024, 512, 256),
 }
+BOOLEAN_FIELDS = {"resource.disable_logger"}
 
 
 class GenomeValidationError(ValueError):
@@ -70,6 +71,10 @@ def validate_genome(genome: AlgorithmGenome, config: dict[str, Any]) -> list[str
             if isinstance(value, list):
                 continue
             if dotted == "ppo.activation":
+                continue
+            if dotted in BOOLEAN_FIELDS:
+                if not isinstance(value, bool):
+                    errors.append(f"{dotted} must be boolean, got {type(value).__name__}")
                 continue
             _validate_number(config, dotted, value, errors)
 

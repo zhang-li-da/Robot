@@ -1,0 +1,20 @@
+{
+  "genome_id": "gen0_m3_001",
+  "fitness": 72.2621059730649,
+  "success_rate": 0.625,
+  "episodes": 16,
+  "mean_return": 9.332608014345169,
+  "mean_max_torso_x": 5.08736227452755,
+  "mean_clearance": 0.10227377861738207,
+  "termination_counts": {
+    "anchor_ori": 0,
+    "anchor_pos": 3,
+    "ee_body_pos": 4,
+    "time_out": 0
+  },
+  "eval_path": "/root/whole_body_tracking-main/outputs/evolution_amass/jump_leap/20260602_163404_197448_gen00/gen0_m3_001/eval_stage1.json",
+  "success_rate_delta_vs_baseline": 0.625,
+  "fitness_delta_vs_baseline": 74.32211771968286,
+  "scoreboard": "outputs/evolution_amass/jump_leap/20260602_163404_197448_gen00/scoreboard.json",
+  "generation_dir": "outputs/evolution_amass/jump_leap/20260602_163404_197448_gen00"
+}

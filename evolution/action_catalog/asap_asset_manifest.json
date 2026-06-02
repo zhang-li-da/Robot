@@ -1,0 +1,1627 @@
+{
+  "schema_version": "1.0",
+  "asap_root": "/root/ASAP-main",
+  "purpose": "ASAP source assets available for LLM-assisted humanoid stunt imitation evolution.",
+  "counts": {
+    "retargeted_g1_motion_pkl": 52,
+    "raw_smpl_motion_npz": 51,
+    "sim2real_mimic_onnx": 14,
+    "sim2real_locomotion_onnx": 1,
+    "config_yaml_indexed": 61
+  },
+  "known_limitations": [
+    "No explicit backflip filename is present in the current ASAP package.",
+    "Single-foot jump and high-dynamic sports clips are proxy/pretraining data for flip-like tasks.",
+    "ASAP sim2real ONNX files are useful references but are not a substitute for task-specific policy validation."
+  ],
+  "tag_counts": {
+    "aerial": 28,
+    "balance": 12,
+    "forward_jump": 10,
+    "kick": 6,
+    "landing": 22,
+    "large_limb_range": 2,
+    "lateral_balance": 8,
+    "locomotion": 24,
+    "low_pose": 2,
+    "low_posture": 6,
+    "recovery_step": 24,
+    "side_jump": 8,
+    "single_foot": 12,
+    "single_leg_support": 6,
+    "sports_motion": 25,
+    "strength_pose": 6,
+    "turn_jump": 10,
+    "unclassified": 14,
+    "wall_contact_proxy": 2,
+    "whole_body_coordination": 25,
+    "yaw_control": 10
+  },
+  "retargeted_g1_motions": [
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-TairanTestbed_TairanTestbed_CR7_video_CR7_level1_filter_amass.pkl",
+      "name": "0-TairanTestbed_TairanTestbed_CR7_video_CR7_level1_filter_amass",
+      "size_bytes": 89652,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_APT_level1_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_APT_level1_amass",
+      "size_bytes": 172660,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_APT_level2_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_APT_level2_amass",
+      "size_bytes": 103844,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_Bolt_level1_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_Bolt_level1_amass",
+      "size_bytes": 98612,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_CR7_level1_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_CR7_level1_filter_amass",
+      "size_bytes": 89652,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_CR7_level2_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_CR7_level2_filter_amass",
+      "size_bytes": 100868,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_Kobe_level1_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_Kobe_level1_amass",
+      "size_bytes": 94116,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass",
+      "size_bytes": 118820,
+      "tags": [
+        "large_limb_range",
+        "low_pose",
+        "wall_contact_proxy"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_TigerWoods_level1_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_TigerWoods_level1_amass",
+      "size_bytes": 89652,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass",
+      "size_bytes": 100868,
+      "tags": [
+        "aerial",
+        "turn_jump",
+        "yaw_control"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass",
+      "size_bytes": 94132,
+      "tags": [
+        "aerial",
+        "turn_jump",
+        "yaw_control"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass",
+      "size_bytes": 100868,
+      "tags": [
+        "aerial",
+        "turn_jump",
+        "yaw_control"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass",
+      "size_bytes": 96372,
+      "tags": [
+        "aerial",
+        "turn_jump",
+        "yaw_control"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass",
+      "size_bytes": 100868,
+      "tags": [
+        "aerial",
+        "turn_jump",
+        "yaw_control"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level1_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level1_filter_amass",
+      "size_bytes": 85156,
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass",
+      "size_bytes": 80676,
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass",
+      "size_bytes": 96372,
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass",
+      "size_bytes": 103108,
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass",
+      "size_bytes": 91892,
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_kick_level1_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_kick_level1_filter_amass",
+      "size_bytes": 89652,
+      "tags": [
+        "kick",
+        "single_leg_support"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_kick_level2_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_kick_level2_filter_amass",
+      "size_bytes": 76180,
+      "tags": [
+        "kick",
+        "single_leg_support"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_kick_level3_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_kick_level3_filter_amass",
+      "size_bytes": 103108,
+      "tags": [
+        "kick",
+        "single_leg_support"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_lebron1_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_lebron1_filter_amass",
+      "size_bytes": 114324,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_lebron2_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_lebron2_filter_amass",
+      "size_bytes": 156964,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_shoot_level1_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_shoot_level1_filter_amass",
+      "size_bytes": 107604,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_shoot_level2_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_shoot_level2_filter_amass",
+      "size_bytes": 94132,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_shoot_level3_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_shoot_level3_filter_amass",
+      "size_bytes": 94132,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_side_jump_level1_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_side_jump_level1_filter_amass",
+      "size_bytes": 69444,
+      "tags": [
+        "aerial",
+        "lateral_balance",
+        "side_jump"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_side_jump_level2_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_side_jump_level2_filter_amass",
+      "size_bytes": 80676,
+      "tags": [
+        "aerial",
+        "lateral_balance",
+        "side_jump"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass",
+      "size_bytes": 82916,
+      "tags": [
+        "aerial",
+        "lateral_balance",
+        "side_jump"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_side_jump_level4_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_side_jump_level4_filter_amass",
+      "size_bytes": 76180,
+      "tags": [
+        "aerial",
+        "lateral_balance",
+        "side_jump"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level1_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level1_filter_amass",
+      "size_bytes": 163716,
+      "tags": [
+        "balance",
+        "landing",
+        "single_foot"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level2_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level2_filter_amass",
+      "size_bytes": 219076,
+      "tags": [
+        "balance",
+        "landing",
+        "single_foot"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level3_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level3_filter_amass",
+      "size_bytes": 203396,
+      "tags": [
+        "balance",
+        "landing",
+        "single_foot"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level4_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level4_filter_amass",
+      "size_bytes": 198884,
+      "tags": [
+        "balance",
+        "landing",
+        "single_foot"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level1_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level1_filter_amass",
+      "size_bytes": 118836,
+      "tags": [
+        "balance",
+        "landing",
+        "single_foot"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass",
+      "size_bytes": 127812,
+      "tags": [
+        "balance",
+        "landing",
+        "single_foot"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass",
+      "size_bytes": 118820,
+      "tags": [
+        "low_posture",
+        "strength_pose"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass",
+      "size_bytes": 143508,
+      "tags": [
+        "low_posture",
+        "strength_pose"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass",
+      "size_bytes": 139012,
+      "tags": [
+        "low_posture",
+        "strength_pose"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_back_level1_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level1_filter_amass",
+      "size_bytes": 89668,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_back_level2_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level2_filter_amass",
+      "size_bytes": 105364,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_back_level3_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level3_filter_amass",
+      "size_bytes": 114340,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass",
+      "size_bytes": 100884,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level1_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level1_filter_amass",
+      "size_bytes": 82932,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level2_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level2_filter_amass",
+      "size_bytes": 98644,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level3_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level3_filter_amass",
+      "size_bytes": 100884,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level4_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level4_filter_amass",
+      "size_bytes": 96388,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_walk_level1_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_walk_level1_filter_amass",
+      "size_bytes": 114324,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_walk_level2_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_walk_level2_filter_amass",
+      "size_bytes": 78420,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_walk_level3_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_walk_level3_filter_amass",
+      "size_bytes": 107604,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_walk_level4_filter_amass.pkl",
+      "name": "0-motions_raw_tairantestbed_smpl_video_walk_level4_filter_amass",
+      "size_bytes": 100868,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    }
+  ],
+  "raw_smpl_motions": [
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_APT_level1_amass.npz",
+      "name": "video_APT_level1_amass",
+      "size_bytes": 70418,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_APT_level2_amass.npz",
+      "name": "video_APT_level2_amass",
+      "size_bytes": 42818,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_Bolt_level1_amass.npz",
+      "name": "video_Bolt_level1_amass",
+      "size_bytes": 40718,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_CR7_level1_filter_amass.npz",
+      "name": "video_CR7_level1_filter_amass",
+      "size_bytes": 37118,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_CR7_level2_filter_amass.npz",
+      "name": "video_CR7_level2_filter_amass",
+      "size_bytes": 41618,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_Kobe_level1_amass.npz",
+      "name": "video_Kobe_level1_amass",
+      "size_bytes": 38918,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_SpiderMan_level2_amass.npz",
+      "name": "video_SpiderMan_level2_amass",
+      "size_bytes": 48818,
+      "tags": [
+        "large_limb_range",
+        "low_pose",
+        "wall_contact_proxy"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_TigerWoods_level1_amass.npz",
+      "name": "video_TigerWoods_level1_amass",
+      "size_bytes": 37118,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_jump_degree_level1_filter_amass.npz",
+      "name": "video_jump_degree_level1_filter_amass",
+      "size_bytes": 41618,
+      "tags": [
+        "aerial",
+        "turn_jump",
+        "yaw_control"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_jump_degree_level2_filter_amass.npz",
+      "name": "video_jump_degree_level2_filter_amass",
+      "size_bytes": 38918,
+      "tags": [
+        "aerial",
+        "turn_jump",
+        "yaw_control"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_jump_degree_level3_filter_amass.npz",
+      "name": "video_jump_degree_level3_filter_amass",
+      "size_bytes": 41618,
+      "tags": [
+        "aerial",
+        "turn_jump",
+        "yaw_control"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_jump_degree_level4_filter_amass.npz",
+      "name": "video_jump_degree_level4_filter_amass",
+      "size_bytes": 39818,
+      "tags": [
+        "aerial",
+        "turn_jump",
+        "yaw_control"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_jump_degree_level5_filter_amass.npz",
+      "name": "video_jump_degree_level5_filter_amass",
+      "size_bytes": 41618,
+      "tags": [
+        "aerial",
+        "turn_jump",
+        "yaw_control"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_jump_forward_level1_filter_amass.npz",
+      "name": "video_jump_forward_level1_filter_amass",
+      "size_bytes": 35318,
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_jump_forward_level2_filter_amass.npz",
+      "name": "video_jump_forward_level2_filter_amass",
+      "size_bytes": 33518,
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_jump_forward_level3_filter_amass.npz",
+      "name": "video_jump_forward_level3_filter_amass",
+      "size_bytes": 39818,
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_jump_forward_level4_filter_amass.npz",
+      "name": "video_jump_forward_level4_filter_amass",
+      "size_bytes": 42518,
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_jump_forward_level5_filter_amass.npz",
+      "name": "video_jump_forward_level5_filter_amass",
+      "size_bytes": 38018,
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_kick_level1_filter_amass.npz",
+      "name": "video_kick_level1_filter_amass",
+      "size_bytes": 37118,
+      "tags": [
+        "kick",
+        "single_leg_support"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_kick_level2_filter_amass.npz",
+      "name": "video_kick_level2_filter_amass",
+      "size_bytes": 31718,
+      "tags": [
+        "kick",
+        "single_leg_support"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_kick_level3_filter_amass.npz",
+      "name": "video_kick_level3_filter_amass",
+      "size_bytes": 42518,
+      "tags": [
+        "kick",
+        "single_leg_support"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_lebron1_filter_amass.npz",
+      "name": "video_lebron1_filter_amass",
+      "size_bytes": 47018,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_lebron2_filter_amass.npz",
+      "name": "video_lebron2_filter_amass",
+      "size_bytes": 64118,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_shoot_level1_filter_amass.npz",
+      "name": "video_shoot_level1_filter_amass",
+      "size_bytes": 44318,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_shoot_level2_filter_amass.npz",
+      "name": "video_shoot_level2_filter_amass",
+      "size_bytes": 38918,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_shoot_level3_filter_amass.npz",
+      "name": "video_shoot_level3_filter_amass",
+      "size_bytes": 38918,
+      "tags": [
+        "sports_motion",
+        "whole_body_coordination"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_side_jump_level1_filter_amass.npz",
+      "name": "video_side_jump_level1_filter_amass",
+      "size_bytes": 29018,
+      "tags": [
+        "aerial",
+        "lateral_balance",
+        "side_jump"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_side_jump_level2_filter_amass.npz",
+      "name": "video_side_jump_level2_filter_amass",
+      "size_bytes": 33518,
+      "tags": [
+        "aerial",
+        "lateral_balance",
+        "side_jump"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_side_jump_level3_filter_amass.npz",
+      "name": "video_side_jump_level3_filter_amass",
+      "size_bytes": 34418,
+      "tags": [
+        "aerial",
+        "lateral_balance",
+        "side_jump"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_side_jump_level4_filter_amass.npz",
+      "name": "video_side_jump_level4_filter_amass",
+      "size_bytes": 31718,
+      "tags": [
+        "aerial",
+        "lateral_balance",
+        "side_jump"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_single_foot_balance_level1_filter_amass.npz",
+      "name": "video_single_foot_balance_level1_filter_amass",
+      "size_bytes": 66818,
+      "tags": [
+        "balance",
+        "landing",
+        "single_foot"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_single_foot_balance_level2_filter_amass.npz",
+      "name": "video_single_foot_balance_level2_filter_amass",
+      "size_bytes": 89018,
+      "tags": [
+        "balance",
+        "landing",
+        "single_foot"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_single_foot_balance_level3_filter_amass.npz",
+      "name": "video_single_foot_balance_level3_filter_amass",
+      "size_bytes": 82718,
+      "tags": [
+        "balance",
+        "landing",
+        "single_foot"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_single_foot_balance_level4_filter_amass.npz",
+      "name": "video_single_foot_balance_level4_filter_amass",
+      "size_bytes": 80918,
+      "tags": [
+        "balance",
+        "landing",
+        "single_foot"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_single_foot_jump_level1_filter_amass.npz",
+      "name": "video_single_foot_jump_level1_filter_amass",
+      "size_bytes": 48818,
+      "tags": [
+        "balance",
+        "landing",
+        "single_foot"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_single_foot_jump_level2_filter_amass.npz",
+      "name": "video_single_foot_jump_level2_filter_amass",
+      "size_bytes": 52418,
+      "tags": [
+        "balance",
+        "landing",
+        "single_foot"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_squat_level1_filter_amass.npz",
+      "name": "video_squat_level1_filter_amass",
+      "size_bytes": 48818,
+      "tags": [
+        "low_posture",
+        "strength_pose"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_squat_level2_filter_amass.npz",
+      "name": "video_squat_level2_filter_amass",
+      "size_bytes": 58718,
+      "tags": [
+        "low_posture",
+        "strength_pose"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_squat_level3_filter_amass.npz",
+      "name": "video_squat_level3_filter_amass",
+      "size_bytes": 56918,
+      "tags": [
+        "low_posture",
+        "strength_pose"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_step_forward_back_level1_filter_amass.npz",
+      "name": "video_step_forward_back_level1_filter_amass",
+      "size_bytes": 37118,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_step_forward_back_level2_filter_amass.npz",
+      "name": "video_step_forward_back_level2_filter_amass",
+      "size_bytes": 43418,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_step_forward_back_level3_filter_amass.npz",
+      "name": "video_step_forward_back_level3_filter_amass",
+      "size_bytes": 47018,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_step_forward_back_level4_filter_amass.npz",
+      "name": "video_step_forward_back_level4_filter_amass",
+      "size_bytes": 41618,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_step_forward_forward_level1_filter_amass.npz",
+      "name": "video_step_forward_forward_level1_filter_amass",
+      "size_bytes": 34418,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_step_forward_forward_level2_filter_amass.npz",
+      "name": "video_step_forward_forward_level2_filter_amass",
+      "size_bytes": 40718,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_step_forward_forward_level3_filter_amass.npz",
+      "name": "video_step_forward_forward_level3_filter_amass",
+      "size_bytes": 41618,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_step_forward_forward_level4_filter_amass.npz",
+      "name": "video_step_forward_forward_level4_filter_amass",
+      "size_bytes": 39818,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_walk_level1_filter_amass.npz",
+      "name": "video_walk_level1_filter_amass",
+      "size_bytes": 47018,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_walk_level2_filter_amass.npz",
+      "name": "video_walk_level2_filter_amass",
+      "size_bytes": 32618,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_walk_level3_filter_amass.npz",
+      "name": "video_walk_level3_filter_amass",
+      "size_bytes": 44318,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    },
+    {
+      "path": "humanoidverse/data/motions/raw_tairantestbed_smpl/video_walk_level4_filter_amass.npz",
+      "name": "video_walk_level4_filter_amass",
+      "size_bytes": 41618,
+      "tags": [
+        "locomotion",
+        "recovery_step"
+      ]
+    }
+  ],
+  "sim2real_mimic_models": [
+    {
+      "path": "sim2real/models/mimic/APT_level1/model_176500.onnx",
+      "name": "model_176500",
+      "size_bytes": 1477413,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "sim2real/models/mimic/CR7_level1/model_191500.onnx",
+      "name": "model_191500",
+      "size_bytes": 1477413,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "sim2real/models/mimic/Kobe_level1/model_193000.onnx",
+      "name": "model_193000",
+      "size_bytes": 1477413,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "sim2real/models/mimic/jump_forward_level1/model_191500.onnx",
+      "name": "model_191500",
+      "size_bytes": 1477413,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "sim2real/models/mimic/jump_forward_level2/model_130500.onnx",
+      "name": "model_130500",
+      "size_bytes": 1477413,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "sim2real/models/mimic/jump_forward_level3/model_149000.onnx",
+      "name": "model_149000",
+      "size_bytes": 1477413,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "sim2real/models/mimic/kick_level1/model_168000.onnx",
+      "name": "model_168000",
+      "size_bytes": 1477413,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "sim2real/models/mimic/kick_level2/model_293000.onnx",
+      "name": "model_293000",
+      "size_bytes": 1477413,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "sim2real/models/mimic/kick_level3/model_240000.onnx",
+      "name": "model_240000",
+      "size_bytes": 1477413,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "sim2real/models/mimic/lebron_level1/model_233500.onnx",
+      "name": "model_233500",
+      "size_bytes": 1477413,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "sim2real/models/mimic/lebron_level2/model_190000.onnx",
+      "name": "model_190000",
+      "size_bytes": 1477413,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "sim2real/models/mimic/side_jump_level1/model_135000.onnx",
+      "name": "model_135000",
+      "size_bytes": 1477413,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "sim2real/models/mimic/side_jump_level2/model_131500.onnx",
+      "name": "model_131500",
+      "size_bytes": 1477413,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "sim2real/models/mimic/side_jump_level3/model_245000.onnx",
+      "name": "model_245000",
+      "size_bytes": 1477413,
+      "tags": [
+        "unclassified"
+      ]
+    }
+  ],
+  "sim2real_locomotion_models": [
+    {
+      "path": "sim2real/models/dec_loco/20250109_231507-noDR_rand_history_loco_stand_height_noise-decoupled_locomotion-g1_29dof/model_6600.onnx",
+      "name": "model_6600",
+      "size_bytes": 1718012,
+      "tags": [
+        "unclassified"
+      ]
+    }
+  ],
+  "source_config_files": [
+    {
+      "path": "humanoidverse/config/algo/ppo.yaml",
+      "name": "ppo",
+      "size_bytes": 1047,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/algo/ppo_train_delta_a.yaml",
+      "name": "ppo_train_delta_a",
+      "size_bytes": 1095,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/base/fabric.yaml",
+      "name": "fabric",
+      "size_bytes": 585,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/base/hydra.yaml",
+      "name": "hydra",
+      "size_bytes": 293,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/base/structure.yaml",
+      "name": "structure",
+      "size_bytes": 109,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/base.yaml",
+      "name": "base",
+      "size_bytes": 985,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/base_eval.yaml",
+      "name": "base_eval",
+      "size_bytes": 168,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/domain_rand/NO_domain_rand.yaml",
+      "name": "NO_domain_rand",
+      "size_bytes": 1773,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/domain_rand/NO_domain_rand_finetune_with_deltaA.yaml",
+      "name": "NO_domain_rand_finetune_with_deltaA",
+      "size_bytes": 1904,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/domain_rand/domain_rand_base.yaml",
+      "name": "domain_rand_base",
+      "size_bytes": 758,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/env/base_task.yaml",
+      "name": "base_task",
+      "size_bytes": 343,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/env/delta_a_closed_loop.yaml",
+      "name": "delta_a_closed_loop",
+      "size_bytes": 906,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/env/delta_a_open_loop.yaml",
+      "name": "delta_a_open_loop",
+      "size_bytes": 906,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/env/legged_base.yaml",
+      "name": "legged_base",
+      "size_bytes": 957,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/env/locomotion.yaml",
+      "name": "locomotion",
+      "size_bytes": 1107,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/env/locomotion_genesis.yaml",
+      "name": "locomotion_genesis",
+      "size_bytes": 1133,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/env/motion_tracking.yaml",
+      "name": "motion_tracking",
+      "size_bytes": 1968,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/exp/base_exp.yaml",
+      "name": "base_exp",
+      "size_bytes": 101,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/exp/legged_base.yaml",
+      "name": "legged_base",
+      "size_bytes": 100,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/exp/locomotion.yaml",
+      "name": "locomotion",
+      "size_bytes": 100,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/exp/motion_tracking.yaml",
+      "name": "motion_tracking",
+      "size_bytes": 110,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/exp/train_delta_a_closed_loop.yaml",
+      "name": "train_delta_a_closed_loop",
+      "size_bytes": 134,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/exp/train_delta_a_open_loop.yaml",
+      "name": "train_delta_a_open_loop",
+      "size_bytes": 105,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/obs/delta_a/open_loop.yaml",
+      "name": "open_loop",
+      "size_bytes": 2516,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/obs/delta_a/train_policy_with_delta_a.yaml",
+      "name": "train_policy_with_delta_a",
+      "size_bytes": 3294,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/obs/legged_obs.yaml",
+      "name": "legged_obs",
+      "size_bytes": 408,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/obs/loco/leggedloco_obs_history_wolinvel.yaml",
+      "name": "leggedloco_obs_history_wolinvel",
+      "size_bytes": 1565,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/obs/loco/leggedloco_obs_singlestep_withlinvel.yaml",
+      "name": "leggedloco_obs_singlestep_withlinvel",
+      "size_bytes": 1812,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/obs/loco/leggedloco_obs_singlestep_wolinvel.yaml",
+      "name": "leggedloco_obs_singlestep_wolinvel",
+      "size_bytes": 1598,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/obs/loco/leggedloco_obs_singlestep_wolinvel_a2c.yaml",
+      "name": "leggedloco_obs_singlestep_wolinvel_a2c",
+      "size_bytes": 1422,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/obs/motion_tracking/deepmimic.yaml",
+      "name": "deepmimic",
+      "size_bytes": 1770,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/obs/motion_tracking/deepmimic_a2c.yaml",
+      "name": "deepmimic_a2c",
+      "size_bytes": 1767,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/obs/motion_tracking/deepmimic_a2c_nolinvel_LARGEnoise_history.yaml",
+      "name": "deepmimic_a2c_nolinvel_LARGEnoise_history",
+      "size_bytes": 2369,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/obs/motion_tracking/motion_tracking.yaml",
+      "name": "motion_tracking",
+      "size_bytes": 1703,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/opt/eval_analysis_plot_locomotion.yaml",
+      "name": "eval_analysis_plot_locomotion",
+      "size_bytes": 286,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/opt/eval_analysis_plot_motion_tracking.yaml",
+      "name": "eval_analysis_plot_motion_tracking",
+      "size_bytes": 328,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/opt/record.yaml",
+      "name": "record",
+      "size_bytes": 164,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/opt/wandb.yaml",
+      "name": "wandb",
+      "size_bytes": 227,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/rewards/loco/reward_g1_locomotion.yaml",
+      "name": "reward_g1_locomotion",
+      "size_bytes": 3204,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/rewards/loco/reward_g1_unitree.yaml",
+      "name": "reward_g1_unitree",
+      "size_bytes": 1929,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/rewards/loco/reward_go2_locomotion.yaml",
+      "name": "reward_go2_locomotion",
+      "size_bytes": 1894,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/rewards/loco/reward_go2_locomotion_sysid.yaml",
+      "name": "reward_go2_locomotion_sysid",
+      "size_bytes": 1959,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/rewards/loco/reward_h1_2_locomotion.yaml",
+      "name": "reward_h1_2_locomotion",
+      "size_bytes": 2259,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/rewards/loco/reward_h1_locomotion.yaml",
+      "name": "reward_h1_locomotion",
+      "size_bytes": 1859,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/rewards/loco/reward_h1_locomotion_10dof.yaml",
+      "name": "reward_h1_locomotion_10dof",
+      "size_bytes": 1847,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/rewards/loco/reward_h1_locomotion_19dof_2real.yaml",
+      "name": "reward_h1_locomotion_19dof_2real",
+      "size_bytes": 2047,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/rewards/loco/reward_h1_locomotion_positiveonly.yaml",
+      "name": "reward_h1_locomotion_positiveonly",
+      "size_bytes": 1228,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/rewards/motion_tracking/delta_a/reward_delta_a_openloop.yaml",
+      "name": "reward_delta_a_openloop",
+      "size_bytes": 3012,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/rewards/motion_tracking/delta_a/reward_motion_tracking_use_deltaA_to_train_2real.yaml",
+      "name": "reward_motion_tracking_use_deltaA_to_train_2real",
+      "size_bytes": 2954,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/rewards/motion_tracking/reward_motion_tracking_basic.yaml",
+      "name": "reward_motion_tracking_basic",
+      "size_bytes": 2836,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/rewards/motion_tracking/reward_motion_tracking_dm_2real.yaml",
+      "name": "reward_motion_tracking_dm_2real",
+      "size_bytes": 3210,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/rewards/motion_tracking/reward_motion_tracking_dm_simfinetuning.yaml",
+      "name": "reward_motion_tracking_dm_simfinetuning",
+      "size_bytes": 3210,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/robot/g1/g1_29dof_anneal_23dof.yaml",
+      "name": "g1_29dof_anneal_23dof",
+      "size_bytes": 15153,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/robot/robot_base.yaml",
+      "name": "robot_base",
+      "size_bytes": 1718,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/simulator/genesis.yaml",
+      "name": "genesis",
+      "size_bytes": 549,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/simulator/isaacgym.yaml",
+      "name": "isaacgym",
+      "size_bytes": 702,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/simulator/isaacsim.yaml",
+      "name": "isaacsim",
+      "size_bytes": 905,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/simulator/mujoco.yaml",
+      "name": "mujoco",
+      "size_bytes": 515,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/terrain/terrain_base.yaml",
+      "name": "terrain_base",
+      "size_bytes": 95,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/terrain/terrain_locomotion.yaml",
+      "name": "terrain_locomotion",
+      "size_bytes": 1093,
+      "tags": [
+        "unclassified"
+      ]
+    },
+    {
+      "path": "humanoidverse/config/terrain/terrain_locomotion_plane.yaml",
+      "name": "terrain_locomotion_plane",
+      "size_bytes": 1091,
+      "tags": [
+        "unclassified"
+      ]
+    }
+  ]
+}

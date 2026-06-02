@@ -18,12 +18,19 @@
 12. 输出必须以 `{` 开始，以 `}` 结束。
 13. 本次只允许生成 `{{REQUESTED_POPULATION_SIZE}}` 个候选，不能超过该数量。
 14. 每个 `rationale` 最多 2 条，每条不超过 40 个中文字符或 25 个英文单词。
+15. 如果 `MOTION_CATALOG_JSON` 非空，必须参考其中的动作统计：水平位移小的动作不要盲目提高 `task_progress_weight`，高度变化大的动作要考虑 `apex_height_weight`/姿态终止放宽，低姿态动作要考虑 `ceiling_clearance_weight` 和合法接触。
+16. 如果任务 `success_criteria.proxy_note` 非空，候选必须把该任务视为 proxy/pretraining 或 stress test，不得在 `description` 或 `rationale` 中声称已经解决真实目标动作。
+17. 如果 `MOTION_CATALOG_JSON` 中出现 backflip、wall_or_vault、crawl_or_tunnel 等标签，必须优先把这些标签作为任务证据；如果没有出现，必须说明当前候选依赖 proxy 数据。
+18. 如果 `TASK_PROFILE_JSON` 非空，必须遵守其中的 `legal_contacts`、`risk_controls.must_preserve` 和 `success_criteria`；不得弱化最终评估标准。
+19. 如果反馈包含 `runtime_sigbus`、`tensorboard_writer_failure`、`runtime_gpu_memory_pressure` 或 `runtime_train_failed`，必须把它视为资源/运行时失败；至少一个修复候选应考虑 `resource.disable_logger=true` 或降低 `resource.num_envs`，不要只改变 reward。
+20. 如果 `ASSET_MANIFEST_JSON` 显示当前 ASAP 包没有真实目标动作文件，例如没有 backflip 文件名，不得把 proxy 数据描述成真实目标动作；只能把它作为预训练、压力测试或相邻动作迁移证据。
 
 # 任务特征提示
 
 后空翻：
 
 - 主要风险是空中姿态跟踪、角速度过大、落地冲击、恢复不稳。
+- 如果 `success_criteria.min_flip_rotation` 存在，必须把累计 pitch 旋转不足视为核心失败，而不是只追求腾空高度。
 - 可提高 `apex_height_weight`、`landing_stability_weight`，适度放宽 `anchor_ori_threshold`，避免过早终止空中翻转。
 - `fixed_start_probability` 不宜过高到完全压制中后段采样。
 
@@ -43,13 +50,43 @@
 
 `{{CONFIG_JSON}}`
 
+`{{TASK_PROFILE_JSON}}`
+
 `{{HISTORY_JSON}}`
 
 `{{FEEDBACK_JSON}}`
 
+`{{MOTION_CATALOG_JSON}}`
+
+`{{ASSET_MANIFEST_JSON}}`
+
 # 反馈使用要求
 
 如果 `FEEDBACK_JSON` 非空，必须优先响应其中的 `llm_feedback_brief.must_address` 和候选级 `failure_tags`。候选必须解释其针对的失败标签；不得重复已经导致严重退化的参数组合。对接触型特技，需要明确区分合法支撑接触、危险冲击和跟踪误差。
+如果 `llm_feedback_brief.runtime_failures` 非空，必须优先生成至少一个运行时修复候选。运行时修复只能改变资源预算、logger、采样/终止容忍等安全项，不能降低最终评估标准。
+
+如果 `MOTION_CATALOG_JSON` 非空，必须把目录中的动作标签和统计量作为任务证据：
+
+- `horizontal_displacement` 大且 `large_vertical_motion`：优先考虑进度、落地稳定、空中姿态容忍。
+- `horizontal_displacement` 小但高度变化大：优先考虑原地高动态姿态跟踪、角速度和落地冲击，而不是强行推进。
+- `low_dynamic_pose` 或低 root 高度：优先考虑低姿态/钻越奖励和接触白名单。
+- 如果反馈包含 `mid_phase_progress_failure`、`crawl_progress_stall` 或长时间 `time_out` 但未完成，优先考虑 `phase_progress_weight`、phase sampling 和更宽终止阈值的组合，而不是只继续加大 `task_progress_weight`。
+- 若目录明确缺少目标动作，例如后空翻，需要在 `rationale` 里说明当前候选只能作为 proxy 或预训练阶段，不得声称已经是真正目标动作数据。
+- 对于未来新增的翻越矮墙、钻洞、后空翻、登墙转身 motion，优先使用 `tags`、`suggested_tasks`、`horizontal_displacement`、`root_height_range` 和 `duration_s` 判断是进度型、低姿态型、高动态空中型还是接触支撑型任务。
+
+如果 `TASK_PROFILE_JSON` 非空，必须优先使用其中的：
+
+- `task_identity.task_type` 判断动作类别。
+- `motion_profile.proxy_note` 判断是否只能作为 proxy/pretraining。
+- `legal_contacts.allowed_support_bodies` 区分合法支撑和危险接触。
+- `risk_controls.sim2real_sensitive_terms` 控制高动态动作的接触冲击、角速度、关节限位和动作平滑。
+- `baseline_contract.comparison_protocol` 保持基线与进化候选的评估协议一致。
+
+如果 `ASSET_MANIFEST_JSON` 非空，必须利用其中的：
+
+- `known_limitations` 判断目标动作是否缺少真实数据。
+- `tag_counts` 判断当前数据集主要覆盖的动作类型。
+- `sim2real_mimic_models` 仅作为迁移参考，不得替代当前任务的成功率评估。
 
 # 本次候选数量
 
@@ -85,6 +122,7 @@
         "joint_limit_weight": -10.0,
         "undesired_contacts_weight": -0.1,
         "task_progress_weight": 0.0,
+        "phase_progress_weight": 0.0,
         "clearance_weight": 0.0,
         "apex_height_weight": 0.0,
         "landing_stability_weight": 0.0,
@@ -139,7 +177,8 @@
         "save_interval": 400,
         "stage1_eval_episodes": 16,
         "stage2_eval_episodes": 32,
-        "final_eval_episodes": 64
+        "final_eval_episodes": 64,
+        "disable_logger": false
       },
       "rationale": [
         "说明为什么这个候选能改善当前任务",

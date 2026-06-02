@@ -20,11 +20,18 @@ parser.add_argument("--motion_file", type=str, required=True)
 parser.add_argument("--num_envs", type=int, default=16)
 parser.add_argument("--eval_episodes", type=int, default=16)
 parser.add_argument("--output", type=str, default="")
+parser.add_argument(
+    "--checkpoint_path",
+    type=str,
+    default="",
+    help="Optional absolute checkpoint path. Useful for evaluating a Flat baseline in a task-specific environment.",
+)
 parser.add_argument("--success_type", type=str, default="progress", choices=("progress", "backflip", "crawl"))
 parser.add_argument("--target_x", type=float, default=1.0)
 parser.add_argument("--obstacle_height", type=float, default=0.0)
 parser.add_argument("--min_root_height", type=float, default=0.55)
 parser.add_argument("--min_apex_height", type=float, default=1.05)
+parser.add_argument("--min_flip_rotation", type=float, default=0.0)
 parser.add_argument("--max_final_speed", type=float, default=0.8)
 parser.add_argument("--max_final_ang_speed", type=float, default=1.5)
 parser.add_argument("--max_body_height", type=float, default=0.85)
@@ -76,6 +83,9 @@ def resolve_checkpoint_path(log_root_path: str, load_run: str | None, checkpoint
             raise
         root = Path(log_root_path)
         matches = sorted(root.glob(f"*{load_run}"), key=lambda path: path.stat().st_mtime)
+        if not matches:
+            global_root = root.parent
+            matches = sorted(global_root.glob(f"*/*{load_run}"), key=lambda path: path.stat().st_mtime)
         if not matches:
             raise
         run_dir = matches[-1]
@@ -151,7 +161,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
     env_cfg.commands.motion.motion_file = args_cli.motion_file
 
     log_root_path = os.path.abspath(os.path.join("logs", "rsl_rl", agent_cfg.experiment_name))
-    checkpoint_path = resolve_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint)
+    if args_cli.checkpoint_path:
+        checkpoint_path = os.path.abspath(args_cli.checkpoint_path)
+    else:
+        checkpoint_path = resolve_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint)
     print(f"[INFO] Loading checkpoint: {checkpoint_path}")
 
     env = gym.make(args_cli.task, cfg=env_cfg)
@@ -184,6 +197,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
     final_speed = torch.zeros_like(current_return)
     final_ang_speed = torch.zeros_like(current_return)
     final_yaw_error = torch.full_like(current_return, float(math.pi))
+    flip_rotation = torch.zeros_like(current_return)
 
     returns: list[float] = []
     lengths: list[float] = []
@@ -193,6 +207,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
     speed_values: list[float] = []
     ang_speed_values: list[float] = []
     yaw_error_values: list[float] = []
+    flip_rotation_values: list[float] = []
     success_values: list[bool] = []
     completed = 0
     termination_counts = {name: 0 for name in env.unwrapped.termination_manager.active_terms}
@@ -216,6 +231,11 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         final_ang_speed = torch.norm(robot.data.body_ang_vel_w[:, torso_id], dim=-1)
         final_yaw = yaw_from_quat_wxyz(robot.data.body_quat_w[:, torso_id])
         final_yaw_error = torch.abs(_wrap_to_pi(final_yaw - args_cli.target_yaw))
+        torso_ang_vel_b = quat_apply(
+            quat_inv(robot.data.body_quat_w[:, torso_id]),
+            robot.data.body_ang_vel_w[:, torso_id],
+        )
+        flip_rotation += torch.abs(torso_ang_vel_b[:, 1]) * env.unwrapped.step_dt
 
         clip_done = command.time_steps >= clip_steps
         with torch.inference_mode():
@@ -235,6 +255,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         if args_cli.success_type == "backflip":
             success_now = (
                 (max_root_height[done_ids] >= args_cli.min_apex_height)
+                & (flip_rotation[done_ids] >= args_cli.min_flip_rotation)
                 & (final_speed[done_ids] <= args_cli.max_final_speed)
                 & (final_ang_speed[done_ids] <= args_cli.max_final_ang_speed)
                 & (final_yaw_error[done_ids] <= args_cli.max_yaw_error)
@@ -260,6 +281,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         speed_values.extend(final_speed[done_ids].detach().cpu().tolist())
         ang_speed_values.extend(final_ang_speed[done_ids].detach().cpu().tolist())
         yaw_error_values.extend(final_yaw_error[done_ids].detach().cpu().tolist())
+        flip_rotation_values.extend(flip_rotation[done_ids].detach().cpu().tolist())
         success_values.extend(success_now.detach().cpu().tolist())
         completed += int(done_ids.numel())
 
@@ -268,6 +290,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         max_torso_x[done_ids] = 0.0
         max_root_height[done_ids] = 0.0
         max_body_height_in_ceiling[done_ids] = -10.0
+        flip_rotation[done_ids] = 0.0
         force_motion_start(env.unwrapped, done_ids)
         obs, _ = env.get_observations()
         if completed >= args_cli.eval_episodes:
@@ -291,8 +314,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         "mean_final_speed": _mean(speed_values[:used]),
         "mean_final_ang_speed": _mean(ang_speed_values[:used]),
         "mean_final_yaw_error": _mean(yaw_error_values[:used]),
+        "mean_flip_rotation": _mean(flip_rotation_values[:used]),
         "best_max_torso_x": float(max(progress_values[:used]) if progress_values[:used] else 0.0),
         "best_max_torso_height": float(max(root_height_values[:used]) if root_height_values[:used] else 0.0),
+        "best_flip_rotation": float(max(flip_rotation_values[:used]) if flip_rotation_values[:used] else 0.0),
         "episode_returns": [float(v) for v in returns[:used]],
         "episode_lengths": [float(v) for v in lengths[:used]],
         "episode_max_torso_x": [float(v) for v in progress_values[:used]],
@@ -301,6 +326,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         "episode_final_speed": [float(v) for v in speed_values[:used]],
         "episode_final_ang_speed": [float(v) for v in ang_speed_values[:used]],
         "episode_final_yaw_error": [float(v) for v in yaw_error_values[:used]],
+        "episode_flip_rotation": [float(v) for v in flip_rotation_values[:used]],
         "episode_successes": [bool(v) for v in used_success_values],
         "start_mode": args_cli.start_mode,
         "termination_counts": termination_counts,

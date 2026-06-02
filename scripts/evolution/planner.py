@@ -28,6 +28,7 @@ REWARD_OVERRIDES = {
     "joint_limit_weight": "env.rewards.joint_limit.weight",
     "undesired_contacts_weight": "env.rewards.undesired_contacts.weight",
     "task_progress_weight": "env.rewards.task_progress.weight",
+    "phase_progress_weight": "env.rewards.phase_progress.weight",
     "clearance_weight": "env.rewards.clearance.weight",
     "apex_height_weight": "env.rewards.apex_height.weight",
     "landing_stability_weight": "env.rewards.landing_stability.weight",
@@ -168,12 +169,52 @@ def training_command(genome: AlgorithmGenome, config: dict[str, Any], stage: str
         str(genome.resource.num_envs),
         "--max_iterations",
         str(iterations),
+        "--experiment_name",
+        str(task.get("name", task["isaac_task"])),
         "--run_name",
         run_name,
         "--headless",
-        "--logger",
-        "tensorboard",
     ]
+    if genome.resource.disable_logger:
+        command.append("--disable_logger")
+    else:
+        command.extend(["--logger", str(config.get("resource_defaults", {}).get("logger", "tensorboard"))])
+    command.extend(hydra_overrides(genome, config))
+    return command
+
+
+def stage2_training_command(genome: AlgorithmGenome, config: dict[str, Any], stage1_run_name: str) -> list[str]:
+    task = config["task"]
+    extra_iterations = max(int(genome.resource.stage2_iterations) - int(genome.resource.stage1_iterations), 0)
+    run_name = f"evo_{genome.metadata.genome_id}_stage2"
+    command = [
+        "python",
+        "-u",
+        "scripts/rsl_rl/train.py",
+        "--task",
+        task["isaac_task"],
+        "--motion_file",
+        task["motion_file"],
+        "--num_envs",
+        str(genome.resource.num_envs),
+        "--max_iterations",
+        str(extra_iterations),
+        "--experiment_name",
+        str(task.get("name", task["isaac_task"])),
+        "--run_name",
+        run_name,
+        "--resume",
+        "True",
+        "--load_run",
+        stage1_run_name,
+        "--checkpoint",
+        f"model_{max(genome.resource.stage1_iterations - 1, 0)}.pt",
+        "--headless",
+    ]
+    if genome.resource.disable_logger:
+        command.append("--disable_logger")
+    else:
+        command.extend(["--logger", str(config.get("resource_defaults", {}).get("logger", "tensorboard"))])
     command.extend(hydra_overrides(genome, config))
     return command
 
@@ -205,6 +246,8 @@ def evaluation_command(
         str(min(16, max(1, episodes))),
         "--eval_episodes",
         str(episodes),
+        "--experiment_name",
+        str(task.get("name", task["isaac_task"])),
         "--load_run",
         run_dir,
         "--checkpoint",
@@ -226,6 +269,8 @@ def evaluation_command(
         command.extend(["--success_type", str(task.get("success_type", "progress"))])
         if "min_apex_height" in success:
             command.extend(["--min_apex_height", str(success["min_apex_height"])])
+        if "min_flip_rotation" in success:
+            command.extend(["--min_flip_rotation", str(success["min_flip_rotation"])])
         if "max_final_anchor_speed" in success:
             command.extend(["--max_final_speed", str(success["max_final_anchor_speed"])])
         if "max_final_ang_speed" in success:
@@ -246,8 +291,11 @@ def evaluation_command(
 def command_plan(genome: AlgorithmGenome, config: dict[str, Any], output_dir: Path) -> dict[str, Any]:
     genome_dir = output_dir / genome.metadata.genome_id
     eval_output = genome_dir / "eval_stage1.json"
-    stage1_checkpoint = f"model_{genome.resource.stage1_iterations}.pt"
+    eval_stage2_output = genome_dir / "eval_stage2.json"
+    stage1_checkpoint = f"model_{max(genome.resource.stage1_iterations - 1, 0)}.pt"
+    stage2_checkpoint = f"model_{max(genome.resource.stage2_iterations - 1, 0)}.pt"
     run_name = f"evo_{genome.metadata.genome_id}_stage1"
+    stage2_run_name = f"evo_{genome.metadata.genome_id}_stage2"
     plan = {
         "genome_id": genome.metadata.genome_id,
         "description": genome.metadata.description,
@@ -260,6 +308,15 @@ def command_plan(genome: AlgorithmGenome, config: dict[str, Any], output_dir: Pa
             checkpoint=stage1_checkpoint,
             output_path=str(eval_output),
             stage="stage1",
+        ),
+        "train_stage2": stage2_training_command(genome, config, stage1_run_name=run_name),
+        "eval_stage2": evaluation_command(
+            genome,
+            config,
+            run_dir=stage2_run_name,
+            checkpoint=stage2_checkpoint,
+            output_path=str(eval_stage2_output),
+            stage="stage2",
         ),
         "resource": asdict(genome.resource),
         "notes": [

@@ -17,6 +17,15 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from scoreboard import CandidateScore, discover_scores, score_eval_json
 
+RUNTIME_FAILURE_STATUSES = {
+    "train_failed",
+    "train_exception",
+    "eval_failed",
+    "eval_exception",
+    "generation_failed",
+    "execute_failed",
+}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build structured LLM feedback from evolution evaluations.")
@@ -78,9 +87,139 @@ def _episode_list(data: dict[str, Any], key: str) -> list[float]:
     return out
 
 
+def _eval_priority(path: Path) -> int:
+    name = path.stem
+    if "final" in name:
+        return 3
+    if "stage2" in name:
+        return 2
+    if "stage1" in name:
+        return 1
+    return 0
+
+
+def _selected_eval_paths(output_dir: Path) -> list[Path]:
+    selected: dict[str, tuple[int, float, Path]] = {}
+    for eval_path in sorted(output_dir.glob("*/eval_*.json")):
+        genome_id = eval_path.parent.name
+        rank = (_eval_priority(eval_path), eval_path.stat().st_mtime)
+        current = selected.get(genome_id)
+        if current is None or rank > (current[0], current[1]):
+            selected[genome_id] = (rank[0], rank[1], eval_path)
+    return [item[2] for item in sorted(selected.values(), key=lambda value: str(value[2]))]
+
+
 def _task_type(config: dict[str, Any]) -> str:
     task = config.get("task", {})
     return str(task.get("success_type") or task.get("name") or "progress")
+
+
+def _runtime_score_stub(genome_id: str, status_path: Path) -> dict[str, Any]:
+    return {
+        "genome_id": genome_id,
+        "fitness": -100.0,
+        "success_rate": 0.0,
+        "episodes": 0,
+        "mean_return": 0.0,
+        "mean_max_torso_x": 0.0,
+        "mean_clearance": 0.0,
+        "termination_counts": {},
+        "eval_path": str(status_path),
+    }
+
+
+def _runtime_failure_feedback(genome_id: str, status_path: Path, config: dict[str, Any]) -> dict[str, Any]:
+    status = load_json(status_path)
+    status_name = str(status.get("status", "unknown"))
+    stage = str(status.get("stage", "unknown"))
+    signal = status.get("signal") or status.get("eval_signal")
+    signal_name = str(signal) if signal else ""
+    return_code = status.get("return_code", status.get("eval_return_code"))
+    train_log_tail = str(status.get("train_log_tail", ""))
+    eval_log_tail = str(status.get("eval_log_tail", ""))
+    log_tail = train_log_tail or eval_log_tail
+    lower_tail = log_tail.lower()
+
+    tags = ["runtime_status_failure", f"runtime_{status_name}"]
+    hypotheses = ["candidate did not produce a valid evaluation, so reward-level feedback is incomplete"]
+    levers = [
+        "repair runtime/resource settings before allocating more training budget",
+        "preserve the same final evaluation protocol after runtime repair",
+    ]
+
+    if "train" in status_name or "train" in stage:
+        tags.append("runtime_train_failed")
+        hypotheses.append("training failed before the candidate could be evaluated")
+        levers.extend(["reduce stage1 num_envs for the retry", "shorten smoke-test iterations before full stage1"])
+    if "eval" in status_name or "eval" in stage:
+        tags.append("runtime_eval_failed")
+        hypotheses.append("evaluation failed after training or checkpoint resolution")
+        levers.extend(["verify checkpoint resolution before retry", "rerun evaluation with fewer parallel envs"])
+    if signal_name:
+        tags.append(f"runtime_{signal_name.lower()}")
+    if signal_name == "SIGBUS" or "bus error" in lower_tail:
+        tags.append("runtime_sigbus")
+        hypotheses.append("SIGBUS is likely an IO/shared-memory/logger/runtime resource failure, not a policy-quality signal")
+        levers.extend(
+            [
+                "set resource.disable_logger=true for the repaired candidate",
+                "reduce num_envs or isolate TensorBoard event writing before reward mutation",
+            ]
+        )
+    if "event_file_writer" in lower_tail or "tensorboard" in lower_tail:
+        tags.append("tensorboard_writer_failure")
+        hypotheses.append("TensorBoard event writer appears in the failure path")
+        levers.append("disable TensorBoard writer for short evolution candidates and keep terminal/checkpoint logging")
+    if "out of memory" in lower_tail or "cuda error" in lower_tail and "memory" in lower_tail:
+        tags.append("runtime_gpu_memory_pressure")
+        hypotheses.append("candidate may exceed stable GPU memory or simulator allocation limits")
+        levers.extend(["reduce resource.num_envs", "prefer early elimination over retrying the same resource budget"])
+    if "no space left" in lower_tail:
+        tags.append("runtime_disk_space")
+        hypotheses.append("logging or checkpoint output may be blocked by storage pressure")
+        levers.extend(["clean stale logs before retry", "increase save_interval for early-stage candidates"])
+    if return_code not in (None, 0):
+        tags.append("runtime_nonzero_return_code")
+
+    return {
+        "feedback_type": "runtime_status",
+        "genome_id": genome_id,
+        "status_path": str(status_path),
+        "runtime_status": {
+            "status": status_name,
+            "stage": stage,
+            "return_code": return_code,
+            "signal": signal_name or None,
+            "duration_seconds": status.get("duration_seconds"),
+            "total_duration_seconds": status.get("total_duration_seconds"),
+            "train_log": status.get("train_log"),
+            "eval_log": status.get("eval_log"),
+        },
+        "score": _runtime_score_stub(genome_id, status_path),
+        "baseline_delta": {},
+        "metrics": {
+            "success_rate": 0.0,
+            "progress_ratio": 0.0,
+            "mean_max_torso_x": 0.0,
+            "mean_clearance": 0.0,
+            "mean_max_body_height": 0.0,
+            "mean_ceiling_zone_body_height": 0.0,
+            "mean_final_speed": 0.0,
+            "mean_final_ang_speed": 0.0,
+            "mean_final_yaw_error": 0.0,
+            "mean_flip_rotation": 0.0,
+            "episode_length_mean": 0.0,
+            "episode_length_std": 0.0,
+            "episode_progress_std": 0.0,
+            "episode_clearance_std": 0.0,
+        },
+        "termination_rates": {},
+        "dominant_termination": "runtime_failure",
+        "failure_tags": sorted(set(tags)),
+        "hypotheses": sorted(set(hypotheses)),
+        "suggested_levers": sorted(set(levers)),
+        "recommendation": "eliminate_or_repair",
+    }
 
 
 def _candidate_feedback(
@@ -98,11 +237,14 @@ def _candidate_feedback(
     termination_rates = _termination_rates(data)
     dominant = _dominant_termination(termination_rates)
     progress = _safe_float(data, "mean_max_torso_x")
-    clearance = _safe_float(data, "mean_max_clearance_over_obstacle")
-    body_height = _safe_float(data, "mean_max_body_height", _safe_float(data, "mean_max_torso_height"))
+    clearance = score.mean_clearance
+    ceiling_zone_body_height = _safe_float(data, "mean_max_body_height", -10.0)
+    torso_height = _safe_float(data, "mean_max_torso_height")
+    body_height = ceiling_zone_body_height if ceiling_zone_body_height > -1.0 else torso_height
     final_speed = _safe_float(data, "mean_final_speed")
     final_ang_speed = _safe_float(data, "mean_final_ang_speed")
     final_yaw_error = _safe_float(data, "mean_final_yaw_error")
+    flip_rotation = _safe_float(data, "mean_flip_rotation")
     progress_ratio = progress / target_x
 
     tags: list[str] = []
@@ -121,7 +263,13 @@ def _candidate_feedback(
     elif progress_ratio < 0.75:
         tags.append("mid_phase_progress_failure")
         hypotheses.append("policy reaches the approach/contact phase but does not complete traversal")
-        levers.extend(["strengthen contact-phase sampling", "allocate stage2 budget only after progress improves"])
+        levers.extend(
+            [
+                "increase phase_progress reward",
+                "strengthen contact-phase sampling",
+                "allocate stage2 budget only after progress improves",
+            ]
+        )
 
     if obstacle_height > 0.0 and clearance < 0.0:
         tags.append("insufficient_clearance")
@@ -149,6 +297,10 @@ def _candidate_feedback(
         if body_height < float(criteria.get("min_apex_height", 1.05)):
             tags.append("insufficient_apex")
             levers.append("increase apex_height reward and mid-clip sampling")
+        if flip_rotation < float(criteria.get("min_flip_rotation", 0.0)):
+            tags.append("insufficient_flip_rotation")
+            hypotheses.append("policy takes off or tracks pose without completing the required rotation")
+            levers.append("increase angular-motion tracking tolerance and flip-phase sampling")
         if final_speed > float(criteria.get("max_final_anchor_speed", 0.8)):
             tags.append("unstable_landing_speed")
             levers.append("increase landing_stability reward")
@@ -159,12 +311,16 @@ def _candidate_feedback(
     if success_type == "crawl":
         criteria = task.get("success_criteria", {})
         max_body_height = float(criteria.get("max_head_or_torso_height", obstacle_height or 0.85))
-        if body_height > max_body_height:
+        if ceiling_zone_body_height <= -1.0:
+            tags.append("never_entered_ceiling_zone")
+            hypotheses.append("policy fails before it reaches the constrained tunnel region")
+            levers.append("increase approach and low-posture progress shaping before ceiling rewards")
+        elif body_height > max_body_height:
             tags.append("ceiling_collision_risk")
             levers.append("increase ceiling_clearance reward and ceiling-zone metric")
         if progress_ratio < 0.75:
             tags.append("crawl_progress_stall")
-            levers.append("increase low-posture forward progress shaping")
+            levers.extend(["increase low-posture forward progress shaping", "increase phase_progress reward"])
 
     episode_lengths = _episode_list(data, "episode_lengths")
     episode_x = _episode_list(data, "episode_max_torso_x")
@@ -198,6 +354,7 @@ def _candidate_feedback(
         recommendation = "eliminate_or_repair"
 
     return {
+        "feedback_type": "evaluation",
         "genome_id": genome_id,
         "eval_path": str(eval_path),
         "score": score.to_dict(),
@@ -208,9 +365,11 @@ def _candidate_feedback(
             "mean_max_torso_x": progress,
             "mean_clearance": clearance,
             "mean_max_body_height": body_height,
+            "mean_ceiling_zone_body_height": ceiling_zone_body_height,
             "mean_final_speed": final_speed,
             "mean_final_ang_speed": final_ang_speed,
             "mean_final_yaw_error": final_yaw_error,
+            "mean_flip_rotation": flip_rotation,
             "episode_length_mean": _mean(episode_lengths),
             "episode_length_std": _std(episode_lengths),
             "episode_progress_std": _std(episode_x),
@@ -230,29 +389,51 @@ def _aggregate(candidate_feedback: list[dict[str, Any]], config: dict[str, Any],
         return {
             "population_status": "no_evaluations",
             "top_failure_tags": [],
+            "evaluation_count": 0,
+            "runtime_failure_count": 0,
+            "runtime_failures": [],
             "next_generation_focus": ["run at least one valid evaluation before LLM-guided evolution"],
         }
 
     tag_counts: dict[str, int] = {}
     term_counts: dict[str, float] = {}
+    runtime_failures: list[dict[str, Any]] = []
     for item in candidate_feedback:
         for tag in item["failure_tags"]:
             tag_counts[tag] = tag_counts.get(tag, 0) + 1
         for name, rate in item["termination_rates"].items():
             term_counts[name] = term_counts.get(name, 0.0) + float(rate)
+        if item.get("feedback_type") == "runtime_status":
+            runtime_failures.append(
+                {
+                    "genome_id": item["genome_id"],
+                    "status": item.get("runtime_status", {}).get("status"),
+                    "stage": item.get("runtime_status", {}).get("stage"),
+                    "signal": item.get("runtime_status", {}).get("signal"),
+                    "failure_tags": item.get("failure_tags", []),
+                    "suggested_levers": item.get("suggested_levers", []),
+                }
+            )
 
     ranked = sorted(candidate_feedback, key=lambda item: float(item["score"]["fitness"]), reverse=True)
+    evaluated = [item for item in candidate_feedback if item.get("feedback_type") == "evaluation"]
     best = ranked[0]
     best_success = float(best["metrics"]["success_rate"])
     baseline_success = baseline.success_rate if baseline is not None else float(config["task"].get("baseline_success_rate", 0.0))
     absolute_delta = best_success - baseline_success
     relative_delta = absolute_delta / max(abs(baseline_success), 1.0e-6) if baseline_success else best_success
     target_relative = float(config.get("task", {}).get("target_relative_improvement", 0.08))
-    target_met = relative_delta >= target_relative and best_success > baseline_success
+    target_met = bool(evaluated) and relative_delta >= target_relative and best_success > baseline_success
 
     focus: list[str] = []
     top_tags = sorted(tag_counts.items(), key=lambda item: (-item[1], item[0]))
     tag_names = [name for name, _ in top_tags[:6]]
+    if "runtime_sigbus" in tag_names or "tensorboard_writer_failure" in tag_names:
+        focus.append("repair runtime first: use resource.disable_logger=true and lower num_envs before mutating rewards")
+    if "runtime_gpu_memory_pressure" in tag_names:
+        focus.append("apply dynamic resource downscaling for unstable candidates before full evaluation")
+    if "runtime_train_failed" in tag_names:
+        focus.append("separate train/runtime failures from policy-quality failures and retry only repaired variants")
     if "ee_body_pos_dominant" in tag_names:
         focus.append("differentiate legal support contact from ee/body tracking failure")
     if "early_progress_failure" in tag_names:
@@ -266,8 +447,15 @@ def _aggregate(candidate_feedback: list[dict[str, Any]], config: dict[str, Any],
     if not focus:
         focus.append("exploit best candidate while preserving stage-gated validation")
 
+    if target_met:
+        population_status = "target_met"
+    elif not evaluated and runtime_failures:
+        population_status = "needs_runtime_repair"
+    else:
+        population_status = "needs_iteration"
+
     return {
-        "population_status": "target_met" if target_met else "needs_iteration",
+        "population_status": population_status,
         "best_genome_id": best["genome_id"],
         "best_success_rate": best_success,
         "baseline_success_rate": baseline_success,
@@ -275,6 +463,9 @@ def _aggregate(candidate_feedback: list[dict[str, Any]], config: dict[str, Any],
         "success_rate_relative_delta": relative_delta,
         "target_relative_improvement": target_relative,
         "target_met": target_met,
+        "evaluation_count": len(evaluated),
+        "runtime_failure_count": len(runtime_failures),
+        "runtime_failures": runtime_failures,
         "top_failure_tags": [{"tag": name, "count": count} for name, count in top_tags],
         "dominant_termination_rates": sorted(term_counts.items(), key=lambda item: (-item[1], item[0])),
         "next_generation_focus": focus,
@@ -296,12 +487,25 @@ def build_feedback(
 
     scores = {score.genome_id: score for score in discover_scores(output_dir, config)}
     candidate_feedback: list[dict[str, Any]] = []
-    for eval_path in sorted(output_dir.glob("*/eval_*.json")):
+    seen_genome_ids: set[str] = set()
+    for eval_path in _selected_eval_paths(output_dir):
         genome_id = eval_path.parent.name
         score = scores.get(genome_id)
         if score is None:
             continue
+        seen_genome_ids.add(genome_id)
         candidate_feedback.append(_candidate_feedback(genome_id, eval_path, score, config, baseline))
+
+    for status_path in sorted(output_dir.glob("*/status.json")):
+        genome_id = status_path.parent.name
+        if genome_id in seen_genome_ids:
+            continue
+        try:
+            status = load_json(status_path)
+        except (OSError, json.JSONDecodeError):
+            continue
+        if str(status.get("status", "")) in RUNTIME_FAILURE_STATUSES:
+            candidate_feedback.append(_runtime_failure_feedback(genome_id, status_path, config))
 
     aggregate = _aggregate(candidate_feedback, config, baseline)
     payload = {
@@ -316,6 +520,7 @@ def build_feedback(
         "llm_feedback_brief": {
             "must_address": aggregate.get("next_generation_focus", []),
             "avoid_repeating": aggregate.get("top_failure_tags", [])[:6],
+            "runtime_failures": aggregate.get("runtime_failures", []),
             "evaluation_contract": {
                 "stage1_success_threshold": config.get("evolution", {}).get("stage1_success_threshold"),
                 "stage2_success_threshold": config.get("evolution", {}).get("stage2_success_threshold"),

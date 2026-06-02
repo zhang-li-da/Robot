@@ -128,20 +128,127 @@ def _extract_json_object(text: str) -> dict[str, Any]:
     if stripped.startswith("```"):
         stripped = re.sub(r"^```(?:json)?\s*", "", stripped)
         stripped = re.sub(r"\s*```$", "", stripped)
-    try:
-        return json.loads(stripped)
-    except json.JSONDecodeError as first_error:
-        start = stripped.find("{")
-        end = stripped.rfind("}")
-        if start < 0 or end <= start:
-            raise MimimaxJSONError(f"No JSON object found in Mimimax response: {text[:800]}", text) from first_error
+    candidates = [stripped]
+    start = stripped.find("{")
+    end = stripped.rfind("}")
+    if start >= 0 and end > start:
+        candidates.append(stripped[start : end + 1])
+
+    first_error: json.JSONDecodeError | None = None
+    for candidate in candidates:
         try:
-            return json.loads(stripped[start : end + 1])
-        except json.JSONDecodeError as second_error:
-            raise MimimaxJSONError(
-                f"Mimimax response JSON parse failed: {second_error}; first_error={first_error}",
-                text,
-            ) from second_error
+            return json.loads(candidate)
+        except json.JSONDecodeError as exc:
+            first_error = first_error or exc
+            repaired = _repair_trailing_json_closers(candidate)
+            if repaired != candidate:
+                try:
+                    return json.loads(repaired)
+                except json.JSONDecodeError:
+                    pass
+
+    salvaged = _salvage_candidates_payload(stripped)
+    if salvaged:
+        return salvaged
+
+    raise MimimaxJSONError(
+        f"Mimimax response JSON parse failed: {first_error}",
+        text,
+    )
+
+
+def _salvage_candidates_payload(text: str) -> dict[str, Any]:
+    marker = '"candidates"'
+    marker_index = text.find(marker)
+    if marker_index < 0:
+        return {}
+    array_start = text.find("[", marker_index)
+    if array_start < 0:
+        return {}
+
+    candidates: list[dict[str, Any]] = []
+    object_start: int | None = None
+    depth = 0
+    in_string = False
+    escaped = False
+    for index in range(array_start + 1, len(text)):
+        char = text[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+        if char == '"':
+            in_string = True
+            continue
+        if char == "{":
+            if depth == 0:
+                object_start = index
+            depth += 1
+            continue
+        if char == "}":
+            if depth == 0:
+                continue
+            depth -= 1
+            if depth == 0 and object_start is not None:
+                raw_object = text[object_start : index + 1]
+                try:
+                    parsed = json.loads(raw_object)
+                except json.JSONDecodeError:
+                    object_start = None
+                    continue
+                if isinstance(parsed, dict):
+                    candidates.append(parsed)
+                object_start = None
+
+    if not candidates:
+        return {}
+    return {
+        "candidates": candidates,
+        "parse_repair": {
+            "type": "salvaged_complete_candidate_objects",
+            "salvaged_count": len(candidates),
+        },
+    }
+
+
+def _repair_trailing_json_closers(text: str) -> str:
+    """Remove unmatched closing braces/brackets outside strings.
+
+    MiniMax occasionally returns otherwise valid compact JSON with one extra
+    closing brace at the end. This repair is deliberately narrow: it only drops
+    closers that cannot match the current parse stack.
+    """
+
+    stack: list[str] = []
+    remove_indexes: set[int] = set()
+    in_string = False
+    escaped = False
+    pairs = {"}": "{", "]": "["}
+    for index, char in enumerate(text):
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+        if char == '"':
+            in_string = True
+        elif char in "{[":
+            stack.append(char)
+        elif char in pairs:
+            if stack and stack[-1] == pairs[char]:
+                stack.pop()
+            else:
+                remove_indexes.add(index)
+    if not remove_indexes:
+        return text
+    return "".join(char for index, char in enumerate(text) if index not in remove_indexes)
 
 
 def generate_candidates(

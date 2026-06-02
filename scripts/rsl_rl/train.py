@@ -26,6 +26,12 @@ parser.add_argument("--seed", type=int, default=None, help="Seed used for the en
 parser.add_argument("--max_iterations", type=int, default=None, help="RL Policy training iterations.")
 parser.add_argument("--registry_name", type=str, default=None, help="The name of the wandb motion registry artifact.")
 parser.add_argument("--motion_file", type=str, default=None, help="Path to a local BeyondMimic motion.npz file.")
+parser.add_argument(
+    "--disable_logger",
+    action="store_true",
+    default=False,
+    help="Disable TensorBoard/W&B/Neptune writers while keeping terminal logs and checkpoints.",
+)
 
 # append RSL-RL cli arguments
 cli_args.add_rsl_rl_args(parser)
@@ -72,6 +78,25 @@ torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
 torch.backends.cudnn.deterministic = False
 torch.backends.cudnn.benchmark = False
+
+
+class NullSummaryWriter:
+    """No-op writer used for short evolution runs that must avoid event-file threads."""
+
+    def add_scalar(self, *args, **kwargs):
+        return None
+
+    def save_file(self, *args, **kwargs):
+        return None
+
+    def save_model(self, *args, **kwargs):
+        return None
+
+    def log_config(self, *args, **kwargs):
+        return None
+
+    def close(self):
+        return None
 
 
 @hydra_task_config(args_cli.task, "rsl_rl_cfg_entry_point")
@@ -143,6 +168,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     runner = OnPolicyRunner(
         env, agent_cfg.to_dict(), log_dir=log_dir, device=agent_cfg.device, registry_name=registry_name
     )
+    if args_cli.disable_logger:
+        runner.logger_type = "none"
+        runner.writer = NullSummaryWriter()
+        print("[INFO] External summary writer disabled; terminal logs and checkpoints remain enabled.")
     # write git state to logs
     runner.add_git_repo_to_log(__file__)
     # save resume path before creating a new log_dir

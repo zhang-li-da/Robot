@@ -13,7 +13,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from genome_ops import seed_population
+from genome_ops import normalize_genome_for_config, seed_population
 from minimax_client import MimimaxClientError, MimimaxJSONError, generate_candidates, load_credentials
 from planner import write_plan_files
 from schemas import AlgorithmGenome
@@ -44,12 +44,77 @@ def load_history(path: Path | None) -> dict[str, Any]:
     return load_json(path)
 
 
+def load_motion_catalog(config: dict[str, Any]) -> dict[str, Any]:
+    catalog_path = config.get("task", {}).get("motion_catalog") or config.get("motion_catalog")
+    if not catalog_path:
+        return {}
+    path = Path(str(catalog_path))
+    if not path.exists():
+        return {"missing_motion_catalog": str(path)}
+    catalog = load_json(path)
+    task_name = str(config.get("task", {}).get("name", ""))
+    filter_tasks = config.get("task", {}).get("motion_catalog_filter_tasks") or ([task_name] if task_name else [])
+    clips = catalog.get("clips", [])
+    if isinstance(clips, list) and filter_tasks:
+        task_clips = [
+            item
+            for item in clips
+            if any(filter_task in item.get("suggested_tasks", []) for filter_task in filter_tasks)
+        ]
+        if task_clips:
+            catalog = dict(catalog)
+            catalog["clips"] = task_clips[:20]
+            catalog["prompt_filter"] = {
+                "task_name": task_name,
+                "filter_tasks": filter_tasks,
+                "matched_clips": len(task_clips),
+                "included": len(catalog["clips"]),
+            }
+    return catalog
+
+
+def load_task_profile(config: dict[str, Any]) -> dict[str, Any]:
+    profile_path = config.get("task", {}).get("task_feature_profile") or config.get("task_feature_profile")
+    if not profile_path:
+        return {}
+    path = Path(str(profile_path))
+    if not path.exists():
+        return {"missing_task_feature_profile": str(path)}
+    return load_json(path)
+
+
+def load_asset_manifest(config: dict[str, Any]) -> dict[str, Any]:
+    manifest_path = config.get("task", {}).get("asset_manifest") or config.get("asset_manifest")
+    if not manifest_path:
+        return {}
+    path = Path(str(manifest_path))
+    if not path.exists():
+        return {"missing_asset_manifest": str(path)}
+    manifest = load_json(path)
+    return {
+        "schema_version": manifest.get("schema_version"),
+        "asap_root": manifest.get("asap_root"),
+        "purpose": manifest.get("purpose"),
+        "counts": manifest.get("counts", {}),
+        "known_limitations": manifest.get("known_limitations", []),
+        "tag_counts": manifest.get("tag_counts", {}),
+        "sim2real_mimic_models": manifest.get("sim2real_mimic_models", []),
+        "sim2real_locomotion_models": manifest.get("sim2real_locomotion_models", []),
+    }
+
+
 def render_prompt(config: dict[str, Any], history: dict[str, Any], population_size: int) -> str:
     template_path = Path(config["llm"]["prompt_template"])
     template = template_path.read_text(encoding="utf-8")
+    motion_catalog = load_motion_catalog(config)
+    task_profile = load_task_profile(config)
+    asset_manifest = load_asset_manifest(config)
     return (
         template.replace("{{CONFIG_JSON}}", json.dumps(config, indent=2, ensure_ascii=False))
+        .replace("{{TASK_PROFILE_JSON}}", json.dumps(task_profile, indent=2, ensure_ascii=False))
         .replace("{{HISTORY_JSON}}", json.dumps(history, indent=2, ensure_ascii=False))
+        .replace("{{MOTION_CATALOG_JSON}}", json.dumps(motion_catalog, indent=2, ensure_ascii=False))
+        .replace("{{ASSET_MANIFEST_JSON}}", json.dumps(asset_manifest, indent=2, ensure_ascii=False))
         .replace("{{REQUESTED_POPULATION_SIZE}}", str(population_size))
     )
 
@@ -78,6 +143,7 @@ def parse_llm_candidates(payload: dict[str, Any], config: dict[str, Any], popula
         except (TypeError, ValueError) as exc:
             print(f"[WARN] reject candidate[{index}] schema error: {exc}")
             continue
+        genome = normalize_genome_for_config(genome, config)
         errors = validate_genome(genome, config)
         if errors:
             print(f"[WARN] reject {genome.metadata.genome_id}: {'; '.join(errors)}")
@@ -103,6 +169,7 @@ def main() -> int:
     population_size = int(args.population_size or config.get("evolution", {}).get("population_size", 4))
     history = load_history(args.history)
     feedback = load_json(args.feedback) if args.feedback is not None and args.feedback.exists() else {}
+    motion_catalog = load_motion_catalog(config)
 
     run_id_base = datetime.now().strftime(f"%Y%m%d_%H%M%S_%f_gen{args.generation:02d}")
     output_dir = args.output_root / run_id_base
@@ -124,6 +191,23 @@ def main() -> int:
             json.dumps(feedback, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
+    if motion_catalog:
+        (output_dir / "motion_catalog_snapshot.json").write_text(
+            json.dumps(motion_catalog, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+    asset_manifest = load_asset_manifest(config)
+    if asset_manifest:
+        (output_dir / "asset_manifest_snapshot.json").write_text(
+            json.dumps(asset_manifest, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+    task_profile = load_task_profile(config)
+    if task_profile:
+        (output_dir / "task_profile_snapshot.json").write_text(
+            json.dumps(task_profile, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
 
     genomes: list[AlgorithmGenome] = []
     if args.use_llm:
@@ -134,8 +218,7 @@ def main() -> int:
             credentials = load_credentials(config)
             print(
                 "[INFO] Mimimax credentials loaded: "
-                f"url={credentials.api_url}, mode={credentials.api_mode}, model={credentials.model}, "
-                f"key={credentials.redacted_key}"
+                f"url={credentials.api_url}, mode={credentials.api_mode}, model={credentials.model}"
             )
             payload = generate_candidates(prompt, config, credentials, timeout=llm_timeout)
             (output_dir / "llm_response.json").write_text(
@@ -167,6 +250,7 @@ def main() -> int:
     validation_report: list[dict[str, Any]] = []
     accepted: list[AlgorithmGenome] = []
     for genome in genomes:
+        genome = normalize_genome_for_config(genome, config)
         errors = validate_genome(genome, config)
         validation_report.append({"genome_id": genome.metadata.genome_id, "valid": not errors, "errors": errors})
         if not errors:

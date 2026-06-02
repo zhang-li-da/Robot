@@ -1,0 +1,283 @@
+{
+  "schema_version": "1.0",
+  "project": "task_adaptive_beyondmimic",
+  "task": {
+    "name": "g1_jump_leap",
+    "isaac_task": "Tracking-JumpLeap-G1-v0",
+    "robot": "unitree_g1_29dof",
+    "motion_file": "artifacts/g1_jump_leap/motion/motion.npz",
+    "motion_catalog": "evolution/action_catalog/asap_motion_catalog.json",
+    "baseline_checkpoint": "artifacts/g1_jump_leap/checkpoints/baseline.pt",
+    "target_x": 5.0,
+    "obstacle_height": 0.0,
+    "min_root_height": 0.85,
+    "baseline_success_rate": 0.0,
+    "target_relative_improvement": 0.08,
+    "final_eval_episodes": 64,
+    "reward_terms": [
+      "motion_global_anchor_pos",
+      "motion_global_anchor_ori",
+      "motion_body_pos",
+      "motion_body_ori",
+      "motion_body_lin_vel",
+      "motion_body_ang_vel",
+      "action_rate_l2",
+      "joint_limit",
+      "undesired_contacts",
+      "task_progress",
+      "phase_progress",
+      "apex_height",
+      "landing_stability",
+      "contact_force"
+    ],
+    "success_criteria": {
+      "description": "完成前向跳跃/跨越并稳定落地",
+      "min_progress_x": 5.0,
+      "min_apex_height": 0.85,
+      "max_final_anchor_speed": 1.2,
+      "max_final_ang_speed": 2.0,
+      "max_final_yaw_error": 0.9,
+      "allow_hand_contact": false
+    },
+    "eval_script": "scripts/rsl_rl/eval_stunt.py",
+    "success_type": "progress"
+  },
+  "llm": {
+    "provider": "minimax",
+    "model": "MiniMax-M3",
+    "prompt_template": "evolution/prompts/mimimax_m3_stunt_candidate_generation_zh.md",
+    "temperature": 0.35,
+    "max_tokens": 8192,
+    "api_mode": "auto",
+    "timeout_seconds": 600
+  },
+  "evolution": {
+    "population_size": 6,
+    "elite_count": 2,
+    "mutation_rate": 0.28,
+    "crossover_rate": 0.55,
+    "random_seed": 20260602,
+    "max_generations": 8,
+    "stage1_success_threshold": 0.55,
+    "stage2_success_threshold": 0.75,
+    "minimum_final_trials": 50
+  },
+  "resource_defaults": {
+    "num_envs": 2048,
+    "stage1_iterations": 800,
+    "stage2_iterations": 1800,
+    "full_iterations": 4000,
+    "save_interval": 400,
+    "stage1_eval_episodes": 16,
+    "stage2_eval_episodes": 32,
+    "final_eval_episodes": 64,
+    "poll_seconds": 60,
+    "disable_logger": true
+  },
+  "search_space": {
+    "reward.motion_global_anchor_pos_weight": [
+      0.25,
+      1.2
+    ],
+    "reward.motion_global_anchor_pos_std": [
+      0.22,
+      0.6
+    ],
+    "reward.motion_global_anchor_ori_weight": [
+      0.15,
+      1.0
+    ],
+    "reward.motion_global_anchor_ori_std": [
+      0.25,
+      0.85
+    ],
+    "reward.motion_body_pos_weight": [
+      0.55,
+      1.8
+    ],
+    "reward.motion_body_pos_std": [
+      0.2,
+      0.5
+    ],
+    "reward.motion_body_ori_weight": [
+      0.35,
+      1.4
+    ],
+    "reward.motion_body_ori_std": [
+      0.25,
+      0.8
+    ],
+    "reward.motion_body_lin_vel_weight": [
+      0.35,
+      1.6
+    ],
+    "reward.motion_body_lin_vel_std": [
+      0.55,
+      1.8
+    ],
+    "reward.motion_body_ang_vel_weight": [
+      0.25,
+      1.3
+    ],
+    "reward.motion_body_ang_vel_std": [
+      2.0,
+      5.5
+    ],
+    "reward.action_rate_l2_weight": [
+      -0.22,
+      -0.02
+    ],
+    "reward.joint_limit_weight": [
+      -14.0,
+      -4.0
+    ],
+    "reward.undesired_contacts_weight": [
+      -0.25,
+      -0.02
+    ],
+    "reward.task_progress_weight": [
+      0.0,
+      1.4
+    ],
+    "reward.clearance_weight": [
+      0.0,
+      0.0
+    ],
+    "reward.apex_height_weight": [
+      0.0,
+      1.4
+    ],
+    "reward.landing_stability_weight": [
+      0.0,
+      1.2
+    ],
+    "reward.ceiling_clearance_weight": [
+      0.0,
+      0.0
+    ],
+    "reward.yaw_alignment_weight": [
+      0.0,
+      0.0
+    ],
+    "reward.contact_force_weight": [
+      -0.3,
+      0.0
+    ],
+    "sampling.adaptive_uniform_ratio": [
+      0.35,
+      1.5
+    ],
+    "sampling.adaptive_kernel_size": [
+      2,
+      12
+    ],
+    "sampling.adaptive_lambda": [
+      0.65,
+      0.98
+    ],
+    "sampling.adaptive_alpha": [
+      0.0005,
+      0.05
+    ],
+    "sampling.fixed_start_probability": [
+      0.35,
+      0.95
+    ],
+    "sampling.fixed_start_time_steps": [
+      0,
+      12
+    ],
+    "termination.anchor_pos_z_threshold": [
+      0.24,
+      0.65
+    ],
+    "termination.anchor_ori_threshold": [
+      0.75,
+      1.55
+    ],
+    "termination.ee_body_pos_z_threshold": [
+      0.28,
+      0.65
+    ],
+    "ppo.learning_rate": [
+      0.00035,
+      0.0015
+    ],
+    "ppo.entropy_coef": [
+      0.001,
+      0.02
+    ],
+    "ppo.desired_kl": [
+      0.006,
+      0.025
+    ],
+    "ppo.clip_param": [
+      0.12,
+      0.28
+    ],
+    "ppo.gamma": [
+      0.975,
+      0.997
+    ],
+    "ppo.lam": [
+      0.9,
+      0.98
+    ],
+    "ppo.num_learning_epochs": [
+      3,
+      8
+    ],
+    "ppo.num_mini_batches": [
+      2,
+      8
+    ],
+    "ppo.max_grad_norm": [
+      0.6,
+      1.5
+    ],
+    "domain_randomization.friction_static_min": [
+      0.3,
+      0.9
+    ],
+    "domain_randomization.friction_static_max": [
+      1.1,
+      2.0
+    ],
+    "domain_randomization.friction_dynamic_min": [
+      0.25,
+      0.8
+    ],
+    "domain_randomization.friction_dynamic_max": [
+      0.9,
+      1.6
+    ],
+    "domain_randomization.joint_default_pos_abs": [
+      0.0,
+      0.035
+    ],
+    "domain_randomization.torso_com_x_abs": [
+      0.0,
+      0.04
+    ],
+    "domain_randomization.torso_com_y_abs": [
+      0.0,
+      0.07
+    ],
+    "domain_randomization.torso_com_z_abs": [
+      0.0,
+      0.07
+    ],
+    "domain_randomization.push_interval_min": [
+      0.8,
+      3.5
+    ],
+    "domain_randomization.push_interval_max": [
+      2.5,
+      6.0
+    ],
+    "reward.phase_progress_weight": [
+      0.0,
+      1.2
+    ]
+  }
+}

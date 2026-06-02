@@ -34,6 +34,7 @@ class RewardGenes:
     joint_limit_weight: float = -10.0
     undesired_contacts_weight: float = -0.1
     task_progress_weight: float = 0.0
+    phase_progress_weight: float = 0.0
     clearance_weight: float = 0.0
     apex_height_weight: float = 0.0
     landing_stability_weight: float = 0.0
@@ -99,6 +100,7 @@ class ResourceGenes:
     stage1_eval_episodes: int = 16
     stage2_eval_episodes: int = 32
     final_eval_episodes: int = 64
+    disable_logger: bool = False
 
 
 @dataclass

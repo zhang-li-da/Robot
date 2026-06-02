@@ -25,6 +25,23 @@ def bad_anchor_pos_z_only(env: ManagerBasedRLEnv, command_name: str, threshold: 
     return torch.abs(command.anchor_pos_w[:, -1] - command.robot_anchor_pos_w[:, -1]) > threshold
 
 
+def bad_anchor_pos_z_phase_gated(
+    env: ManagerBasedRLEnv,
+    command_name: str,
+    early_threshold: float,
+    late_threshold: float,
+    switch_phase: float,
+) -> torch.Tensor:
+    command: MotionCommand = env.command_manager.get_term(command_name)
+    phase = command.time_steps.float() / max(command.motion.time_step_total - 1, 1)
+    threshold = torch.where(
+        phase < switch_phase,
+        torch.full_like(phase, early_threshold),
+        torch.full_like(phase, late_threshold),
+    )
+    return torch.abs(command.anchor_pos_w[:, -1] - command.robot_anchor_pos_w[:, -1]) > threshold
+
+
 def bad_anchor_ori(
     env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, command_name: str, threshold: float
 ) -> torch.Tensor:
@@ -56,3 +73,25 @@ def bad_motion_body_pos_z_only(
     body_indexes = _get_body_indexes(command, body_names)
     error = torch.abs(command.body_pos_relative_w[:, body_indexes, -1] - command.robot_body_pos_w[:, body_indexes, -1])
     return torch.any(error > threshold, dim=-1)
+
+
+def bad_motion_body_pos_z_phase_gated(
+    env: ManagerBasedRLEnv,
+    command_name: str,
+    early_threshold: float,
+    late_threshold: float,
+    switch_phase: float,
+    body_names: list[str] | None = None,
+) -> torch.Tensor:
+    """Phase-gated z-only body tracking termination for long contact-rich stunts."""
+    command: MotionCommand = env.command_manager.get_term(command_name)
+
+    body_indexes = _get_body_indexes(command, body_names)
+    error = torch.abs(command.body_pos_relative_w[:, body_indexes, -1] - command.robot_body_pos_w[:, body_indexes, -1])
+    phase = command.time_steps.float() / max(command.motion.time_step_total - 1, 1)
+    threshold = torch.where(
+        phase < switch_phase,
+        torch.full_like(phase, early_threshold),
+        torch.full_like(phase, late_threshold),
+    )
+    return torch.any(error > threshold[:, None], dim=-1)

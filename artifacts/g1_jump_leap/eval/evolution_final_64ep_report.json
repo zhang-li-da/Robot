@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0",
+  "task": {
+    "name": "g1_jump_leap",
+    "isaac_task": "Tracking-JumpLeap-G1-v0",
+    "robot": "unitree_g1_29dof",
+    "motion_file": "artifacts/g1_jump_leap/motion/motion.npz",
+    "motion_catalog": "evolution/action_catalog/asap_motion_catalog.json",
+    "baseline_checkpoint": "artifacts/g1_jump_leap/checkpoints/baseline.pt",
+    "target_x": 5.0,
+    "obstacle_height": 0.0,
+    "min_root_height": 0.85,
+    "baseline_success_rate": 0.0,
+    "target_relative_improvement": 0.08,
+    "final_eval_episodes": 64,
+    "reward_terms": [
+      "motion_global_anchor_pos",
+      "motion_global_anchor_ori",
+      "motion_body_pos",
+      "motion_body_ori",
+      "motion_body_lin_vel",
+      "motion_body_ang_vel",
+      "action_rate_l2",
+      "joint_limit",
+      "undesired_contacts",
+      "task_progress",
+      "phase_progress",
+      "apex_height",
+      "landing_stability",
+      "contact_force"
+    ],
+    "success_criteria": {
+      "description": "完成前向跳跃/跨越并稳定落地",
+      "min_progress_x": 5.0,
+      "min_apex_height": 0.85,
+      "max_final_anchor_speed": 1.2,
+      "max_final_ang_speed": 2.0,
+      "max_final_yaw_error": 0.9,
+      "allow_hand_contact": false
+    },
+    "eval_script": "scripts/rsl_rl/eval_stunt.py",
+    "success_type": "progress"
+  },
+  "baseline_eval": {
+    "genome_id": "baseline",
+    "fitness": -2.060011746617965,
+    "success_rate": 0.0,
+    "episodes": 64,
+    "mean_return": 0.5610968046821654,
+    "mean_max_torso_x": 0.8606710135936737,
+    "mean_clearance": -0.07169451043009756,
+    "termination_counts": {
+      "anchor_ori": 0,
+      "anchor_pos": 56,
+      "ee_body_pos": 12,
+      "time_out": 0
+    },
+    "eval_path": "artifacts/g1_jump_leap/eval/baseline_beyondmimic.json",
+    "mean_final_speed": 3.553105402737856,
+    "mean_final_ang_speed": 3.5358648896217346,
+    "mean_final_yaw_error": 0.08182846749787132,
+    "mean_max_body_height": 1.0208671167492867,
+    "mean_flip_rotation": null
+  },
+  "adapted_eval": {
+    "genome_id": "adapted_task_rewards",
+    "fitness": 1.800833528861404,
+    "success_rate": 0.0,
+    "episodes": 64,
+    "mean_return": 5.424837417900562,
+    "mean_max_torso_x": 1.6714361570775509,
+    "mean_clearance": 0.01932719033211472,
+    "termination_counts": {
+      "anchor_ori": 0,
+      "anchor_pos": 1,
+      "ee_body_pos": 64,
+      "time_out": 0
+    },
+    "eval_path": "artifacts/g1_jump_leap/eval/adapted_task_rewards.json",
+    "mean_final_speed": 2.2462399206124246,
+    "mean_final_ang_speed": 1.717328090686351,
+    "mean_final_yaw_error": 0.13517124703503214,
+    "mean_max_body_height": 1.1143382750451565,
+    "mean_flip_rotation": null
+  },
+  "best_evolved_selection_stage1": {
+    "genome_id": "gen0_m3_001",
+    "fitness": 72.2621059730649,
+    "success_rate": 0.625,
+    "episodes": 16,
+    "mean_return": 9.332608014345169,
+    "mean_max_torso_x": 5.08736227452755,
+    "mean_clearance": 0.10227377861738207,
+    "termination_counts": {
+      "anchor_ori": 0,
+      "anchor_pos": 3,
+      "ee_body_pos": 4,
+      "time_out": 0
+    },
+    "eval_path": "/root/whole_body_tracking-main/outputs/evolution_amass/jump_leap/20260602_163404_197448_gen00/gen0_m3_001/eval_stage1.json",
+    "success_rate_delta_vs_baseline": 0.625,
+    "fitness_delta_vs_baseline": 74.32211771968286,
+    "scoreboard": "outputs/evolution_amass/jump_leap/20260602_163404_197448_gen00/scoreboard.json",
+    "generation_dir": "outputs/evolution_amass/jump_leap/20260602_163404_197448_gen00"
+  },
+  "best_evolved_final_64ep": {
+    "genome_id": "gen0_m3_001",
+    "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_jump_leap/2026-06-02_17-01-12_evo_gen0_m3_001_stage1/model_799.pt",
+    "eval_path": "artifacts/g1_jump_leap/eval/best_evolved_64ep.json",
+    "success_rate": 0.546875,
+    "successes": 35,
+    "episodes": 64,
+    "mean_return": 9.705457799136639,
+    "mean_max_torso_x": 5.006427146494389,
+    "mean_max_body_height": 1.194863561540842,
+    "mean_final_speed": 1.7706980844959617,
+    "mean_final_ang_speed": 1.8736204819288105,
+    "mean_final_yaw_error": 0.1286463696711735,
+    "termination_counts": {
+      "anchor_ori": 0,
+      "anchor_pos": 14,
+      "ee_body_pos": 8,
+      "time_out": 0
+    },
+    "success_rate_delta_vs_baseline": 0.546875,
+    "meets_8pct_50_trial_target": true
+  }
+}

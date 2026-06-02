@@ -30,8 +30,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--start_generation", type=int, default=0)
     parser.add_argument("--use_llm", action="store_true")
     parser.add_argument("--llm_timeout", type=float, default=None)
+    parser.add_argument("--initial_history", type=Path, default=None, help="Optional scoreboard JSON to seed generation 0.")
+    parser.add_argument("--initial_feedback", type=Path, default=None, help="Optional feedback JSON to seed generation 0.")
     parser.add_argument("--skip_execute", action="store_true", help="Generate plans and feedback wiring without training.")
     parser.add_argument("--stop_on_target", action="store_true", help="Stop when feedback target_met is true.")
+    parser.add_argument("--enable_stage2", action="store_true", help="Allow execute_generation.py to promote strong candidates.")
+    parser.add_argument("--stage2_min_success_delta", type=float, default=0.05)
+    parser.add_argument("--stage2_min_fitness_delta", type=float, default=5.0)
     return parser.parse_args()
 
 
@@ -97,8 +102,13 @@ def main() -> int:
     }
     write_loop_state(state_path, state)
 
-    history_path: Path | None = None
-    feedback_path: Path | None = None
+    history_path: Path | None = args.initial_history if args.initial_history is not None and args.initial_history.exists() else None
+    feedback_path: Path | None = args.initial_feedback if args.initial_feedback is not None and args.initial_feedback.exists() else None
+    if history_path is not None:
+        state["initial_history"] = str(history_path)
+    if feedback_path is not None:
+        state["initial_feedback"] = str(feedback_path)
+    write_loop_state(state_path, state)
     for generation in range(args.start_generation, args.start_generation + max_generations):
         before = {path.resolve() for path in output_root.iterdir() if path.is_dir()}
         generation_log = loop_dir / f"generation_{generation:02d}_run_generation.log"
@@ -158,6 +168,10 @@ def main() -> int:
             ]
             if args.baseline_eval is not None:
                 execute_cmd.extend(["--baseline_eval", str(args.baseline_eval)])
+            if args.enable_stage2:
+                execute_cmd.append("--enable_stage2")
+                execute_cmd.extend(["--stage2_min_success_delta", str(args.stage2_min_success_delta)])
+                execute_cmd.extend(["--stage2_min_fitness_delta", str(args.stage2_min_fitness_delta)])
             exec_rc = run_command(execute_cmd, repo, execute_log)
             record["execute_return_code"] = exec_rc
             record["execute_log"] = str(execute_log)
