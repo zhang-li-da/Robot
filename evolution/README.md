@@ -31,12 +31,15 @@ scripts/evolution/
 scripts/asap_g1_task_suite.py
 scripts/index_asap_motion_catalog.py
 scripts/index_asap_assets.py
+scripts/select_asap_evolution_tasks.py
 scripts/create_asap_evolution_configs.py
 scripts/create_asap_task_profiles.py
 scripts/run_asap_g1_evolution_experiments.sh
 docs/beyondmimic_task_adaptive_evolution.md
 evolution/action_catalog/stunt_motion_sources_zh.md
 evolution/action_catalog/asap_motion_catalog.json
+evolution/action_catalog/asap_evolution_candidate_queue.json
+evolution/action_catalog/asap_evolution_candidate_queue_zh.md
 evolution/action_catalog/asap_asset_manifest.json
 evolution/action_catalog/asap_asset_manifest_zh.md
 evolution/task_profiles/*.json
@@ -248,6 +251,26 @@ artifacts/<task>/video/best_evolved_video_manifest.json
 ```bash
 bash scripts/finalize_asap_evolution_results.sh
 ```
+
+ASAP 动作包更新后，先刷新动作目录和候选队列：
+
+```bash
+cd /root/whole_body_tracking-main
+source /base/mambaforge/etc/profile.d/conda.sh
+conda activate /root/shared-nvme/conda_envs/isaaclab210
+python scripts/index_asap_motion_catalog.py
+python scripts/index_asap_assets.py
+python scripts/select_asap_evolution_tasks.py --limit 24
+```
+
+候选队列输出：
+
+```text
+evolution/action_catalog/asap_evolution_candidate_queue.json
+evolution/action_catalog/asap_evolution_candidate_queue_zh.md
+```
+
+该队列按动作标签、位移、高度变化、时长和是否已有正式配置排序，并给出推荐的 `base_config`、`isaac_task`、`success_type` 和 reward 进化重点。它用于把后续新增的翻墙、钻洞、后空翻、登墙转身 motion 自动转成任务优先级和 LLM prompt 证据。`proxy` 类动作只能作为预训练或压力测试，不能作为真实特技任务的最终成功证据。
 
 如果只想检查闭环目录、prompt 和反馈接线，不启动训练：
 
