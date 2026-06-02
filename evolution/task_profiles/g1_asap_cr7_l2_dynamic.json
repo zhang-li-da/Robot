@@ -27,7 +27,9 @@
       "id": "0-motions_raw_tairantestbed_smpl_video_CR7_level2_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_CR7_level2_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_CR7_level2_filter_amass",
+      "motion_archetype": "dynamic_balance",
       "tags": [
+        "large_joint_excursion",
         "large_vertical_motion",
         "locomotion",
         "sports_motion",

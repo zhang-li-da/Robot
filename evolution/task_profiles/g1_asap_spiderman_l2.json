@@ -27,10 +27,16 @@
       "id": "0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass",
+      "motion_archetype": "wall_contact_proxy",
       "tags": [
+        "in_place_high_dynamic",
+        "large_height_transition",
+        "large_joint_excursion",
         "large_limb_range",
         "large_vertical_motion",
+        "long_sequence",
         "low_dynamic_pose",
+        "low_root_height",
         "wall_turn_proxy"
       ],
       "suggested_tasks": [

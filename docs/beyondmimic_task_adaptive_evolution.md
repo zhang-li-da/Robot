@@ -306,7 +306,10 @@ fps
 cd /root/whole_body_tracking-main
 conda activate /root/shared-nvme/conda_envs/isaaclab210
 python scripts/index_asap_motion_catalog.py
+python scripts/index_asap_assets.py
+python scripts/select_asap_evolution_tasks.py --limit 24
 python scripts/create_asap_task_profiles.py
+python scripts/build_asap_task_adaptive_roadmap.py --limit 18
 ```
 
 输出文件：
@@ -314,6 +317,12 @@ python scripts/create_asap_task_profiles.py
 ```text
 evolution/action_catalog/asap_motion_catalog.json
 evolution/action_catalog/asap_motion_catalog_zh.md
+evolution/action_catalog/asap_asset_manifest.json
+evolution/action_catalog/asap_asset_manifest_zh.md
+evolution/action_catalog/asap_evolution_candidate_queue.json
+evolution/action_catalog/asap_evolution_candidate_queue_zh.md
+evolution/action_catalog/asap_task_adaptive_roadmap.json
+evolution/action_catalog/asap_task_adaptive_roadmap_zh.md
 evolution/task_profiles/g1_asap_*.json
 ```
 
@@ -489,6 +498,66 @@ env NUM_ENVS=2048 BASELINE_ITERS=800 ADAPTED_ITERS=800 EVO_GENERATIONS=2 EVO_POP
 ```
 
 LLM 客户端日志只允许记录 URL、API mode 和 model，不记录 API key 或 key 前后缀；如果生成日志中出现旧格式 `key=...`，提交仓库前必须先替换为 `key=<redacted>`。
+
+## V1.6 ASAP 任务族路线图
+
+新增 ASAP 动作数据后，框架不直接把所有 clip 都当成正式任务训练，而是先通过：
+
+```text
+motion catalog -> candidate queue -> task adaptive roadmap -> LLM prompt context
+```
+
+把动作分为四类：
+
+```text
+formal_or_curriculum
+  可作为正式实验或相邻课程任务，例如 forward jump、turn jump。
+
+proxy_pretraining
+  只能作为预训练或压力测试，例如 SpiderMan wall-contact proxy、single-foot jump flip proxy、squat low-posture proxy。
+
+robustness_pretraining
+  用于改进落地恢复、单腿支撑、全身协调和 domain randomization，不作为目标任务成功证据。
+
+manual_gate
+  动作语义不明确，需要人工确认后再写 task profile。
+```
+
+路线图生成入口：
+
+```bash
+python scripts/build_asap_task_adaptive_roadmap.py --limit 18
+```
+
+输出：
+
+```text
+evolution/action_catalog/asap_task_adaptive_roadmap.json
+evolution/action_catalog/asap_task_adaptive_roadmap_zh.md
+```
+
+`asap_task_adaptive_roadmap_zh.md` 会给每个任务族写出 LLM 应优先搜索的算法杠杆。例如：
+
+```text
+aerial_turn_jump
+  reward: task_progress, phase_progress, apex_height, yaw_alignment, landing_stability
+  sampling: 保留起跳、空中、落地阶段覆盖
+  termination: 训练阶段放宽空中姿态/ee 容忍，最终 yaw 标准不能放宽
+
+low_posture_pretraining
+  reward: phase_progress, ceiling_clearance, landing_stability
+  sampling: 覆盖低姿态进入、保持、退出阶段
+  termination: 不能因为 root height 低就提前终止
+
+recovery_pretraining
+  reward: phase_progress, landing_stability, contact_force
+  sampling: 给跳跃、转体、翻墙后的失败落地阶段补充采样
+  termination: 保留最终速度和角速度门槛
+```
+
+这一步的作用是把 LLM 从“泛化调参器”约束成“任务族诊断器”：它必须根据动作标签、位移、高度变化、合法接触和历史失败标签选择 reward、termination、sampling、PPO 或资源基因，而不是只输出通用 BeyondMimic 参数组合。
+
+当前 ASAP 包没有真实后空翻、真实翻墙和真实钻洞文件名，因此 roadmap 会显式保留数据缺口。后续用户提供 400m 障碍翻墙 mesh/钻洞 mesh、真实翻墙/钻洞跟踪数据、新机器人 URDF/MJCF 后，应先刷新 catalog 和 roadmap，再启动正式闭环；proxy 动作产生的成功率不能用于最终任务书考核。
 
 ## 运行时失败反馈与资源基因
 

@@ -30,6 +30,8 @@ def classify_name(name: str) -> list[str]:
         tags.extend(["turn_jump", "yaw_control", "aerial"])
     if "single_foot_jump" in lower or "single_foot_balance" in lower:
         tags.extend(["single_foot", "balance", "landing"])
+    if "single_foot_balance" in lower:
+        tags.extend(["single_leg_support", "stability_pretraining"])
     if "spiderman" in lower:
         tags.extend(["low_pose", "large_limb_range", "wall_contact_proxy"])
     if "kick" in lower:
@@ -37,9 +39,13 @@ def classify_name(name: str) -> list[str]:
     if any(token in lower for token in ["cr7", "kobe", "lebron", "bolt", "tigerwoods", "shoot", "apt"]):
         tags.extend(["sports_motion", "whole_body_coordination"])
     if "squat" in lower:
-        tags.extend(["low_posture", "strength_pose"])
+        tags.extend(["low_posture", "strength_pose", "low_posture_transition"])
     if "walk" in lower or "step_forward" in lower:
-        tags.extend(["locomotion", "recovery_step"])
+        tags.extend(["locomotion", "recovery_step", "landing_recovery"])
+    if "step_forward_back" in lower:
+        tags.append("direction_change")
+    if "step_forward_forward" in lower:
+        tags.append("forward_step")
     return sorted(set(tags or ["unclassified"]))
 
 
@@ -89,7 +95,9 @@ def build_manifest(root: Path) -> dict[str, Any]:
         },
         "known_limitations": [
             "No explicit backflip filename is present in the current ASAP package.",
+            "No explicit crawl/tunnel or wall-vault filename is present in the current ASAP package.",
             "Single-foot jump and high-dynamic sports clips are proxy/pretraining data for flip-like tasks.",
+            "Squat and low-pose clips are low-posture pretraining data, not final tunnel traversal evidence.",
             "ASAP sim2real ONNX files are useful references but are not a substitute for task-specific policy validation.",
         ],
         "tag_counts": dict(sorted(tag_counts.items())),
@@ -123,7 +131,17 @@ def write_markdown(manifest: dict[str, Any], output: Path) -> None:
     for item in manifest["sim2real_mimic_models"]:
         lines.append(f"- `{item['path']}`: {', '.join(item['tags'])}")
     lines.extend(["", "## 复杂动作候选", ""])
-    complex_tags = {"aerial", "yaw_control", "low_pose", "single_foot", "sports_motion", "wall_contact_proxy"}
+    complex_tags = {
+        "aerial",
+        "yaw_control",
+        "low_pose",
+        "low_posture",
+        "single_foot",
+        "single_leg_support",
+        "sports_motion",
+        "wall_contact_proxy",
+        "landing_recovery",
+    }
     for item in manifest["retargeted_g1_motions"]:
         if complex_tags.intersection(item["tags"]):
             lines.append(f"- `{item['path']}`: {', '.join(item['tags'])}")

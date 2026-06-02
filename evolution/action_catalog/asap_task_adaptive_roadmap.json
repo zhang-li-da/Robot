@@ -1,0 +1,1103 @@
+{
+  "schema_version": "1.0",
+  "purpose": "ASAP-driven task-adaptive LLM evolution roadmap for BeyondMimic-style humanoid stunt imitation.",
+  "dataset": {
+    "input_dir": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles",
+    "clip_count": 52,
+    "task_counts": {
+      "g1_crawl_tunnel": 3,
+      "g1_dynamic_balance": 23,
+      "g1_jump_leap": 20,
+      "g1_recovery": 16,
+      "g1_roll_vault": 1,
+      "g1_wall_turn": 10
+    },
+    "tag_counts": {
+      "aerial": 14,
+      "balance": 6,
+      "direction_change": 4,
+      "dynamic_leg": 3,
+      "forward_jump": 5,
+      "forward_step": 4,
+      "gait": 4,
+      "in_place_high_dynamic": 5,
+      "kick": 3,
+      "landing": 11,
+      "landing_recovery": 8,
+      "large_height_transition": 5,
+      "large_joint_excursion": 18,
+      "large_limb_range": 1,
+      "large_vertical_motion": 20,
+      "lateral_jump": 4,
+      "locomotion": 29,
+      "long_sequence": 15,
+      "low_dynamic_pose": 1,
+      "low_posture": 3,
+      "low_posture_transition": 3,
+      "low_root_height": 25,
+      "recovery_step": 8,
+      "single_foot_balance": 4,
+      "single_foot_jump": 2,
+      "single_leg_support": 9,
+      "sports_motion": 13,
+      "squat": 3,
+      "stability_pretraining": 4,
+      "strength_pose": 3,
+      "turn_jump": 5,
+      "upper_lower_coordination": 13,
+      "walk": 4,
+      "wall_turn_proxy": 1,
+      "yaw_control": 5
+    },
+    "known_limitations": [
+      "No explicit backflip filename is present in the current ASAP package.",
+      "No explicit crawl/tunnel or wall-vault filename is present in the current ASAP package.",
+      "Single-foot jump and high-dynamic sports clips are proxy/pretraining data for flip-like tasks.",
+      "Squat and low-pose clips are low-posture pretraining data, not final tunnel traversal evidence.",
+      "ASAP sim2real ONNX files are useful references but are not a substitute for task-specific policy validation."
+    ]
+  },
+  "execution_policy": {
+    "gpu_policy": "single Isaac training job on the RTX 3090; CPU-only catalog/report jobs may run in parallel",
+    "evaluation_contract": "final claims require >=50 motion-start episodes and baseline vs evolved comparison",
+    "proxy_contract": "proxy/pretraining clips may guide reward search but cannot be reported as real backflip/wall-vault/tunnel success"
+  },
+  "configured_tasks": [
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass",
+      "archetype": "wall_contact_proxy",
+      "rank_score": 311.464,
+      "task_name": "g1_asap_spiderman_l2",
+      "task_profile": "evolution/task_profiles/g1_asap_spiderman_l2.json",
+      "recommended_evolution": {
+        "base_config": "g1_wall_turn_v1.json",
+        "isaac_task": "Tracking-WallTurn-G1-v0",
+        "success_type": "proxy",
+        "reward_focus": [
+          "phase_progress",
+          "yaw_alignment",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "proxy for wall-contact coordination, not a final wall-vault claim"
+      },
+      "status": {
+        "task_name": "g1_asap_spiderman_l2",
+        "baseline_success_rate": null,
+        "adapted_success_rate": null,
+        "best_evolved_success_rate": null,
+        "best_evolved_fitness": null,
+        "has_eval": false,
+        "eval_dir": "artifacts/g1_asap_spiderman_l2/eval"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass",
+      "archetype": "aerial_turn_jump",
+      "rank_score": 300.076,
+      "task_name": "g1_asap_turn_jump_l5",
+      "task_profile": "evolution/task_profiles/g1_asap_turn_jump_l5.json",
+      "recommended_evolution": {
+        "base_config": "g1_wall_turn_v1.json",
+        "isaac_task": "Tracking-WallTurn-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "yaw_alignment",
+          "landing_stability"
+        ],
+        "search_note": "relax aerial orientation termination while keeping final yaw recovery strict"
+      },
+      "status": {
+        "task_name": "g1_asap_turn_jump_l5",
+        "baseline_success_rate": 0.0,
+        "adapted_success_rate": 0.0,
+        "best_evolved_success_rate": 0.0,
+        "best_evolved_fitness": 12.795303845405579,
+        "has_eval": true,
+        "eval_dir": "artifacts/g1_asap_turn_jump_l5/eval"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass",
+      "archetype": "flip_proxy_single_foot_jump",
+      "rank_score": 245.547,
+      "task_name": "g1_asap_single_foot_jump_l2",
+      "task_profile": "evolution/task_profiles/g1_asap_single_foot_jump_l2.json",
+      "recommended_evolution": {
+        "base_config": "g1_backflip_v1.json",
+        "isaac_task": "Tracking-Backflip-G1-v0",
+        "success_type": "backflip_proxy",
+        "reward_focus": [
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use only as flip pretraining or stress testing until true flip motion is added"
+      },
+      "status": {
+        "task_name": "g1_asap_single_foot_jump_l2",
+        "baseline_success_rate": null,
+        "adapted_success_rate": null,
+        "best_evolved_success_rate": null,
+        "best_evolved_fitness": null,
+        "has_eval": false,
+        "eval_dir": "artifacts/g1_asap_single_foot_jump_l2/eval"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass",
+      "archetype": "aerial_jump",
+      "rank_score": 233.394,
+      "task_name": "g1_asap_jump_forward_l5",
+      "task_profile": "evolution/task_profiles/g1_asap_jump_forward_l5.json",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use displacement, apex height, and landing stability as the screening metrics"
+      },
+      "status": {
+        "task_name": "g1_asap_jump_forward_l5",
+        "baseline_success_rate": 0.0,
+        "adapted_success_rate": 0.0,
+        "best_evolved_success_rate": 0.125,
+        "best_evolved_fitness": 23.501502461565863,
+        "has_eval": true,
+        "eval_dir": "artifacts/g1_asap_jump_forward_l5/eval"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass",
+      "archetype": "aerial_jump",
+      "rank_score": 209.611,
+      "task_name": "g1_asap_jump_forward_l4",
+      "task_profile": "evolution/task_profiles/g1_asap_jump_forward_l4.json",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use displacement, apex height, and landing stability as the screening metrics"
+      },
+      "status": {
+        "task_name": "g1_asap_jump_forward_l4",
+        "baseline_success_rate": null,
+        "adapted_success_rate": null,
+        "best_evolved_success_rate": null,
+        "best_evolved_fitness": null,
+        "has_eval": false,
+        "eval_dir": "artifacts/g1_asap_jump_forward_l4/eval"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_side_jump_level4_filter_amass",
+      "archetype": "aerial_jump",
+      "rank_score": 163.844,
+      "task_name": "g1_asap_side_jump_l4",
+      "task_profile": "evolution/task_profiles/g1_asap_side_jump_l4.json",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use displacement, apex height, and landing stability as the screening metrics"
+      },
+      "status": {
+        "task_name": "g1_asap_side_jump_l4",
+        "baseline_success_rate": null,
+        "adapted_success_rate": null,
+        "best_evolved_success_rate": null,
+        "best_evolved_fitness": null,
+        "has_eval": false,
+        "eval_dir": "artifacts/g1_asap_side_jump_l4/eval"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_CR7_level2_filter_amass",
+      "archetype": "dynamic_balance",
+      "rank_score": 127.554,
+      "task_name": "g1_asap_cr7_l2_dynamic",
+      "task_profile": "evolution/task_profiles/g1_asap_cr7_l2_dynamic.json",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "dynamic_balance",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use as robustness and coordination pretraining rather than obstacle success evidence"
+      },
+      "status": {
+        "task_name": "g1_asap_cr7_l2_dynamic",
+        "baseline_success_rate": null,
+        "adapted_success_rate": null,
+        "best_evolved_success_rate": null,
+        "best_evolved_fitness": null,
+        "has_eval": false,
+        "eval_dir": "artifacts/g1_asap_cr7_l2_dynamic/eval"
+      }
+    }
+  ],
+  "next_candidates": [
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass.pkl",
+      "archetype": "low_posture_pretraining",
+      "rank_score": 330.048,
+      "tags": [
+        "in_place_high_dynamic",
+        "large_height_transition",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "long_sequence",
+        "low_posture",
+        "low_posture_transition",
+        "low_root_height",
+        "squat",
+        "strength_pose"
+      ],
+      "stats": {
+        "duration_s": 6.133333333333334,
+        "horizontal_displacement": 0.04457547515630722,
+        "root_height_range": 0.6355957984924316,
+        "min_root_height": 0.31014370918273926,
+        "max_root_height": 0.9457395076751709,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "proxy_pretraining",
+      "recommended_evolution": {
+        "base_config": "g1_crawl_tunnel_v1.json",
+        "isaac_task": "Tracking-CrawlTunnel-G1-v0",
+        "success_type": "low_posture_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "ceiling_clearance",
+          "landing_stability"
+        ],
+        "search_note": "use to tune low-posture transitions before real tunnel or crawl clips are added"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass.pkl",
+      "archetype": "aerial_turn_jump",
+      "rank_score": 303.762,
+      "tags": [
+        "aerial",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "locomotion",
+        "low_root_height",
+        "turn_jump",
+        "yaw_control"
+      ],
+      "stats": {
+        "duration_s": 4.233333333333333,
+        "horizontal_displacement": 0.5721935629844666,
+        "root_height_range": 0.5564396381378174,
+        "min_root_height": 0.7355360984802246,
+        "max_root_height": 1.291975736618042,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "formal_or_curriculum",
+      "recommended_evolution": {
+        "base_config": "g1_wall_turn_v1.json",
+        "isaac_task": "Tracking-WallTurn-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "yaw_alignment",
+          "landing_stability"
+        ],
+        "search_note": "relax aerial orientation termination while keeping final yaw recovery strict"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass.pkl",
+      "archetype": "aerial_turn_jump",
+      "rank_score": 287.178,
+      "tags": [
+        "aerial",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "low_root_height",
+        "turn_jump",
+        "yaw_control"
+      ],
+      "stats": {
+        "duration_s": 4.433333333333334,
+        "horizontal_displacement": 0.17109894752502441,
+        "root_height_range": 0.6103744506835938,
+        "min_root_height": 0.7134584188461304,
+        "max_root_height": 1.3238328695297241,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "formal_or_curriculum",
+      "recommended_evolution": {
+        "base_config": "g1_wall_turn_v1.json",
+        "isaac_task": "Tracking-WallTurn-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "yaw_alignment",
+          "landing_stability"
+        ],
+        "search_note": "relax aerial orientation termination while keeping final yaw recovery strict"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass.pkl",
+      "archetype": "aerial_turn_jump",
+      "rank_score": 281.326,
+      "tags": [
+        "aerial",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "low_root_height",
+        "turn_jump",
+        "yaw_control"
+      ],
+      "stats": {
+        "duration_s": 4.133333333333334,
+        "horizontal_displacement": 0.26192837953567505,
+        "root_height_range": 0.5268269777297974,
+        "min_root_height": 0.7426071166992188,
+        "max_root_height": 1.2694340944290161,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "formal_or_curriculum",
+      "recommended_evolution": {
+        "base_config": "g1_wall_turn_v1.json",
+        "isaac_task": "Tracking-WallTurn-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "yaw_alignment",
+          "landing_stability"
+        ],
+        "search_note": "relax aerial orientation termination while keeping final yaw recovery strict"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass.pkl",
+      "archetype": "low_posture_pretraining",
+      "rank_score": 281.111,
+      "tags": [
+        "in_place_high_dynamic",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "long_sequence",
+        "low_posture",
+        "low_posture_transition",
+        "low_root_height",
+        "squat",
+        "strength_pose"
+      ],
+      "stats": {
+        "duration_s": 6.333333333333333,
+        "horizontal_displacement": 0.07903294265270233,
+        "root_height_range": 0.31824207305908203,
+        "min_root_height": 0.5765854120254517,
+        "max_root_height": 0.8948274850845337,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "proxy_pretraining",
+      "recommended_evolution": {
+        "base_config": "g1_crawl_tunnel_v1.json",
+        "isaac_task": "Tracking-CrawlTunnel-G1-v0",
+        "success_type": "low_posture_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "ceiling_clearance",
+          "landing_stability"
+        ],
+        "search_note": "use to tune low-posture transitions before real tunnel or crawl clips are added"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass.pkl",
+      "archetype": "aerial_turn_jump",
+      "rank_score": 279.445,
+      "tags": [
+        "aerial",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "low_root_height",
+        "turn_jump",
+        "yaw_control"
+      ],
+      "stats": {
+        "duration_s": 4.433333333333334,
+        "horizontal_displacement": 0.15580256283283234,
+        "root_height_range": 0.5752696990966797,
+        "min_root_height": 0.7258584499359131,
+        "max_root_height": 1.3011281490325928,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "formal_or_curriculum",
+      "recommended_evolution": {
+        "base_config": "g1_wall_turn_v1.json",
+        "isaac_task": "Tracking-WallTurn-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "yaw_alignment",
+          "landing_stability"
+        ],
+        "search_note": "relax aerial orientation termination while keeping final yaw recovery strict"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level1_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level1_filter_amass.pkl",
+      "archetype": "flip_proxy_single_foot_jump",
+      "rank_score": 221.379,
+      "tags": [
+        "balance",
+        "in_place_high_dynamic",
+        "landing",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "long_sequence",
+        "single_foot_jump",
+        "single_leg_support"
+      ],
+      "stats": {
+        "duration_s": 5.233333333333333,
+        "horizontal_displacement": 0.07250450551509857,
+        "root_height_range": 0.3256416320800781,
+        "min_root_height": 0.7831807136535645,
+        "max_root_height": 1.1088223457336426,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "proxy_pretraining",
+      "recommended_evolution": {
+        "base_config": "g1_backflip_v1.json",
+        "isaac_task": "Tracking-Backflip-G1-v0",
+        "success_type": "backflip_proxy",
+        "reward_focus": [
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use only as flip pretraining or stress testing until true flip motion is added"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass.pkl",
+      "archetype": "aerial_jump",
+      "rank_score": 209.05,
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing",
+        "large_vertical_motion",
+        "locomotion",
+        "low_root_height"
+      ],
+      "stats": {
+        "duration_s": 4.233333333333333,
+        "horizontal_displacement": 1.5379056930541992,
+        "root_height_range": 0.28157126903533936,
+        "min_root_height": 0.6649381518363953,
+        "max_root_height": 0.9465094208717346,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "formal_or_curriculum",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use displacement, apex height, and landing stability as the screening metrics"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass.pkl",
+      "archetype": "low_posture_pretraining",
+      "rank_score": 204.134,
+      "tags": [
+        "long_sequence",
+        "low_posture",
+        "low_posture_transition",
+        "low_root_height",
+        "squat",
+        "strength_pose"
+      ],
+      "stats": {
+        "duration_s": 5.233333333333333,
+        "horizontal_displacement": 0.0712750107049942,
+        "root_height_range": 0.1871408224105835,
+        "min_root_height": 0.6960652470588684,
+        "max_root_height": 0.8832060694694519,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "proxy_pretraining",
+      "recommended_evolution": {
+        "base_config": "g1_crawl_tunnel_v1.json",
+        "isaac_task": "Tracking-CrawlTunnel-G1-v0",
+        "success_type": "low_posture_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "ceiling_clearance",
+          "landing_stability"
+        ],
+        "search_note": "use to tune low-posture transitions before real tunnel or crawl clips are added"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass.pkl",
+      "archetype": "aerial_jump",
+      "rank_score": 203.746,
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing",
+        "large_vertical_motion",
+        "locomotion",
+        "low_root_height"
+      ],
+      "stats": {
+        "duration_s": 3.533333333333333,
+        "horizontal_displacement": 1.1050702333450317,
+        "root_height_range": 0.3265523910522461,
+        "min_root_height": 0.6660720109939575,
+        "max_root_height": 0.9926244020462036,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "formal_or_curriculum",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use displacement, apex height, and landing stability as the screening metrics"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass.pkl",
+      "archetype": "recovery_pretraining",
+      "rank_score": 175.997,
+      "tags": [
+        "direction_change",
+        "in_place_high_dynamic",
+        "landing_recovery",
+        "large_vertical_motion",
+        "low_root_height",
+        "recovery_step"
+      ],
+      "stats": {
+        "duration_s": 4.433333333333334,
+        "horizontal_displacement": 0.05179004743695259,
+        "root_height_range": 0.3884144425392151,
+        "min_root_height": 0.4917433261871338,
+        "max_root_height": 0.8801577687263489,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "robustness_pretraining",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "recovery_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use to improve landing recovery after aerial or wall-contact tasks"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level4_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level4_filter_amass.pkl",
+      "archetype": "recovery_pretraining",
+      "rank_score": 171.658,
+      "tags": [
+        "forward_step",
+        "landing_recovery",
+        "large_vertical_motion",
+        "locomotion",
+        "low_root_height",
+        "recovery_step"
+      ],
+      "stats": {
+        "duration_s": 4.233333333333333,
+        "horizontal_displacement": 1.1964850425720215,
+        "root_height_range": 0.3042824864387512,
+        "min_root_height": 0.5612214207649231,
+        "max_root_height": 0.8655039072036743,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "robustness_pretraining",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "recovery_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use to improve landing recovery after aerial or wall-contact tasks"
+      }
+    },
+    {
+      "motion_id": "0-TairanTestbed_TairanTestbed_CR7_video_CR7_level1_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-TairanTestbed_TairanTestbed_CR7_video_CR7_level1_filter_amass.pkl",
+      "archetype": "dynamic_balance",
+      "rank_score": 166.93,
+      "tags": [
+        "large_height_transition",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "locomotion",
+        "low_root_height",
+        "sports_motion",
+        "upper_lower_coordination"
+      ],
+      "stats": {
+        "duration_s": 3.933333333333333,
+        "horizontal_displacement": 0.5275705456733704,
+        "root_height_range": 0.5478724837303162,
+        "min_root_height": 0.7168882489204407,
+        "max_root_height": 1.2647607326507568,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "robustness_pretraining",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "dynamic_balance",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use as robustness and coordination pretraining rather than obstacle success evidence"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_CR7_level1_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_CR7_level1_filter_amass.pkl",
+      "archetype": "dynamic_balance",
+      "rank_score": 166.93,
+      "tags": [
+        "large_height_transition",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "locomotion",
+        "low_root_height",
+        "sports_motion",
+        "upper_lower_coordination"
+      ],
+      "stats": {
+        "duration_s": 3.933333333333333,
+        "horizontal_displacement": 0.5275705456733704,
+        "root_height_range": 0.5478724837303162,
+        "min_root_height": 0.7153331637382507,
+        "max_root_height": 1.263205647468567,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "robustness_pretraining",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "dynamic_balance",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use as robustness and coordination pretraining rather than obstacle success evidence"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass.pkl",
+      "archetype": "aerial_jump",
+      "rank_score": 165.809,
+      "tags": [
+        "aerial",
+        "landing",
+        "lateral_jump",
+        "locomotion",
+        "low_root_height"
+      ],
+      "stats": {
+        "duration_s": 3.6333333333333333,
+        "horizontal_displacement": 1.2487660646438599,
+        "root_height_range": 0.1849154233932495,
+        "min_root_height": 0.7066913843154907,
+        "max_root_height": 0.8916068077087402,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "formal_or_curriculum",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use displacement, apex height, and landing stability as the screening metrics"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_side_jump_level2_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_side_jump_level2_filter_amass.pkl",
+      "archetype": "aerial_jump",
+      "rank_score": 153.749,
+      "tags": [
+        "aerial",
+        "landing",
+        "lateral_jump",
+        "locomotion",
+        "low_root_height"
+      ],
+      "stats": {
+        "duration_s": 3.533333333333333,
+        "horizontal_displacement": 0.7519751787185669,
+        "root_height_range": 0.09397339820861816,
+        "min_root_height": 0.732736349105835,
+        "max_root_height": 0.8267097473144531,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "formal_or_curriculum",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use displacement, apex height, and landing stability as the screening metrics"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level4_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level4_filter_amass.pkl",
+      "archetype": "single_leg_balance_pretraining",
+      "rank_score": 139.418,
+      "tags": [
+        "balance",
+        "large_joint_excursion",
+        "long_sequence",
+        "single_foot_balance",
+        "single_leg_support",
+        "stability_pretraining"
+      ],
+      "stats": {
+        "duration_s": 8.8,
+        "horizontal_displacement": 0.04662887379527092,
+        "root_height_range": 0.043378591537475586,
+        "min_root_height": 0.7910811901092529,
+        "max_root_height": 0.8344597816467285,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "robustness_pretraining",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "balance_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use for single-leg support and recovery robustness, not as final stunt evidence"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level2_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level2_filter_amass.pkl",
+      "archetype": "single_leg_balance_pretraining",
+      "rank_score": 130.783,
+      "tags": [
+        "balance",
+        "long_sequence",
+        "single_foot_balance",
+        "single_leg_support",
+        "stability_pretraining"
+      ],
+      "stats": {
+        "duration_s": 9.7,
+        "horizontal_displacement": 0.06943945586681366,
+        "root_height_range": 0.246404230594635,
+        "min_root_height": 0.8194682002067566,
+        "max_root_height": 1.0658724308013916,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "robustness_pretraining",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "balance_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use for single-leg support and recovery robustness, not as final stunt evidence"
+      }
+    }
+  ],
+  "archetype_levers": {
+    "aerial_turn_jump": {
+      "role": "formal_or_curriculum",
+      "reward": [
+        "task_progress",
+        "phase_progress",
+        "apex_height",
+        "yaw_alignment",
+        "landing_stability"
+      ],
+      "sampling": [
+        "reduce fixed_start over-locking",
+        "keep takeoff/aerial/landing phase coverage"
+      ],
+      "termination": [
+        "relax aerial-stage orientation/ee tolerance",
+        "keep final yaw criterion strict"
+      ],
+      "notes": [
+        "适合登墙转身、空中转体和落地恢复算法进化"
+      ]
+    },
+    "aerial_jump": {
+      "role": "formal_or_curriculum",
+      "reward": [
+        "task_progress",
+        "phase_progress",
+        "apex_height",
+        "landing_stability",
+        "contact_force"
+      ],
+      "sampling": [
+        "screen with stage1 displacement and landing metrics"
+      ],
+      "termination": [
+        "avoid early anchor_pos termination during takeoff"
+      ],
+      "notes": [
+        "适合跨越、腾空和落地稳定的奖励搜索"
+      ]
+    },
+    "wall_contact_proxy": {
+      "role": "proxy_pretraining",
+      "reward": [
+        "phase_progress",
+        "yaw_alignment",
+        "landing_stability",
+        "contact_force"
+      ],
+      "sampling": [
+        "preserve contact/posture phases"
+      ],
+      "termination": [
+        "separate legal hand support from dangerous torso/head impact"
+      ],
+      "notes": [
+        "只能作为墙接触协调 proxy，不能声称完成真实翻墙"
+      ]
+    },
+    "flip_proxy_single_foot_jump": {
+      "role": "proxy_pretraining",
+      "reward": [
+        "phase_progress",
+        "apex_height",
+        "landing_stability",
+        "contact_force"
+      ],
+      "sampling": [
+        "keep mid/late landing recovery coverage"
+      ],
+      "termination": [
+        "relax high-dynamic orientation while preserving final stability"
+      ],
+      "notes": [
+        "当前 ASAP 无真实后空翻，只能作为翻转类预训练"
+      ]
+    },
+    "single_leg_balance_pretraining": {
+      "role": "robustness_pretraining",
+      "reward": [
+        "phase_progress",
+        "landing_stability",
+        "contact_force"
+      ],
+      "sampling": [
+        "increase support-leg transition coverage"
+      ],
+      "termination": [
+        "avoid over-penalizing legal single-leg support posture"
+      ],
+      "notes": [
+        "用于强化单腿支撑和落地恢复"
+      ]
+    },
+    "low_posture_pretraining": {
+      "role": "proxy_pretraining",
+      "reward": [
+        "phase_progress",
+        "ceiling_clearance",
+        "landing_stability"
+      ],
+      "sampling": [
+        "cover low posture enter/hold/exit phases"
+      ],
+      "termination": [
+        "do not terminate only because root height is low"
+      ],
+      "notes": [
+        "深蹲/低姿态只能预训练钻洞姿态，不是洞口通过证据"
+      ]
+    },
+    "recovery_pretraining": {
+      "role": "robustness_pretraining",
+      "reward": [
+        "phase_progress",
+        "landing_stability",
+        "contact_force"
+      ],
+      "sampling": [
+        "reuse after failed landing or yaw-recovery candidates"
+      ],
+      "termination": [
+        "keep speed/angular-speed final gates"
+      ],
+      "notes": [
+        "用于给跳跃、转体、翻墙后的恢复阶段补课"
+      ]
+    },
+    "dynamic_balance": {
+      "role": "robustness_pretraining",
+      "reward": [
+        "phase_progress",
+        "landing_stability",
+        "contact_force"
+      ],
+      "sampling": [
+        "use as whole-body coordination stress test"
+      ],
+      "termination": [
+        "preserve joint/torque/contact safety"
+      ],
+      "notes": [
+        "体育动作适合作为鲁棒性压力测试"
+      ]
+    },
+    "locomotion_pretraining": {
+      "role": "warm_start",
+      "reward": [
+        "phase_progress",
+        "landing_stability"
+      ],
+      "sampling": [
+        "use as approach/recovery warm start"
+      ],
+      "termination": [
+        "strict final stability is acceptable"
+      ],
+      "notes": [
+        "行走和恢复步不作为特技成功证据"
+      ]
+    },
+    "manual_review": {
+      "role": "manual_gate",
+      "reward": [
+        "motion_body_pos",
+        "motion_body_ori",
+        "phase_progress"
+      ],
+      "sampling": [
+        "inspect clip semantics first"
+      ],
+      "termination": [
+        "do not launch formal evolution before task profile exists"
+      ],
+      "notes": [
+        "需要人工确认动作语义"
+      ]
+    }
+  }
+}

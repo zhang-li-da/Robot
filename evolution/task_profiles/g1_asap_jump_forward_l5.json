@@ -27,12 +27,15 @@
       "id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass",
+      "motion_archetype": "aerial_jump",
       "tags": [
         "aerial",
         "forward_jump",
         "landing",
+        "large_joint_excursion",
         "large_vertical_motion",
-        "locomotion"
+        "locomotion",
+        "low_root_height"
       ],
       "suggested_tasks": [
         "g1_jump_leap"

@@ -11,25 +11,32 @@
   },
   "known_limitations": [
     "No explicit backflip filename is present in the current ASAP package.",
+    "No explicit crawl/tunnel or wall-vault filename is present in the current ASAP package.",
     "Single-foot jump and high-dynamic sports clips are proxy/pretraining data for flip-like tasks.",
+    "Squat and low-pose clips are low-posture pretraining data, not final tunnel traversal evidence.",
     "ASAP sim2real ONNX files are useful references but are not a substitute for task-specific policy validation."
   ],
   "tag_counts": {
     "aerial": 28,
     "balance": 12,
+    "direction_change": 8,
     "forward_jump": 10,
+    "forward_step": 8,
     "kick": 6,
     "landing": 22,
+    "landing_recovery": 24,
     "large_limb_range": 2,
     "lateral_balance": 8,
     "locomotion": 24,
     "low_pose": 2,
     "low_posture": 6,
+    "low_posture_transition": 6,
     "recovery_step": 24,
     "side_jump": 8,
     "single_foot": 12,
-    "single_leg_support": 6,
+    "single_leg_support": 14,
     "sports_motion": 25,
+    "stability_pretraining": 8,
     "strength_pose": 6,
     "turn_jump": 10,
     "unclassified": 14,
@@ -339,7 +346,9 @@
       "tags": [
         "balance",
         "landing",
-        "single_foot"
+        "single_foot",
+        "single_leg_support",
+        "stability_pretraining"
       ]
     },
     {
@@ -349,7 +358,9 @@
       "tags": [
         "balance",
         "landing",
-        "single_foot"
+        "single_foot",
+        "single_leg_support",
+        "stability_pretraining"
       ]
     },
     {
@@ -359,7 +370,9 @@
       "tags": [
         "balance",
         "landing",
-        "single_foot"
+        "single_foot",
+        "single_leg_support",
+        "stability_pretraining"
       ]
     },
     {
@@ -369,7 +382,9 @@
       "tags": [
         "balance",
         "landing",
-        "single_foot"
+        "single_foot",
+        "single_leg_support",
+        "stability_pretraining"
       ]
     },
     {
@@ -398,6 +413,7 @@
       "size_bytes": 118820,
       "tags": [
         "low_posture",
+        "low_posture_transition",
         "strength_pose"
       ]
     },
@@ -407,6 +423,7 @@
       "size_bytes": 143508,
       "tags": [
         "low_posture",
+        "low_posture_transition",
         "strength_pose"
       ]
     },
@@ -416,6 +433,7 @@
       "size_bytes": 139012,
       "tags": [
         "low_posture",
+        "low_posture_transition",
         "strength_pose"
       ]
     },
@@ -424,6 +442,8 @@
       "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level1_filter_amass",
       "size_bytes": 89668,
       "tags": [
+        "direction_change",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -433,6 +453,8 @@
       "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level2_filter_amass",
       "size_bytes": 105364,
       "tags": [
+        "direction_change",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -442,6 +464,8 @@
       "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level3_filter_amass",
       "size_bytes": 114340,
       "tags": [
+        "direction_change",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -451,6 +475,8 @@
       "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass",
       "size_bytes": 100884,
       "tags": [
+        "direction_change",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -460,6 +486,8 @@
       "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level1_filter_amass",
       "size_bytes": 82932,
       "tags": [
+        "forward_step",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -469,6 +497,8 @@
       "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level2_filter_amass",
       "size_bytes": 98644,
       "tags": [
+        "forward_step",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -478,6 +508,8 @@
       "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level3_filter_amass",
       "size_bytes": 100884,
       "tags": [
+        "forward_step",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -487,6 +519,8 @@
       "name": "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level4_filter_amass",
       "size_bytes": 96388,
       "tags": [
+        "forward_step",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -496,6 +530,7 @@
       "name": "0-motions_raw_tairantestbed_smpl_video_walk_level1_filter_amass",
       "size_bytes": 114324,
       "tags": [
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -505,6 +540,7 @@
       "name": "0-motions_raw_tairantestbed_smpl_video_walk_level2_filter_amass",
       "size_bytes": 78420,
       "tags": [
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -514,6 +550,7 @@
       "name": "0-motions_raw_tairantestbed_smpl_video_walk_level3_filter_amass",
       "size_bytes": 107604,
       "tags": [
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -523,6 +560,7 @@
       "name": "0-motions_raw_tairantestbed_smpl_video_walk_level4_filter_amass",
       "size_bytes": 100868,
       "tags": [
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -821,7 +859,9 @@
       "tags": [
         "balance",
         "landing",
-        "single_foot"
+        "single_foot",
+        "single_leg_support",
+        "stability_pretraining"
       ]
     },
     {
@@ -831,7 +871,9 @@
       "tags": [
         "balance",
         "landing",
-        "single_foot"
+        "single_foot",
+        "single_leg_support",
+        "stability_pretraining"
       ]
     },
     {
@@ -841,7 +883,9 @@
       "tags": [
         "balance",
         "landing",
-        "single_foot"
+        "single_foot",
+        "single_leg_support",
+        "stability_pretraining"
       ]
     },
     {
@@ -851,7 +895,9 @@
       "tags": [
         "balance",
         "landing",
-        "single_foot"
+        "single_foot",
+        "single_leg_support",
+        "stability_pretraining"
       ]
     },
     {
@@ -880,6 +926,7 @@
       "size_bytes": 48818,
       "tags": [
         "low_posture",
+        "low_posture_transition",
         "strength_pose"
       ]
     },
@@ -889,6 +936,7 @@
       "size_bytes": 58718,
       "tags": [
         "low_posture",
+        "low_posture_transition",
         "strength_pose"
       ]
     },
@@ -898,6 +946,7 @@
       "size_bytes": 56918,
       "tags": [
         "low_posture",
+        "low_posture_transition",
         "strength_pose"
       ]
     },
@@ -906,6 +955,8 @@
       "name": "video_step_forward_back_level1_filter_amass",
       "size_bytes": 37118,
       "tags": [
+        "direction_change",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -915,6 +966,8 @@
       "name": "video_step_forward_back_level2_filter_amass",
       "size_bytes": 43418,
       "tags": [
+        "direction_change",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -924,6 +977,8 @@
       "name": "video_step_forward_back_level3_filter_amass",
       "size_bytes": 47018,
       "tags": [
+        "direction_change",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -933,6 +988,8 @@
       "name": "video_step_forward_back_level4_filter_amass",
       "size_bytes": 41618,
       "tags": [
+        "direction_change",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -942,6 +999,8 @@
       "name": "video_step_forward_forward_level1_filter_amass",
       "size_bytes": 34418,
       "tags": [
+        "forward_step",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -951,6 +1010,8 @@
       "name": "video_step_forward_forward_level2_filter_amass",
       "size_bytes": 40718,
       "tags": [
+        "forward_step",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -960,6 +1021,8 @@
       "name": "video_step_forward_forward_level3_filter_amass",
       "size_bytes": 41618,
       "tags": [
+        "forward_step",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -969,6 +1032,8 @@
       "name": "video_step_forward_forward_level4_filter_amass",
       "size_bytes": 39818,
       "tags": [
+        "forward_step",
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -978,6 +1043,7 @@
       "name": "video_walk_level1_filter_amass",
       "size_bytes": 47018,
       "tags": [
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -987,6 +1053,7 @@
       "name": "video_walk_level2_filter_amass",
       "size_bytes": 32618,
       "tags": [
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -996,6 +1063,7 @@
       "name": "video_walk_level3_filter_amass",
       "size_bytes": 44318,
       "tags": [
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]
@@ -1005,6 +1073,7 @@
       "name": "video_walk_level4_filter_amass",
       "size_bytes": 41618,
       "tags": [
+        "landing_recovery",
         "locomotion",
         "recovery_step"
       ]

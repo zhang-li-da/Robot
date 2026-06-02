@@ -9,26 +9,33 @@
 ## 关键限制
 
 - No explicit backflip filename is present in the current ASAP package.
+- No explicit crawl/tunnel or wall-vault filename is present in the current ASAP package.
 - Single-foot jump and high-dynamic sports clips are proxy/pretraining data for flip-like tasks.
+- Squat and low-pose clips are low-posture pretraining data, not final tunnel traversal evidence.
 - ASAP sim2real ONNX files are useful references but are not a substitute for task-specific policy validation.
 
 ## 动作标签分布
 
 - `aerial`: 28
 - `balance`: 12
+- `direction_change`: 8
 - `forward_jump`: 10
+- `forward_step`: 8
 - `kick`: 6
 - `landing`: 22
+- `landing_recovery`: 24
 - `large_limb_range`: 2
 - `lateral_balance`: 8
 - `locomotion`: 24
 - `low_pose`: 2
 - `low_posture`: 6
+- `low_posture_transition`: 6
 - `recovery_step`: 24
 - `side_jump`: 8
 - `single_foot`: 12
-- `single_leg_support`: 6
+- `single_leg_support`: 14
 - `sports_motion`: 25
+- `stability_pretraining`: 8
 - `strength_pose`: 6
 - `turn_jump`: 10
 - `unclassified`: 14
@@ -74,6 +81,9 @@
 - `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass.pkl`: aerial, forward_jump, landing
 - `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass.pkl`: aerial, forward_jump, landing
 - `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass.pkl`: aerial, forward_jump, landing
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_kick_level1_filter_amass.pkl`: kick, single_leg_support
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_kick_level2_filter_amass.pkl`: kick, single_leg_support
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_kick_level3_filter_amass.pkl`: kick, single_leg_support
 - `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_lebron1_filter_amass.pkl`: sports_motion, whole_body_coordination
 - `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_lebron2_filter_amass.pkl`: sports_motion, whole_body_coordination
 - `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_shoot_level1_filter_amass.pkl`: sports_motion, whole_body_coordination
@@ -83,9 +93,24 @@
 - `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_side_jump_level2_filter_amass.pkl`: aerial, lateral_balance, side_jump
 - `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass.pkl`: aerial, lateral_balance, side_jump
 - `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_side_jump_level4_filter_amass.pkl`: aerial, lateral_balance, side_jump
-- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level1_filter_amass.pkl`: balance, landing, single_foot
-- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level2_filter_amass.pkl`: balance, landing, single_foot
-- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level3_filter_amass.pkl`: balance, landing, single_foot
-- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level4_filter_amass.pkl`: balance, landing, single_foot
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level1_filter_amass.pkl`: balance, landing, single_foot, single_leg_support, stability_pretraining
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level2_filter_amass.pkl`: balance, landing, single_foot, single_leg_support, stability_pretraining
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level3_filter_amass.pkl`: balance, landing, single_foot, single_leg_support, stability_pretraining
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level4_filter_amass.pkl`: balance, landing, single_foot, single_leg_support, stability_pretraining
 - `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level1_filter_amass.pkl`: balance, landing, single_foot
 - `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass.pkl`: balance, landing, single_foot
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass.pkl`: low_posture, low_posture_transition, strength_pose
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass.pkl`: low_posture, low_posture_transition, strength_pose
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass.pkl`: low_posture, low_posture_transition, strength_pose
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_back_level1_filter_amass.pkl`: direction_change, landing_recovery, locomotion, recovery_step
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_back_level2_filter_amass.pkl`: direction_change, landing_recovery, locomotion, recovery_step
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_back_level3_filter_amass.pkl`: direction_change, landing_recovery, locomotion, recovery_step
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass.pkl`: direction_change, landing_recovery, locomotion, recovery_step
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level1_filter_amass.pkl`: forward_step, landing_recovery, locomotion, recovery_step
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level2_filter_amass.pkl`: forward_step, landing_recovery, locomotion, recovery_step
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level3_filter_amass.pkl`: forward_step, landing_recovery, locomotion, recovery_step
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level4_filter_amass.pkl`: forward_step, landing_recovery, locomotion, recovery_step
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_walk_level1_filter_amass.pkl`: landing_recovery, locomotion, recovery_step
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_walk_level2_filter_amass.pkl`: landing_recovery, locomotion, recovery_step
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_walk_level3_filter_amass.pkl`: landing_recovery, locomotion, recovery_step
+- `humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_walk_level4_filter_amass.pkl`: landing_recovery, locomotion, recovery_step

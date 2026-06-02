@@ -33,6 +33,7 @@ python scripts/index_asap_assets.py
 python scripts/create_asap_evolution_configs.py
 python scripts/create_asap_task_profiles.py
 python scripts/select_asap_evolution_tasks.py --limit 24
+python scripts/build_asap_task_adaptive_roadmap.py --limit 18
 
 if [[ -z "${TASK_IDS}" ]]; then
   TASK_IDS="$(python scripts/asap_g1_task_suite.py --list-default)"

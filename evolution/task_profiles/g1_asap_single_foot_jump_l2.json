@@ -27,11 +27,17 @@
       "id": "0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass",
+      "motion_archetype": "flip_proxy_single_foot_jump",
       "tags": [
         "balance",
         "landing",
+        "large_height_transition",
+        "large_joint_excursion",
         "large_vertical_motion",
-        "single_foot_jump"
+        "long_sequence",
+        "low_root_height",
+        "single_foot_jump",
+        "single_leg_support"
       ],
       "suggested_tasks": [
         "g1_jump_leap"

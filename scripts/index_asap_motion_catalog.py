@@ -21,58 +21,100 @@ from asap_paths import asap_motion_dir, resolve_asap_root  # noqa: E402
 DEFAULT_ASAP_DIR = asap_motion_dir()
 
 
-def classify_motion(name: str, stats: dict[str, Any]) -> tuple[list[str], list[str]]:
+def classify_motion(name: str, stats: dict[str, Any]) -> tuple[list[str], list[str], str]:
     lower = name.lower()
     tags: list[str] = []
     tasks: list[str] = []
+    archetype = "manual_review"
 
     if any(token in lower for token in ["backflip", "back_flip", "flip_back"]):
         tags.extend(["backflip", "aerial", "inverted", "landing"])
         tasks.append("g1_backflip")
+        archetype = "true_flip"
     if any(token in lower for token in ["frontflip", "front_flip", "flip_front"]):
         tags.extend(["frontflip", "aerial", "inverted", "landing"])
         tasks.extend(["g1_backflip", "g1_roll_vault"])
+        archetype = "true_flip"
     if any(token in lower for token in ["wall", "climb", "vault", "hurdle"]):
         tags.extend(["obstacle_contact", "wall_or_vault"])
         tasks.extend(["g1_wall_turn", "g1_roll_vault"])
+        archetype = "wall_vault"
     if any(token in lower for token in ["crawl", "tunnel", "duck", "militarycrawl"]):
         tags.extend(["low_posture", "crawl_or_tunnel"])
         tasks.append("g1_crawl_tunnel")
+        archetype = "crawl_tunnel"
     if "jump_forward" in lower:
         tags.extend(["forward_jump", "aerial", "landing"])
         tasks.append("g1_jump_leap")
+        archetype = "aerial_jump"
     if "jump_degree" in lower:
         tags.extend(["turn_jump", "aerial", "yaw_control"])
         tasks.extend(["g1_jump_leap", "g1_wall_turn"])
+        archetype = "aerial_turn_jump"
     if "side_jump" in lower:
         tags.extend(["lateral_jump", "aerial", "landing"])
         tasks.append("g1_jump_leap")
+        archetype = "aerial_jump"
     if "single_foot_jump" in lower:
-        tags.extend(["single_foot_jump", "balance", "landing"])
+        tags.extend(["single_foot_jump", "balance", "single_leg_support", "landing"])
         tasks.append("g1_jump_leap")
+        archetype = "flip_proxy_single_foot_jump"
+    if "single_foot_balance" in lower:
+        tags.extend(["single_foot_balance", "balance", "single_leg_support", "stability_pretraining"])
+        tasks.extend(["g1_dynamic_balance", "g1_recovery"])
+        archetype = "single_leg_balance_pretraining"
     if "spiderman" in lower:
         tags.extend(["low_dynamic_pose", "wall_turn_proxy", "large_limb_range"])
         tasks.extend(["g1_wall_turn", "g1_roll_vault"])
+        archetype = "wall_contact_proxy"
     if "kick" in lower:
         tags.extend(["kick", "single_leg_support", "dynamic_leg"])
         tasks.append("g1_dynamic_balance")
+        archetype = "dynamic_balance"
+    if "squat" in lower:
+        tags.extend(["low_posture", "squat", "strength_pose", "low_posture_transition"])
+        tasks.extend(["g1_crawl_tunnel", "g1_dynamic_balance"])
+        archetype = "low_posture_pretraining"
     if "step_forward_back" in lower:
-        tags.extend(["recovery_step", "direction_change"])
+        tags.extend(["recovery_step", "direction_change", "landing_recovery"])
         tasks.extend(["g1_wall_turn", "g1_recovery"])
+        archetype = "recovery_pretraining"
+    if "step_forward_forward" in lower:
+        tags.extend(["recovery_step", "forward_step", "locomotion", "landing_recovery"])
+        tasks.extend(["g1_jump_leap", "g1_recovery"])
+        archetype = "recovery_pretraining"
+    if "walk" in lower:
+        tags.extend(["walk", "locomotion", "gait"])
+        tasks.append("g1_recovery")
+        archetype = "locomotion_pretraining"
     if any(token in lower for token in ["cr7", "kobe", "bolt", "tigerwoods", "apt", "lebron", "shoot"]):
         tags.extend(["sports_motion", "upper_lower_coordination"])
         tasks.append("g1_dynamic_balance")
+        if archetype == "manual_review":
+            archetype = "dynamic_balance"
 
     if stats["max_root_height"] - stats["min_root_height"] > 0.25:
         tags.append("large_vertical_motion")
+    if stats["max_root_height"] - stats["min_root_height"] > 0.45 and "aerial" not in tags:
+        tags.append("large_height_transition")
     if stats["horizontal_displacement"] > 0.4:
         tags.append("locomotion")
+    if stats["horizontal_displacement"] < 0.15 and stats["root_height_range"] > 0.3:
+        tags.append("in_place_high_dynamic")
+        if archetype == "manual_review":
+            archetype = "in_place_control_pretraining"
+    if stats["min_root_height"] < 0.75:
+        tags.append("low_root_height")
+    if stats["duration_s"] >= 5.0:
+        tags.append("long_sequence")
+    if stats["max_abs_dof"] >= 2.0:
+        tags.append("large_joint_excursion")
     if not tags:
         tags.append("unclassified")
     if not tasks:
         tasks.append("manual_review")
 
-    return sorted(set(tags)), sorted(set(tasks))
+    return sorted(set(tags)), sorted(set(tasks)), archetype
 
 
 def load_asap_file(path: Path) -> dict[str, Any]:
@@ -107,11 +149,12 @@ def summarize_clip(path: Path, clip_key: str, clip: dict[str, Any]) -> dict[str,
         "mean_root_height": float(root[:, 2].mean()),
         "max_abs_dof": float(np.abs(dof).max()),
     }
-    tags, tasks = classify_motion(path.stem, stats)
+    tags, tasks, archetype = classify_motion(path.stem, stats)
     return {
         "id": path.stem,
         "source_file": str(path),
         "clip_key": clip_key,
+        "motion_archetype": archetype,
         "tags": tags,
         "suggested_tasks": tasks,
         **stats,

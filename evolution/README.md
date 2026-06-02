@@ -34,12 +34,15 @@ scripts/index_asap_assets.py
 scripts/select_asap_evolution_tasks.py
 scripts/create_asap_evolution_configs.py
 scripts/create_asap_task_profiles.py
+scripts/build_asap_task_adaptive_roadmap.py
 scripts/run_asap_g1_evolution_experiments.sh
 docs/beyondmimic_task_adaptive_evolution.md
 evolution/action_catalog/stunt_motion_sources_zh.md
 evolution/action_catalog/asap_motion_catalog.json
 evolution/action_catalog/asap_evolution_candidate_queue.json
 evolution/action_catalog/asap_evolution_candidate_queue_zh.md
+evolution/action_catalog/asap_task_adaptive_roadmap.json
+evolution/action_catalog/asap_task_adaptive_roadmap_zh.md
 evolution/action_catalog/asap_asset_manifest.json
 evolution/action_catalog/asap_asset_manifest_zh.md
 evolution/task_profiles/*.json
@@ -260,7 +263,10 @@ source /base/mambaforge/etc/profile.d/conda.sh
 conda activate /root/shared-nvme/conda_envs/isaaclab210
 python scripts/index_asap_motion_catalog.py
 python scripts/index_asap_assets.py
+python scripts/create_asap_evolution_configs.py
+python scripts/create_asap_task_profiles.py
 python scripts/select_asap_evolution_tasks.py --limit 24
+python scripts/build_asap_task_adaptive_roadmap.py --limit 18
 ```
 
 候选队列输出：
@@ -268,9 +274,13 @@ python scripts/select_asap_evolution_tasks.py --limit 24
 ```text
 evolution/action_catalog/asap_evolution_candidate_queue.json
 evolution/action_catalog/asap_evolution_candidate_queue_zh.md
+evolution/action_catalog/asap_task_adaptive_roadmap.json
+evolution/action_catalog/asap_task_adaptive_roadmap_zh.md
 ```
 
 该队列按动作标签、位移、高度变化、时长和是否已有正式配置排序，并给出推荐的 `base_config`、`isaac_task`、`success_type` 和 reward 进化重点。它用于把后续新增的翻墙、钻洞、后空翻、登墙转身 motion 自动转成任务优先级和 LLM prompt 证据。`proxy` 类动作只能作为预训练或压力测试，不能作为真实特技任务的最终成功证据。
+
+`asap_task_adaptive_roadmap_zh.md` 进一步把动作划分为正式任务、proxy/pretraining、鲁棒性预训练和人工检查四类，并给出每类动作进入 LLM 进化时应优先搜索的 reward、termination 和 sampling 杠杆。当前 ASAP 包没有显式后空翻、真实翻墙或钻洞文件名，因此这些目标在真实数据到位前只能使用相邻动作做预训练和算法压力测试，不能作为最终任务成功率结论。
 
 如果只想检查闭环目录、prompt 和反馈接线，不启动训练：
 

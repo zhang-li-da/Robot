@@ -35,18 +35,33 @@ TAG_WEIGHTS = {
     "turn_jump": 72.0,
     "yaw_control": 65.0,
     "single_foot_jump": 62.0,
+    "single_foot_balance": 40.0,
+    "stability_pretraining": 28.0,
     "low_dynamic_pose": 58.0,
+    "low_posture_transition": 52.0,
+    "squat": 42.0,
     "wall_turn_proxy": 56.0,
     "large_limb_range": 48.0,
     "aerial": 42.0,
     "large_vertical_motion": 38.0,
+    "large_height_transition": 32.0,
     "lateral_jump": 34.0,
     "forward_jump": 32.0,
     "landing": 28.0,
+    "landing_recovery": 26.0,
     "single_leg_support": 25.0,
+    "recovery_step": 24.0,
+    "direction_change": 20.0,
+    "forward_step": 14.0,
     "sports_motion": 20.0,
     "dynamic_leg": 18.0,
     "locomotion": 12.0,
+    "gait": 6.0,
+    "walk": 4.0,
+    "in_place_high_dynamic": 18.0,
+    "large_joint_excursion": 12.0,
+    "long_sequence": 8.0,
+    "low_root_height": 8.0,
     "manual_review": -20.0,
     "unclassified": -20.0,
 }
@@ -66,6 +81,9 @@ def motion_level(name: str) -> int:
 
 
 def infer_archetype(clip: dict[str, Any]) -> str:
+    explicit = str(clip.get("motion_archetype", ""))
+    if explicit and explicit != "manual_review":
+        return explicit
     tags = set(clip.get("tags", []))
     tasks = set(clip.get("suggested_tasks", []))
     name = str(clip.get("id", "")).lower()
@@ -81,10 +99,20 @@ def infer_archetype(clip: dict[str, Any]) -> str:
         return "wall_contact_proxy"
     if "single_foot_jump" in tags:
         return "flip_proxy_single_foot_jump"
+    if {"single_foot_balance", "stability_pretraining"} & tags:
+        return "single_leg_balance_pretraining"
+    if {"low_posture_transition", "squat"} & tags:
+        return "low_posture_pretraining"
+    if {"recovery_step", "landing_recovery", "direction_change"} & tags:
+        return "recovery_pretraining"
     if {"forward_jump", "lateral_jump", "aerial"} & tags:
         return "aerial_jump"
     if {"sports_motion", "kick", "single_leg_support", "dynamic_leg"} & tags:
         return "dynamic_balance"
+    if {"walk", "gait"} & tags:
+        return "locomotion_pretraining"
+    if {"in_place_high_dynamic", "large_height_transition"} & tags:
+        return "in_place_control_pretraining"
     return "manual_review"
 
 
@@ -145,6 +173,41 @@ def recommended_plan(archetype: str) -> dict[str, Any]:
             "success_type": "dynamic_balance",
             "reward_focus": ["phase_progress", "landing_stability", "contact_force"],
             "search_note": "use as robustness and coordination pretraining rather than obstacle success evidence",
+        },
+        "single_leg_balance_pretraining": {
+            "base_config": "g1_jump_leap_v1.json",
+            "isaac_task": "Tracking-JumpLeap-G1-v0",
+            "success_type": "balance_pretraining",
+            "reward_focus": ["phase_progress", "landing_stability", "contact_force"],
+            "search_note": "use for single-leg support and recovery robustness, not as final stunt evidence",
+        },
+        "low_posture_pretraining": {
+            "base_config": "g1_crawl_tunnel_v1.json",
+            "isaac_task": "Tracking-CrawlTunnel-G1-v0",
+            "success_type": "low_posture_pretraining",
+            "reward_focus": ["phase_progress", "ceiling_clearance", "landing_stability"],
+            "search_note": "use to tune low-posture transitions before real tunnel or crawl clips are added",
+        },
+        "recovery_pretraining": {
+            "base_config": "g1_jump_leap_v1.json",
+            "isaac_task": "Tracking-JumpLeap-G1-v0",
+            "success_type": "recovery_pretraining",
+            "reward_focus": ["phase_progress", "landing_stability", "contact_force"],
+            "search_note": "use to improve landing recovery after aerial or wall-contact tasks",
+        },
+        "locomotion_pretraining": {
+            "base_config": "g1_jump_leap_v1.json",
+            "isaac_task": "Tracking-JumpLeap-G1-v0",
+            "success_type": "locomotion_pretraining",
+            "reward_focus": ["phase_progress", "landing_stability"],
+            "search_note": "use as gait/recovery warm start rather than a formal stunt task",
+        },
+        "in_place_control_pretraining": {
+            "base_config": "g1_jump_leap_v1.json",
+            "isaac_task": "Tracking-JumpLeap-G1-v0",
+            "success_type": "in_place_control_pretraining",
+            "reward_focus": ["phase_progress", "landing_stability", "contact_force"],
+            "search_note": "use for in-place height or posture transitions where task_progress should stay weak",
         },
         "manual_review": {
             "base_config": "manual_review",
