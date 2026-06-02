@@ -292,8 +292,18 @@ def _candidate_feedback(
         levers.extend(["relax anchor_ori threshold", "increase angular velocity tracking tolerance"])
 
     success_type = _task_type(config)
+    criteria = task.get("success_criteria", {})
+    reward_terms = set(task.get("reward_terms", []))
+    task_name = str(task.get("name", "")).lower()
+    is_aerial_turn_jump = (
+        "turn_jump" in task_name
+        or (
+            "target_final_yaw" in criteria
+            and "yaw_alignment" in reward_terms
+            and "apex_height" in reward_terms
+        )
+    )
     if success_type == "backflip":
-        criteria = task.get("success_criteria", {})
         if body_height < float(criteria.get("min_apex_height", 1.05)):
             tags.append("insufficient_apex")
             levers.append("increase apex_height reward and mid-clip sampling")
@@ -308,8 +318,37 @@ def _candidate_feedback(
             tags.append("unstable_landing_rotation")
             levers.append("increase final angular-speed penalty")
 
+    if is_aerial_turn_jump:
+        min_apex = float(criteria.get("min_apex_height", task.get("min_root_height", 0.85)))
+        max_yaw_error = float(criteria.get("max_final_yaw_error", 1.1))
+        max_final_speed = float(criteria.get("max_final_anchor_speed", 1.4))
+        max_final_ang_speed = float(criteria.get("max_final_ang_speed", 2.6))
+        if body_height < min_apex:
+            tags.append("insufficient_apex")
+            hypotheses.append("turn-jump policy does not create enough aerial margin for yaw recovery")
+            levers.extend(["increase apex_height reward", "sample takeoff and aerial phases more uniformly"])
+        if final_yaw_error > max_yaw_error:
+            tags.append("yaw_recovery_failure")
+            hypotheses.append("policy does not recover the target heading by the end of the clip")
+            levers.extend(["increase yaw_alignment reward", "avoid over-tight orientation termination during aerial phase"])
+        if final_speed > max_final_speed:
+            tags.append("unstable_landing_speed")
+            levers.append("increase landing_stability reward after progress improves")
+        if final_ang_speed > max_final_ang_speed:
+            tags.append("unstable_landing_rotation")
+            levers.extend(["increase landing_stability reward", "raise angular velocity tracking tolerance in the aerial phase"])
+        if termination_rates.get("anchor_pos", 0.0) + termination_rates.get("ee_body_pos", 0.0) >= 0.75:
+            tags.append("aerial_phase_tracking_too_strict")
+            hypotheses.append("strict anchor/ee tracking prevents completing the high-dynamic turn-jump phase")
+            levers.extend(
+                [
+                    "relax ee_body_pos threshold for stage1 exploration",
+                    "use phase_progress with lower fixed-start probability",
+                    "preserve final yaw and landing criteria for evaluation",
+                ]
+            )
+
     if success_type == "crawl":
-        criteria = task.get("success_criteria", {})
         max_body_height = float(criteria.get("max_head_or_torso_height", obstacle_height or 0.85))
         if ceiling_zone_body_height <= -1.0:
             tags.append("never_entered_ceiling_zone")
@@ -436,6 +475,12 @@ def _aggregate(candidate_feedback: list[dict[str, Any]], config: dict[str, Any],
         focus.append("separate train/runtime failures from policy-quality failures and retry only repaired variants")
     if "ee_body_pos_dominant" in tag_names:
         focus.append("differentiate legal support contact from ee/body tracking failure")
+    if "aerial_phase_tracking_too_strict" in tag_names:
+        focus.append("for aerial turn-jump, relax stage1 anchor/ee tracking while preserving final yaw and landing criteria")
+    if "yaw_recovery_failure" in tag_names:
+        focus.append("increase yaw recovery pressure and avoid candidates that only optimize progress")
+    if "unstable_landing_rotation" in tag_names:
+        focus.append("stabilize landing angular velocity before promoting to stage2")
     if "early_progress_failure" in tag_names:
         focus.append("improve motion-start and approach-phase progression before spending stage2 budget")
     if "insufficient_clearance" in tag_names:
