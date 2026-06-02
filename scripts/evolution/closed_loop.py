@@ -73,6 +73,66 @@ def baseline_summary(config: dict[str, Any], baseline_eval: Path | None, baselin
     return score_eval_json(baseline_id, baseline_eval, config).to_dict()
 
 
+def baseline_failure_context(config: dict[str, Any], baseline: dict[str, Any]) -> dict[str, Any]:
+    """Translate baseline eval metrics into first-generation LLM constraints."""
+
+    episodes = max(int(baseline.get("episodes", 0) or 0), 1)
+    counts = baseline.get("termination_counts", {}) or {}
+    termination_rates = {str(name): float(value) / episodes for name, value in counts.items()}
+    dominant_termination = max(termination_rates.items(), key=lambda item: item[1])[0] if termination_rates else "unknown"
+    success_rate = float(baseline.get("success_rate", 0.0) or 0.0)
+    target_x = max(float(config.get("task", {}).get("target_x", 1.0) or 1.0), 1.0e-6)
+    mean_x = float(baseline.get("mean_max_torso_x", 0.0) or 0.0)
+    criteria = config.get("task", {}).get("success_criteria", {}) or {}
+    mean_body_height = float(baseline.get("mean_max_body_height", 0.0) or 0.0)
+    mean_final_speed = float(baseline.get("mean_final_speed", 0.0) or 0.0)
+    mean_final_ang_speed = float(baseline.get("mean_final_ang_speed", 0.0) or 0.0)
+    mean_flip_rotation = float(baseline.get("mean_flip_rotation", 0.0) or 0.0)
+
+    tags: list[str] = []
+    must_address: list[str] = []
+    if success_rate <= 0.0:
+        tags.append("baseline_no_success")
+        must_address.append("baseline has zero success; first candidates must repair dominant failure modes before optimizing quality metrics")
+    if termination_rates.get("anchor_pos", 0.0) >= 0.50:
+        tags.append("anchor_pos_dominant")
+        must_address.append("baseline is dominated by anchor_pos termination; do not make anchor_pos threshold stricter")
+        must_address.append("increase global anchor tolerance/std or broaden motion-start phase coverage before adding aggressive task rewards")
+    if termination_rates.get("ee_body_pos", 0.0) >= 0.50:
+        tags.append("ee_body_pos_dominant")
+        must_address.append("baseline is dominated by ee_body_pos termination; separate legal support/landing errors from early tracking failure")
+    if mean_x / target_x < 0.75:
+        tags.append("baseline_progress_shortfall")
+        must_address.append("baseline does not reliably reach the target progress; prioritize phase/progress repair before stage2 promotion")
+    min_apex = criteria.get("min_apex_height")
+    if min_apex is not None and mean_body_height < float(min_apex):
+        tags.append("baseline_apex_shortfall")
+        must_address.append("baseline apex/body height is below the task criterion; tune apex only together with stable phase tracking")
+    max_final_speed = criteria.get("max_final_anchor_speed")
+    if max_final_speed is not None and mean_final_speed > float(max_final_speed):
+        tags.append("baseline_landing_speed_high")
+        must_address.append("baseline final speed exceeds landing criterion; include landing stability but avoid early anchor regression")
+    max_final_ang_speed = criteria.get("max_final_ang_speed")
+    if max_final_ang_speed is not None and mean_final_ang_speed > float(max_final_ang_speed):
+        tags.append("baseline_landing_ang_speed_high")
+        must_address.append("baseline final angular speed exceeds landing criterion; repair rotation recovery without tightening anchor_pos")
+    min_flip_rotation = criteria.get("min_flip_rotation")
+    if min_flip_rotation is not None and mean_flip_rotation < float(min_flip_rotation):
+        tags.append("baseline_flip_rotation_shortfall")
+        must_address.append("baseline lacks required flip rotation; sample aerial phase while preserving final stability gates")
+
+    if not must_address:
+        must_address.append("baseline diagnostics show no single dominant failure; use conservative baseline-adjacent exploration")
+
+    return {
+        "failure_tags": sorted(set(tags)),
+        "termination_rates": termination_rates,
+        "dominant_termination": dominant_termination,
+        "progress_ratio": mean_x / target_x,
+        "must_address": must_address,
+    }
+
+
 def write_baseline_context(
     loop_dir: Path,
     config: dict[str, Any],
@@ -83,9 +143,11 @@ def write_baseline_context(
     if baseline is None:
         return None, None
 
+    baseline_diagnostics = baseline_failure_context(config, baseline)
     history = {
         "scores": [],
         "baseline": baseline,
+        "baseline_diagnostics": baseline_diagnostics,
         "source": "closed_loop_baseline_context",
     }
     history_path = loop_dir / "baseline_history.json"
@@ -96,6 +158,7 @@ def write_baseline_context(
         "use the provided baseline as the first reference point; do not generate from-scratch candidates that sacrifice baseline success",
         "preserve the final evaluation protocol and compare every candidate against baseline_success_rate",
     ]
+    must_address.extend(baseline_diagnostics.get("must_address", []))
     if success_rate >= 0.90:
         must_address.extend(
             [
@@ -116,12 +179,14 @@ def write_baseline_context(
             "best_success_rate": success_rate,
             "baseline_success_rate": success_rate,
             "target_met": False,
+            "baseline_diagnostics": baseline_diagnostics,
             "next_generation_focus": must_address,
         },
         "candidates": [],
         "llm_feedback_brief": {
             "must_address": must_address,
             "avoid_repeating": [],
+            "baseline_failure_tags": baseline_diagnostics.get("failure_tags", []),
             "runtime_failures": [],
             "evaluation_contract": {
                 "baseline_success_rate": success_rate,

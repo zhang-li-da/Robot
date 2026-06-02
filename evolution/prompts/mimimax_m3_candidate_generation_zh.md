@@ -59,6 +59,7 @@
 4. 如果出现 `deterministic_collapse`，必须至少有一个候选提高探索或拓宽 phase sampling。
 5. 对已经高成功率的基线，不要用短预算从零训练候选替代长期基线，除非候选明确是 baseline-adjacent repair。
 6. 如果 `llm_feedback_brief.runtime_failures` 非空，必须优先生成至少一个运行时修复候选，且不能降低最终评估 episode 数或成功标准。
+7. 如果 `llm_feedback_brief.baseline_failure_tags` 包含 `anchor_pos_dominant` 或 `ee_body_pos_dominant`，第一代候选必须优先修复对应终止源；不要把相关 termination threshold 调得更严格，也不要只增加任务奖励。
 
 如果 `TASK_PROFILE_JSON` 非空，必须使用其中的任务类型、合法接触、风险控制和基线评估协议，确保候选只改变可搜索算法基因，不改变最终考核标准。
 

@@ -71,6 +71,7 @@
 
 如果 `FEEDBACK_JSON` 非空，必须优先响应其中的 `llm_feedback_brief.must_address` 和候选级 `failure_tags`。候选必须解释其针对的失败标签；不得重复已经导致严重退化的参数组合。对接触型特技，需要明确区分合法支撑接触、危险冲击和跟踪误差。
 如果 `llm_feedback_brief.runtime_failures` 非空，必须优先生成至少一个运行时修复候选。运行时修复只能改变资源预算、logger、采样/终止容忍等安全项，不能降低最终评估标准。
+如果 `llm_feedback_brief.baseline_failure_tags` 包含 `anchor_pos_dominant` 或 `ee_body_pos_dominant`，第一代候选必须优先修复对应终止源；不要把相关 termination threshold 调得更严格，也不要只增加 apex/landing/task reward。
 
 如果 baseline 已经高成功率，下一代候选的目标不是证明 baseline 错误，而是在保持成功率的前提下改进更细的质量指标，例如最终 yaw、最终速度/角速度、接触冲击、动作自然度、鲁棒性或 sim2real 安全项。候选 rationale 必须明确说明如何避免 `severe_regression_vs_baseline`。
 
