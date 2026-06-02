@@ -313,6 +313,58 @@ def _apply_high_baseline_guard(
     return guarded
 
 
+def _apply_nonzero_baseline_guard(
+    genome: AlgorithmGenome,
+    config: dict[str, Any],
+    history: dict[str, Any],
+    feedback: dict[str, Any],
+) -> AlgorithmGenome:
+    """Keep moderate-success baselines from regressing through harsher exploration settings."""
+
+    guarded = genome
+    baseline_success = _context_baseline_success(history, feedback)
+    if baseline_success < 0.25 or baseline_success >= 0.90:
+        return guarded
+
+    task = config.get("task", {})
+    task_name = str(task.get("name", "")).lower()
+    isaac_task = str(task.get("isaac_task", "")).lower()
+    success_type = str(task.get("success_type", "")).lower()
+    proxy_note = str(task.get("success_criteria", {}).get("proxy_note", ""))
+    is_aerial_turn_proxy = (
+        "turn_jump" in task_name
+        or "wallturn" in isaac_task
+        or ("progress" in success_type and bool(proxy_note))
+    )
+    if not is_aerial_turn_proxy:
+        return guarded
+
+    guarded.sampling.fixed_start_probability = _clip_context_value(
+        config,
+        "sampling.fixed_start_probability",
+        max(float(guarded.sampling.fixed_start_probability), 0.80),
+    )
+    guarded.termination.anchor_pos_z_threshold = _clip_context_value(
+        config,
+        "termination.anchor_pos_z_threshold",
+        max(float(guarded.termination.anchor_pos_z_threshold), 0.32),
+    )
+    guarded.termination.ee_body_pos_z_threshold = _clip_context_value(
+        config,
+        "termination.ee_body_pos_z_threshold",
+        max(float(guarded.termination.ee_body_pos_z_threshold), 0.40),
+    )
+    guarded.reward.yaw_alignment_weight = _clip_context_value(
+        config,
+        "reward.yaw_alignment_weight",
+        max(float(guarded.reward.yaw_alignment_weight), 0.75),
+    )
+    note = "非零baseline保护：保持motion-start覆盖并避免更严格anchor/ee终止"
+    if note not in guarded.rationale:
+        guarded.rationale = list(guarded.rationale) + [note]
+    return guarded
+
+
 def _normalize_with_context(
     genome: AlgorithmGenome,
     config: dict[str, Any],
@@ -321,6 +373,7 @@ def _normalize_with_context(
 ) -> AlgorithmGenome:
     genome = normalize_genome_for_config(genome, config)
     genome = _apply_high_baseline_guard(genome, config, history, feedback)
+    genome = _apply_nonzero_baseline_guard(genome, config, history, feedback)
     return normalize_genome_for_config(genome, config)
 
 
