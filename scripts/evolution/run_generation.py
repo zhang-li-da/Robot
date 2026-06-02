@@ -456,6 +456,69 @@ def _apply_feedback_failure_guard(
 
     guarded = genome
     tags = _feedback_failure_tags(feedback)
+    if not tags:
+        return guarded
+
+    if "anchor_pos_dominant" in tags or "aerial_phase_tracking_too_strict" in tags:
+        guarded.reward.motion_global_anchor_pos_std = _clip_context_value(
+            config,
+            "reward.motion_global_anchor_pos_std",
+            max(float(guarded.reward.motion_global_anchor_pos_std), 0.38),
+        )
+        guarded.reward.motion_body_pos_std = _clip_context_value(
+            config,
+            "reward.motion_body_pos_std",
+            max(float(guarded.reward.motion_body_pos_std), 0.32),
+        )
+        guarded.termination.anchor_pos_z_threshold = _clip_context_value(
+            config,
+            "termination.anchor_pos_z_threshold",
+            max(float(guarded.termination.anchor_pos_z_threshold), 0.38),
+        )
+        note = "anchor失败保护：放宽阶段跟踪容忍"
+        if note not in guarded.rationale:
+            guarded.rationale = list(guarded.rationale) + [note]
+
+    if "ee_body_pos_dominant" in tags:
+        guarded.termination.ee_body_pos_z_threshold = _clip_context_value(
+            config,
+            "termination.ee_body_pos_z_threshold",
+            max(float(guarded.termination.ee_body_pos_z_threshold), 0.42),
+        )
+        note = "末端失败保护：放宽探索期ee容忍"
+        if note not in guarded.rationale:
+            guarded.rationale = list(guarded.rationale) + [note]
+
+    if "mid_phase_progress_failure" in tags:
+        guarded.reward.phase_progress_weight = _clip_context_value(
+            config,
+            "reward.phase_progress_weight",
+            max(float(guarded.reward.phase_progress_weight), 0.55),
+        )
+        guarded.sampling.adaptive_uniform_ratio = _clip_context_value(
+            config,
+            "sampling.adaptive_uniform_ratio",
+            max(float(guarded.sampling.adaptive_uniform_ratio), 0.90),
+        )
+        note = "中段停滞保护：保持phase覆盖"
+        if note not in guarded.rationale:
+            guarded.rationale = list(guarded.rationale) + [note]
+
+    if "unstable_landing_rotation" in tags:
+        guarded.reward.landing_stability_weight = _clip_context_value(
+            config,
+            "reward.landing_stability_weight",
+            max(float(guarded.reward.landing_stability_weight), 0.90),
+        )
+        guarded.reward.motion_body_ang_vel_std = _clip_context_value(
+            config,
+            "reward.motion_body_ang_vel_std",
+            max(float(guarded.reward.motion_body_ang_vel_std), 4.0),
+        )
+        note = "落地旋转保护：提高稳定恢复压力"
+        if note not in guarded.rationale:
+            guarded.rationale = list(guarded.rationale) + [note]
+
     if "yaw_recovery_failure" not in tags:
         return guarded
 
@@ -490,8 +553,8 @@ def _append_contract_rationale(genome: AlgorithmGenome, note: str) -> None:
     if note in rationale:
         genome.rationale = rationale
         return
-    if len(rationale) >= 2:
-        rationale = rationale[:1] + [note]
+    if len(rationale) >= 4:
+        rationale = rationale[:3] + [note]
     else:
         rationale.append(note)
     genome.rationale = rationale
