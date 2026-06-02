@@ -84,6 +84,7 @@
 - `horizontal_displacement` 小但高度变化大：优先考虑原地高动态姿态跟踪、角速度和落地冲击，而不是强行推进。
 - `low_dynamic_pose` 或低 root 高度：优先考虑低姿态/钻越奖励和接触白名单。
 - 如果反馈包含 `mid_phase_progress_failure`、`crawl_progress_stall` 或长时间 `time_out` 但未完成，优先考虑 `phase_progress_weight`、phase sampling 和更宽终止阈值的组合，而不是只继续加大 `task_progress_weight`。
+- 如果反馈包含 `yaw_recovery_failure`，至少一个候选必须显式提高或重平衡 `yaw_alignment_weight`、landing stability 或 yaw-recovery phase sampling；不得只继续提高 `task_progress_weight`、`apex_height_weight` 或放宽终止条件。
 - 若目录明确缺少目标动作，例如后空翻，需要在 `rationale` 里说明当前候选只能作为 proxy 或预训练阶段，不得声称已经是真正目标动作数据。
 - 对于未来新增的翻越矮墙、钻洞、后空翻、登墙转身 motion，优先使用 `tags`、`suggested_tasks`、`horizontal_displacement`、`root_height_range` 和 `duration_s` 判断是进度型、低姿态型、高动态空中型还是接触支撑型任务。
 
