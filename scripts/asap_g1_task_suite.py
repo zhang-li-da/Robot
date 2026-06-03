@@ -114,11 +114,19 @@ TASK_SPECS: list[dict[str, Any]] = [
             "success_type": "progress",
             "motion_catalog_filter_tasks": ["g1_jump_leap"],
             "reward_terms": COMMON_REWARD_TERMS
-            + ["task_progress", "phase_progress", "apex_height", "landing_stability", "contact_force"],
+            + [
+                "task_progress",
+                "phase_progress",
+                "apex_height",
+                "yaw_alignment",
+                "landing_stability",
+                "contact_force",
+            ],
             "success_criteria": {
                 "description": "ASAP side jump level4 reoriented to +X for aerial balance stress testing.",
                 "min_progress_x": 1.25,
                 "min_apex_height": 0.78,
+                "target_final_yaw": 0.0,
                 "max_final_anchor_speed": 1.4,
                 "max_final_ang_speed": 2.4,
                 "max_final_yaw_error": 1.1,

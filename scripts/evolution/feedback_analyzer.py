@@ -541,14 +541,26 @@ def _candidate_feedback(
     criteria = task.get("success_criteria", {})
     reward_terms = set(task.get("reward_terms", []))
     task_name = str(task.get("name", "")).lower()
+    has_final_yaw_gate = "max_final_yaw_error" in criteria
     is_aerial_turn_jump = (
         "turn_jump" in task_name
         or (
-            "target_final_yaw" in criteria
+            has_final_yaw_gate
             and "yaw_alignment" in reward_terms
             and "apex_height" in reward_terms
         )
     )
+    if has_final_yaw_gate:
+        max_yaw_error = float(criteria.get("max_final_yaw_error", 1.1))
+        if final_yaw_error > max_yaw_error:
+            tags.append("yaw_recovery_failure")
+            hypotheses.append("policy does not recover the target heading by the end of the clip")
+            if "yaw_alignment" in reward_terms:
+                levers.append("increase yaw_alignment reward")
+            else:
+                levers.append("enable yaw_alignment as a searchable reward lever for this yaw-gated task")
+            levers.append("avoid over-tight orientation termination during aerial phase")
+
     if success_type == "backflip":
         if body_height < float(criteria.get("min_apex_height", 1.05)):
             tags.append("insufficient_apex")
@@ -573,7 +585,7 @@ def _candidate_feedback(
             tags.append("insufficient_apex")
             hypotheses.append("turn-jump policy does not create enough aerial margin for yaw recovery")
             levers.extend(["increase apex_height reward", "sample takeoff and aerial phases more uniformly"])
-        if final_yaw_error > max_yaw_error:
+        if final_yaw_error > max_yaw_error and "yaw_recovery_failure" not in tags:
             tags.append("yaw_recovery_failure")
             hypotheses.append("policy does not recover the target heading by the end of the clip")
             levers.extend(["increase yaw_alignment reward", "avoid over-tight orientation termination during aerial phase"])
