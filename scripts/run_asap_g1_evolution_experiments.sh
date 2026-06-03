@@ -29,9 +29,9 @@ export LD_LIBRARY_PATH="/tmp/nvidia-vulkan-full-550.54.14:/usr/lib/x86_64-linux-
 export VK_ICD_FILENAMES="/tmp/nvidia-vulkan-full-550.54.14/nvidia_icd_abs.json"
 
 python scripts/sync_asap_evolution_context.py \
-  --queue_limit 24 \
-  --roadmap_limit 18 \
-  --task_pack_limit 10
+  --queue_limit 32 \
+  --roadmap_limit 24 \
+  --task_pack_limit 12
 
 if [[ -z "${TASK_IDS}" ]]; then
   TASK_IDS="$(python scripts/asap_g1_task_suite.py --list-default)"
