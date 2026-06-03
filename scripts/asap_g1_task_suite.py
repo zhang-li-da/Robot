@@ -412,16 +412,16 @@ def adapted_hydra_overrides(spec: dict[str, Any]) -> list[str]:
     if any(term in reward_terms for term in ("task_progress", "phase_progress", "clearance", "ceiling_clearance")):
         overrides.extend(
             [
-                "env.terminations.anchor_pos.params.threshold=0.32",
-                "env.terminations.ee_body_pos.params.threshold=0.34",
-                "env.commands.motion.adaptive_uniform_ratio=1.05",
+                "env.terminations.anchor_pos.params.threshold=0.45",
+                "env.terminations.ee_body_pos.params.threshold=0.50",
+                "env.commands.motion.adaptive_uniform_ratio=0.90",
             ]
         )
     if any(term in reward_terms for term in ("apex_height", "yaw_alignment", "landing_stability")):
         overrides.append("env.terminations.anchor_ori.params.threshold=1.05")
     overrides.extend(
         [
-            "env.commands.motion.fixed_start_probability=0.95",
+            "env.commands.motion.fixed_start_probability=0.55",
             "env.commands.motion.fixed_start_time_steps=0",
         ]
     )
