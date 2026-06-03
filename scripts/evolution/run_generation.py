@@ -463,17 +463,19 @@ def _apply_feedback_failure_guard(
     if not tags:
         return guarded
 
+    has_training_anchor_pressure = "training_anchor_pos_pressure" in tags or "training_anchor_pos_dominant" in tags
     if (
         "anchor_pos_dominant" in tags
         or "aerial_phase_tracking_too_strict" in tags
-        or "training_anchor_pos_pressure" in tags
-        or "training_anchor_pos_dominant" in tags
+        or has_training_anchor_pressure
         or "comparison_anchor_pos_dominant" in tags
     ):
+        anchor_std_floor = 0.45 if has_training_anchor_pressure else 0.38
+        anchor_threshold_floor = 0.45 if has_training_anchor_pressure else 0.38
         guarded.reward.motion_global_anchor_pos_std = _clip_context_value(
             config,
             "reward.motion_global_anchor_pos_std",
-            max(float(guarded.reward.motion_global_anchor_pos_std), 0.38),
+            max(float(guarded.reward.motion_global_anchor_pos_std), anchor_std_floor),
         )
         guarded.reward.motion_body_pos_std = _clip_context_value(
             config,
@@ -483,7 +485,12 @@ def _apply_feedback_failure_guard(
         guarded.termination.anchor_pos_z_threshold = _clip_context_value(
             config,
             "termination.anchor_pos_z_threshold",
-            max(float(guarded.termination.anchor_pos_z_threshold), 0.38),
+            max(float(guarded.termination.anchor_pos_z_threshold), anchor_threshold_floor),
+        )
+        guarded.sampling.fixed_start_probability = _clip_context_value(
+            config,
+            "sampling.fixed_start_probability",
+            min(float(guarded.sampling.fixed_start_probability), 0.65),
         )
         note = "anchor失败保护：放宽阶段跟踪容忍"
         if note not in guarded.rationale:
