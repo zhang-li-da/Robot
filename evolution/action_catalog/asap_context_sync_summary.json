@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-03T00:24:12.106455+00:00",
+  "generated_at": "2026-06-03T01:19:02.091555+00:00",
   "purpose": "CPU-only ASAP dataset and algorithm-prior synchronization for LLM-assisted stunt imitation evolution.",
   "asap_root": "/root/ASAP-main",
   "motion_dir": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles",
@@ -71,11 +71,11 @@
       "argv": [
         "scripts/select_asap_evolution_tasks.py",
         "--limit",
-        "32"
+        "40"
       ],
       "returncode": 0,
       "stdout_json": {
-        "selected": 32,
+        "selected": 40,
         "output_json": "evolution/action_catalog/asap_evolution_candidate_queue.json"
       }
     },
@@ -84,7 +84,7 @@
       "argv": [
         "scripts/build_asap_task_adaptive_roadmap.py",
         "--limit",
-        "24"
+        "32"
       ],
       "returncode": 0,
       "stdout_json": {
@@ -99,7 +99,7 @@
         "--goal",
         "backflip",
         "--limit",
-        "12"
+        "16"
       ],
       "returncode": 0,
       "stdout_json": {
@@ -114,7 +114,7 @@
         "--goal",
         "wall_vault",
         "--limit",
-        "12"
+        "16"
       ],
       "returncode": 0,
       "stdout_json": {
@@ -129,7 +129,7 @@
         "--goal",
         "crawl_tunnel",
         "--limit",
-        "12"
+        "16"
       ],
       "returncode": 0,
       "stdout_json": {
@@ -144,7 +144,7 @@
         "--goal",
         "wall_turn",
         "--limit",
-        "12"
+        "16"
       ],
       "returncode": 0,
       "stdout_json": {
@@ -159,7 +159,7 @@
         "--goal",
         "jump_leap",
         "--limit",
-        "12"
+        "16"
       ],
       "returncode": 0,
       "stdout_json": {
@@ -251,7 +251,7 @@
       "status": "proxy_only",
       "real_motion_available": false,
       "real_motion_count": 0,
-      "proxy_motion_count": 12,
+      "proxy_motion_count": 16,
       "selected_motion_ids": [
         "0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass",
         "0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass",
@@ -268,7 +268,7 @@
       "status": "proxy_only",
       "real_motion_available": false,
       "real_motion_count": 0,
-      "proxy_motion_count": 12,
+      "proxy_motion_count": 16,
       "selected_motion_ids": [
         "0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass",
         "0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass",
@@ -285,7 +285,7 @@
       "status": "proxy_only",
       "real_motion_available": false,
       "real_motion_count": 0,
-      "proxy_motion_count": 12,
+      "proxy_motion_count": 15,
       "selected_motion_ids": [
         "0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass",
         "0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass",
@@ -302,7 +302,7 @@
       "status": "proxy_only",
       "real_motion_available": false,
       "real_motion_count": 0,
-      "proxy_motion_count": 12,
+      "proxy_motion_count": 14,
       "selected_motion_ids": [
         "0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass",
         "0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass",
@@ -318,8 +318,8 @@
     "jump_leap": {
       "status": "real_motion_available",
       "real_motion_available": true,
-      "real_motion_count": 12,
-      "proxy_motion_count": 0,
+      "real_motion_count": 14,
+      "proxy_motion_count": 2,
       "selected_motion_ids": [
         "0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass",
         "0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass",
@@ -536,7 +536,7 @@
   "roadmap": {
     "path": "evolution/action_catalog/asap_task_adaptive_roadmap.json",
     "configured_task_count": 9,
-    "next_candidate_count": 24
+    "next_candidate_count": 26
   },
   "execution_policy": {
     "gpu_policy": "single Isaac training job on the RTX 3090; CPU-only catalog/report jobs may run in parallel",

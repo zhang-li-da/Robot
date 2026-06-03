@@ -57,6 +57,8 @@
 | 22 | `0-motions_raw_tairantestbed_smpl_video_shoot_level3_filter_amass` | `dynamic_balance` | `robustness_pretraining` | 2.07m / 0.14m / 4.13s | phase_progress, landing_stability, contact_force |
 | 23 | `0-motions_raw_tairantestbed_smpl_video_walk_level4_filter_amass` | `locomotion_pretraining` | `warm_start` | 2.07m / 0.09m / 4.43s | phase_progress, landing_stability |
 | 24 | `0-motions_raw_tairantestbed_smpl_video_walk_level3_filter_amass` | `locomotion_pretraining` | `warm_start` | 2.22m / 0.10m / 4.73s | phase_progress, landing_stability |
+| 25 | `0-motions_raw_tairantestbed_smpl_video_walk_level1_filter_amass` | `locomotion_pretraining` | `warm_start` | 1.77m / 0.10m / 5.03s | phase_progress, landing_stability |
+| 26 | `0-motions_raw_tairantestbed_smpl_video_walk_level2_filter_amass` | `locomotion_pretraining` | `warm_start` | 1.99m / 0.08m / 3.43s | phase_progress, landing_stability |
 
 ## 任务族到算法进化杠杆
 

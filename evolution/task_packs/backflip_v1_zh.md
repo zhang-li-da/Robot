@@ -4,7 +4,7 @@
 - 任务族：`aerial_flip`
 - 数据状态：`proxy_only`
 - 真实动作数：`0`
-- 代理动作数：`12`
+- 代理动作数：`16`
 - 成功声明约束：final claim requires true flip motion and >=50 motion-start trials
 
 ## 数据限制
@@ -32,6 +32,10 @@
 | 10 | `0-TairanTestbed_TairanTestbed_CR7_video_CR7_level1_filter_amass` | `dynamic_balance` | no | 346.9 | 0.53m / 0.55m / 3.93s | phase_progress, landing_stability, contact_force |
 | 11 | `0-motions_raw_tairantestbed_smpl_video_CR7_level1_filter_amass` | `dynamic_balance` | no | 346.9 | 0.53m / 0.55m / 3.93s | phase_progress, landing_stability, contact_force |
 | 12 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass` | `aerial_jump` | no | 345.8 | 1.25m / 0.18m / 3.63s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 13 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level2_filter_amass` | `aerial_jump` | no | 333.7 | 0.75m / 0.09m / 3.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 14 | `0-motions_raw_tairantestbed_smpl_video_CR7_level2_filter_amass` | `dynamic_balance` | yes | 327.6 | 1.98m / 0.35m / 4.43s | phase_progress, landing_stability, contact_force |
+| 15 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level1_filter_amass` | `aerial_jump` | no | 319.0 | 0.47m / 0.12m / 3.73s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 16 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level1_filter_amass` | `aerial_jump` | no | 318.2 | 0.41m / 0.07m / 3.03s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
 
 ## LLM 搜索约束
 

@@ -18,7 +18,7 @@
     "status": "proxy_only",
     "real_motion_available": false,
     "real_motion_count": 0,
-    "proxy_motion_count": 12,
+    "proxy_motion_count": 15,
     "known_limitations": [
       "当前动作库只有相邻/代理动作，只能用于预训练、压力测试或参数搜索。",
       "No explicit backflip filename is present in the current ASAP package.",
@@ -510,6 +510,115 @@
         "search_note": "use as gait/recovery warm start rather than a formal stunt task"
       },
       "goal_match_score": 250.529
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_walk_level3_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_walk_level3_filter_amass.pkl",
+      "clip_key": "0-motions_raw_tairantestbed_smpl_video_walk_level3_filter_amass",
+      "rank_score": 69.841,
+      "already_configured": false,
+      "archetype": "locomotion_pretraining",
+      "tags": [
+        "gait",
+        "locomotion",
+        "walk"
+      ],
+      "suggested_tasks": [
+        "g1_recovery"
+      ],
+      "stats": {
+        "duration_s": 4.733333333333333,
+        "horizontal_displacement": 2.2249085903167725,
+        "root_height_range": 0.10205352306365967,
+        "min_root_height": 0.7817213535308838,
+        "max_root_height": 0.8837748765945435,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "locomotion_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability"
+        ],
+        "search_note": "use as gait/recovery warm start rather than a formal stunt task"
+      },
+      "goal_match_score": 249.841
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_walk_level1_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_walk_level1_filter_amass.pkl",
+      "clip_key": "0-motions_raw_tairantestbed_smpl_video_walk_level1_filter_amass",
+      "rank_score": 67.272,
+      "already_configured": false,
+      "archetype": "locomotion_pretraining",
+      "tags": [
+        "gait",
+        "locomotion",
+        "long_sequence",
+        "walk"
+      ],
+      "suggested_tasks": [
+        "g1_recovery"
+      ],
+      "stats": {
+        "duration_s": 5.033333333333333,
+        "horizontal_displacement": 1.7664748430252075,
+        "root_height_range": 0.10238504409790039,
+        "min_root_height": 0.7732747793197632,
+        "max_root_height": 0.8756598234176636,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "locomotion_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability"
+        ],
+        "search_note": "use as gait/recovery warm start rather than a formal stunt task"
+      },
+      "goal_match_score": 247.272
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_walk_level2_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_walk_level2_filter_amass.pkl",
+      "clip_key": "0-motions_raw_tairantestbed_smpl_video_walk_level2_filter_amass",
+      "rank_score": 63.522,
+      "already_configured": false,
+      "archetype": "locomotion_pretraining",
+      "tags": [
+        "gait",
+        "locomotion",
+        "walk"
+      ],
+      "suggested_tasks": [
+        "g1_recovery"
+      ],
+      "stats": {
+        "duration_s": 3.433333333333333,
+        "horizontal_displacement": 1.9866398572921753,
+        "root_height_range": 0.08124327659606934,
+        "min_root_height": 0.794369637966156,
+        "max_root_height": 0.8756129145622253,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "locomotion_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability"
+        ],
+        "search_note": "use as gait/recovery warm start rather than a formal stunt task"
+      },
+      "goal_match_score": 243.522
     }
   ],
   "baseline_context": {

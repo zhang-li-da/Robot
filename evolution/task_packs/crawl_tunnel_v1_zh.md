@@ -4,7 +4,7 @@
 - 任务族：`crawl_tunnel`
 - 数据状态：`proxy_only`
 - 真实动作数：`0`
-- 代理动作数：`12`
+- 代理动作数：`15`
 - 成功声明约束：final claim requires tunnel/ceiling geometry and >=50 task trials
 
 ## 数据限制
@@ -32,6 +32,9 @@
 | 10 | `0-motions_raw_tairantestbed_smpl_video_step_forward_back_level2_filter_amass` | `recovery_pretraining` | no | 273.4 | 0.12m / 0.09m / 4.63s | phase_progress, landing_stability, contact_force |
 | 11 | `0-motions_raw_tairantestbed_smpl_video_step_forward_back_level1_filter_amass` | `recovery_pretraining` | no | 267.2 | 0.04m / 0.04m / 3.93s | phase_progress, landing_stability, contact_force |
 | 12 | `0-motions_raw_tairantestbed_smpl_video_walk_level4_filter_amass` | `locomotion_pretraining` | no | 250.5 | 2.07m / 0.09m / 4.43s | phase_progress, landing_stability |
+| 13 | `0-motions_raw_tairantestbed_smpl_video_walk_level3_filter_amass` | `locomotion_pretraining` | no | 249.8 | 2.22m / 0.10m / 4.73s | phase_progress, landing_stability |
+| 14 | `0-motions_raw_tairantestbed_smpl_video_walk_level1_filter_amass` | `locomotion_pretraining` | no | 247.3 | 1.77m / 0.10m / 5.03s | phase_progress, landing_stability |
+| 15 | `0-motions_raw_tairantestbed_smpl_video_walk_level2_filter_amass` | `locomotion_pretraining` | no | 243.5 | 1.99m / 0.08m / 3.43s | phase_progress, landing_stability |
 
 ## LLM 搜索约束
 
