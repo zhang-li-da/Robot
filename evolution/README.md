@@ -222,6 +222,8 @@ python scripts/evolution/closed_loop.py \
 
 `--comparison_eval` 不会把对比算法自动当作新 baseline。它只把“成功率退化、任务进度上升但最终成功下降、ee/anchor 终止占优、回报函数与最终指标错配”等消融证据写入 `baseline_feedback.json`、`feedback.json` 和 `llm_feedback_brief`，用于约束下一代候选生成。
 
+执行器默认启用训练日志健康早停：候选至少运行到 `--health_min_iterations` 后，如果连续 `--health_patience_checks` 次检查仍处于 active collapse，会写入 `status=train_health_eliminated` 并跳过该候选的后续评估。该状态会被反馈分析器作为算法候选失败证据输入下一代 LLM，而不是当作 Isaac 环境故障。需要完整跑完所有候选时，可给 `execute_generation.py` 加 `--disable_training_health_stop`。
+
 ## G1 膝爬 V1 正式执行模板
 
 生成第一代候选：

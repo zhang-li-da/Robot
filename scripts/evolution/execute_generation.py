@@ -16,6 +16,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from scoreboard import discover_scores, score_eval_json
+from training_log_analyzer import summarize_training_log
 
 
 DEFAULT_CONDA_ENV = "/root/shared-nvme/conda_envs/isaaclab210"
@@ -37,6 +38,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--enable_stage2", action="store_true", help="Promote strong stage1 candidates to stage2 budget.")
     parser.add_argument("--stage2_min_success_delta", type=float, default=0.05)
     parser.add_argument("--stage2_min_fitness_delta", type=float, default=5.0)
+    parser.add_argument(
+        "--disable_training_health_stop",
+        action="store_true",
+        help="Disable dynamic early elimination based on training-log health.",
+    )
+    parser.add_argument("--health_check_interval_s", type=float, default=60.0)
+    parser.add_argument("--health_min_iterations", type=int, default=180)
+    parser.add_argument("--health_patience_checks", type=int, default=2)
+    parser.add_argument("--health_grace_seconds", type=float, default=20.0)
     parser.add_argument("--skip_preflight", action="store_true")
     parser.add_argument("--preflight_only", action="store_true")
     return parser.parse_args()
@@ -54,6 +64,105 @@ def run_command(command: list[str], cwd: Path, log_path: Path, env: dict[str, st
         process = subprocess.run(command, cwd=str(cwd), stdout=log_file, stderr=subprocess.STDOUT, env=env, text=True)
         log_file.write(f"[exit_code] {process.returncode}\n")
         return int(process.returncode)
+
+
+def run_training_command(
+    command: list[str],
+    cwd: Path,
+    log_path: Path,
+    env: dict[str, str],
+    status_path: Path,
+    genome_id: str,
+    stage: str,
+    health_stop_enabled: bool,
+    check_interval_s: float,
+    min_iterations: int,
+    patience_checks: int,
+    grace_seconds: float,
+) -> tuple[int, dict[str, Any]]:
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    details: dict[str, Any] = {
+        "health_stop_enabled": health_stop_enabled,
+        "health_check_interval_s": check_interval_s,
+        "health_min_iterations": min_iterations,
+        "health_patience_checks": patience_checks,
+    }
+    if not health_stop_enabled:
+        return run_command(command, cwd, log_path, env), details
+
+    bad_checks = 0
+    last_summary: dict[str, Any] = {}
+    started = time.time()
+    with log_path.open("a", encoding="utf-8") as log_file:
+        log_file.write("$ " + " ".join(command) + "\n")
+        log_file.flush()
+        process = subprocess.Popen(
+            command,
+            cwd=str(cwd),
+            stdout=log_file,
+            stderr=subprocess.STDOUT,
+            env=env,
+            text=True,
+        )
+        while True:
+            return_code = process.poll()
+            if return_code is not None:
+                log_file.write(f"[exit_code] {return_code}\n")
+                log_file.flush()
+                details["training_log_health"] = last_summary or summarize_training_log(log_path)
+                return int(return_code), details
+
+            time.sleep(max(1.0, check_interval_s))
+            last_summary = summarize_training_log(log_path)
+            health_status = str(last_summary.get("health_status", "unknown"))
+            last_iteration = int(last_summary.get("last_iteration", -1) or -1)
+            failure_tags = set(last_summary.get("failure_tags", []))
+            write_status(
+                status_path,
+                {
+                    "genome_id": genome_id,
+                    "status": "training",
+                    "stage": stage,
+                    "train_log": str(log_path),
+                    "command": command,
+                    "duration_seconds": time.time() - started,
+                    "training_log_health": last_summary,
+                },
+            )
+
+            active_collapse = health_status == "collapsing" or "training_active_collapse" in failure_tags
+            if last_iteration >= min_iterations and active_collapse:
+                bad_checks += 1
+            else:
+                bad_checks = 0
+
+            if bad_checks < max(1, patience_checks):
+                continue
+
+            details.update(
+                {
+                    "health_eliminated": True,
+                    "training_log_health": last_summary,
+                    "bad_health_checks": bad_checks,
+                    "duration_seconds": time.time() - started,
+                }
+            )
+            log_file.write(
+                "[health_stop] persistent training collapse detected; "
+                f"terminating pid={process.pid} at iteration={last_iteration}\n"
+            )
+            log_file.flush()
+            process.terminate()
+            try:
+                process.wait(timeout=max(1.0, grace_seconds))
+            except subprocess.TimeoutExpired:
+                log_file.write(f"[health_stop] killing pid={process.pid} after grace timeout\n")
+                log_file.flush()
+                process.kill()
+                process.wait()
+            log_file.write("[exit_code] health_eliminated\n")
+            log_file.flush()
+            return int(process.returncode if process.returncode is not None else -15), details
 
 
 def tail_text(path: Path, max_bytes: int = 12000) -> str:
@@ -355,7 +464,20 @@ def main() -> int:
             },
         )
         try:
-            train_rc = run_command(plan["train_stage1"], Path.cwd(), train_log, env)
+            train_rc, train_details = run_training_command(
+                plan["train_stage1"],
+                Path.cwd(),
+                train_log,
+                env,
+                status_path,
+                genome_id,
+                "stage1_train",
+                not args.disable_training_health_stop,
+                args.health_check_interval_s,
+                args.health_min_iterations,
+                args.health_patience_checks,
+                args.health_grace_seconds,
+            )
         except Exception as exc:
             write_status(
                 status_path,
@@ -367,6 +489,28 @@ def main() -> int:
                     "duration_seconds": time.time() - stage_started,
                     "train_log": str(train_log),
                     "train_log_tail": tail_text(train_log),
+                },
+            )
+            continue
+        if train_details.get("health_eliminated"):
+            write_status(
+                status_path,
+                {
+                    "genome_id": genome_id,
+                    "status": "train_health_eliminated",
+                    "stage": "stage1_train",
+                    "return_code": train_rc,
+                    "signal": signal_name(train_rc),
+                    "duration_seconds": train_details.get("duration_seconds", time.time() - stage_started),
+                    "train_log": str(train_log),
+                    "train_log_tail": tail_text(train_log),
+                    "training_log_health": train_details.get("training_log_health", {}),
+                    "health_stop": {
+                        "bad_health_checks": train_details.get("bad_health_checks"),
+                        "min_iterations": args.health_min_iterations,
+                        "patience_checks": args.health_patience_checks,
+                        "check_interval_s": args.health_check_interval_s,
+                    },
                 },
             )
             continue
@@ -382,6 +526,7 @@ def main() -> int:
                     "duration_seconds": time.time() - stage_started,
                     "train_log": str(train_log),
                     "train_log_tail": tail_text(train_log),
+                    "training_log_health": train_details.get("training_log_health", {}),
                 },
             )
             continue
@@ -483,7 +628,20 @@ def main() -> int:
         )
         stage2_started = time.time()
         try:
-            stage2_train_rc = run_command(stage2_train_command, Path.cwd(), stage2_train_log, env)
+            stage2_train_rc, stage2_train_details = run_training_command(
+                stage2_train_command,
+                Path.cwd(),
+                stage2_train_log,
+                env,
+                status_path,
+                genome_id,
+                "stage2_train",
+                not args.disable_training_health_stop,
+                args.health_check_interval_s,
+                args.health_min_iterations,
+                args.health_patience_checks,
+                args.health_grace_seconds,
+            )
         except Exception as exc:
             write_status(
                 status_path,
@@ -495,6 +653,29 @@ def main() -> int:
                     "duration_seconds": time.time() - stage2_started,
                     "train_log": str(stage2_train_log),
                     "train_log_tail": tail_text(stage2_train_log),
+                },
+            )
+            continue
+        if stage2_train_details.get("health_eliminated"):
+            write_status(
+                status_path,
+                {
+                    "genome_id": genome_id,
+                    "status": "train_health_eliminated",
+                    "stage": "stage2_train",
+                    "return_code": stage2_train_rc,
+                    "signal": signal_name(stage2_train_rc),
+                    "duration_seconds": stage2_train_details.get("duration_seconds", time.time() - stage2_started),
+                    "train_log": str(stage2_train_log),
+                    "train_log_tail": tail_text(stage2_train_log),
+                    "training_log_health": stage2_train_details.get("training_log_health", {}),
+                    "stage2_decision": decision,
+                    "health_stop": {
+                        "bad_health_checks": stage2_train_details.get("bad_health_checks"),
+                        "min_iterations": args.health_min_iterations,
+                        "patience_checks": args.health_patience_checks,
+                        "check_interval_s": args.health_check_interval_s,
+                    },
                 },
             )
             continue
@@ -510,6 +691,7 @@ def main() -> int:
                     "duration_seconds": time.time() - stage2_started,
                     "train_log": str(stage2_train_log),
                     "train_log_tail": tail_text(stage2_train_log),
+                    "training_log_health": stage2_train_details.get("training_log_health", {}),
                 },
             )
             continue

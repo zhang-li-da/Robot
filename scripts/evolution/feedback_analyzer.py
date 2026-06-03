@@ -21,6 +21,7 @@ from training_log_analyzer import summarize_candidate_training_logs
 RUNTIME_FAILURE_STATUSES = {
     "train_failed",
     "train_exception",
+    "train_health_eliminated",
     "eval_failed",
     "eval_exception",
     "generation_failed",
@@ -263,6 +264,64 @@ def _runtime_failure_feedback(genome_id: str, status_path: Path, config: dict[st
         "repair runtime/resource settings before allocating more training budget",
         "preserve the same final evaluation protocol after runtime repair",
     ]
+
+    if status_name == "train_health_eliminated":
+        health = status.get("training_log_health", {}) or {}
+        tags = ["training_health_eliminated"]
+        tags.extend(health.get("failure_tags", []))
+        hypotheses = [
+            "dynamic resource controller stopped this candidate because training log health stayed poor",
+            "this is an algorithm/search-space failure signal rather than an Isaac runtime failure",
+        ]
+        levers = list(health.get("suggested_levers", []))
+        levers.extend(
+            [
+                "eliminate this exact genome and mutate reward/sampling/termination before retry",
+                "allocate full training budget only to candidates that recover before the health-stop window",
+            ]
+        )
+        return {
+            "feedback_type": "runtime_status",
+            "genome_id": genome_id,
+            "status_path": str(status_path),
+            "runtime_status": {
+                "status": status_name,
+                "stage": stage,
+                "return_code": return_code,
+                "signal": signal_name or None,
+                "duration_seconds": status.get("duration_seconds"),
+                "total_duration_seconds": status.get("total_duration_seconds"),
+                "train_log": status.get("train_log"),
+                "health_stop": status.get("health_stop", {}),
+            },
+            "training_log_health": health,
+            "score": _runtime_score_stub(genome_id, status_path),
+            "baseline_delta": {},
+            "metrics": {
+                "success_rate": 0.0,
+                "progress_ratio": 0.0,
+                "mean_max_torso_x": 0.0,
+                "mean_clearance": 0.0,
+                "mean_max_body_height": 0.0,
+                "mean_min_body_height": 0.0,
+                "mean_low_posture_fraction": 0.0,
+                "mean_ceiling_zone_body_height": 0.0,
+                "mean_final_speed": 0.0,
+                "mean_final_ang_speed": 0.0,
+                "mean_final_yaw_error": 0.0,
+                "mean_flip_rotation": 0.0,
+                "episode_length_mean": 0.0,
+                "episode_length_std": 0.0,
+                "episode_progress_std": 0.0,
+                "episode_clearance_std": 0.0,
+            },
+            "termination_rates": {},
+            "dominant_termination": "training_health_stop",
+            "failure_tags": sorted(set(tags)),
+            "hypotheses": sorted(set(hypotheses)),
+            "suggested_levers": sorted(set(levers)),
+            "recommendation": "eliminate_or_repair",
+        }
 
     if "train" in status_name or "train" in stage:
         tags.append("runtime_train_failed")
@@ -656,6 +715,8 @@ def _aggregate(candidate_feedback: list[dict[str, Any]], config: dict[str, Any],
         focus.append("increase behavior diversity through entropy, phase sampling, or warm-start curriculum")
     if "training_active_collapse" in tag_names:
         focus.append("repair training collapse before reward search: lower fixed-start pressure and relax stage1 anchor/ee termination")
+    if "training_health_eliminated" in tag_names:
+        focus.append("use dynamic early elimination evidence: mutate collapsed genomes instead of extending their training budget")
     if "training_recovered_from_collapse" in tag_names:
         focus.append("preserve recovery-friendly sampling and avoid stricter early termination in the next generation")
     if "training_ee_body_pos_pressure" in tag_names or "training_ee_body_pos_dominant" in tag_names:
