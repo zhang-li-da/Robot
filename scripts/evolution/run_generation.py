@@ -567,6 +567,16 @@ def _apply_crawl_low_posture_guard(
         "reward.motion_body_pos_std",
         max(float(guarded.reward.motion_body_pos_std), 0.40),
     )
+    guarded.reward.task_progress_weight = _clip_context_value(
+        config,
+        "reward.task_progress_weight",
+        max(float(guarded.reward.task_progress_weight), 0.90),
+    )
+    guarded.reward.ceiling_clearance_weight = _clip_context_value(
+        config,
+        "reward.ceiling_clearance_weight",
+        max(float(guarded.reward.ceiling_clearance_weight), 0.95),
+    )
     guarded.termination.anchor_pos_z_threshold = _clip_context_value(
         config,
         "termination.anchor_pos_z_threshold",
@@ -580,19 +590,26 @@ def _apply_crawl_low_posture_guard(
     guarded.sampling.fixed_start_probability = _clip_context_value(
         config,
         "sampling.fixed_start_probability",
-        min(float(guarded.sampling.fixed_start_probability), 0.45),
+        max(float(guarded.sampling.fixed_start_probability), 0.85),
+    )
+    guarded.sampling.fixed_start_time_steps = int(
+        _clip_context_value(
+            config,
+            "sampling.fixed_start_time_steps",
+            max(float(guarded.sampling.fixed_start_time_steps), 4.0),
+        )
     )
     guarded.reward.phase_progress_weight = _clip_context_value(
         config,
         "reward.phase_progress_weight",
-        max(float(guarded.reward.phase_progress_weight), 0.75),
+        max(float(guarded.reward.phase_progress_weight), 0.85),
     )
     guarded.sampling.adaptive_uniform_ratio = _clip_context_value(
         config,
         "sampling.adaptive_uniform_ratio",
         max(float(guarded.sampling.adaptive_uniform_ratio), 1.00),
     )
-    note = "低姿态/钻洞保护：最大化探索期anchor/ee容忍并保持阶段覆盖"
+    note = "低姿态/钻洞保护：保持motion-start覆盖并强化早期进度"
     if note not in guarded.rationale:
         guarded.rationale = list(guarded.rationale) + [note]
     return guarded
