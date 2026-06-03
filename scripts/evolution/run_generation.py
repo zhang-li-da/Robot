@@ -464,34 +464,39 @@ def _apply_crawl_low_posture_guard(
     guarded.reward.motion_global_anchor_pos_std = _clip_context_value(
         config,
         "reward.motion_global_anchor_pos_std",
-        max(float(guarded.reward.motion_global_anchor_pos_std), 0.40),
+        max(float(guarded.reward.motion_global_anchor_pos_std), 0.50),
     )
     guarded.reward.motion_body_pos_std = _clip_context_value(
         config,
         "reward.motion_body_pos_std",
-        max(float(guarded.reward.motion_body_pos_std), 0.32),
+        max(float(guarded.reward.motion_body_pos_std), 0.40),
     )
     guarded.termination.anchor_pos_z_threshold = _clip_context_value(
         config,
         "termination.anchor_pos_z_threshold",
-        max(float(guarded.termination.anchor_pos_z_threshold), 0.40),
+        max(float(guarded.termination.anchor_pos_z_threshold), 0.45),
     )
     guarded.termination.ee_body_pos_z_threshold = _clip_context_value(
         config,
         "termination.ee_body_pos_z_threshold",
-        max(float(guarded.termination.ee_body_pos_z_threshold), 0.45),
+        max(float(guarded.termination.ee_body_pos_z_threshold), 0.50),
     )
     guarded.sampling.fixed_start_probability = _clip_context_value(
         config,
         "sampling.fixed_start_probability",
-        min(float(guarded.sampling.fixed_start_probability), 0.65),
+        min(float(guarded.sampling.fixed_start_probability), 0.45),
     )
     guarded.reward.phase_progress_weight = _clip_context_value(
         config,
         "reward.phase_progress_weight",
-        max(float(guarded.reward.phase_progress_weight), 0.55),
+        max(float(guarded.reward.phase_progress_weight), 0.75),
     )
-    note = "低姿态/钻洞保护：放宽anchor/ee早期终止并保持阶段覆盖"
+    guarded.sampling.adaptive_uniform_ratio = _clip_context_value(
+        config,
+        "sampling.adaptive_uniform_ratio",
+        max(float(guarded.sampling.adaptive_uniform_ratio), 1.00),
+    )
+    note = "低姿态/钻洞保护：最大化探索期anchor/ee容忍并保持阶段覆盖"
     if note not in guarded.rationale:
         guarded.rationale = list(guarded.rationale) + [note]
     return guarded
