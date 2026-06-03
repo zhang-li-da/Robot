@@ -30,6 +30,7 @@
 24. 如果 `ALGORITHM_PRIORS_JSON` 非空，必须把 ASAP 的 phase motion tracking、history observation、domain randomization 和 delta-action sim2real 机制作为搜索先验；但不得把 ASAP ONNX 或 proxy 动作当作本任务成功证据。
 25. 如果候选涉及未来 sim2real 迁移，只能通过 action smoothness、torque/joint/contact risk、delay/randomization/history 这些可搜索项体现；不能改变当前 sim2sim 的最终评价协议。
 26. 如果 `TASK_EVOLUTION_PACK_JSON` 非空，必须优先使用其中的 `data_readiness`、`selected_motions`、`llm_evolution_context` 和 `closed_loop_execution`。若 `data_readiness.status` 为 `proxy_only` 或 `missing_motion`，候选只能声明 proxy/pretraining/stress-test 目标，不得声称已经完成真实后空翻、翻墙、钻洞或登墙转身。
+27. 如果 `CONFIG_JSON.task.task_constraint_contract` 非空，必须把它视为可执行的任务物理约束：`geometry` 定义目标位移/障碍/洞口/最终朝向，`contact_semantics` 定义合法支撑和危险接触，`optimization_levers` 定义本任务优先搜索的 reward/sampling/termination 杠杆，`guardrails` 定义成功声明和最终评估不可弱化的边界。
 
 # 任务特征提示
 
@@ -95,6 +96,14 @@
 - `legal_contacts.allowed_support_bodies` 区分合法支撑和危险接触。
 - `risk_controls.sim2real_sensitive_terms` 控制高动态动作的接触冲击、角速度、关节限位和动作平滑。
 - `baseline_contract.comparison_protocol` 保持基线与进化候选的评估协议一致。
+
+如果 `CONFIG_JSON.task.task_constraint_contract` 非空，必须优先使用其中的：
+
+- `task_family` 判断候选属于钻洞低姿态、翻墙/登墙、跳跃腾空还是后空翻。
+- `geometry.target_x_m`、`geometry.obstacle_height_m`、`geometry.ceiling_height_m`、`geometry.target_final_yaw` 绑定任务完成奖励，不要使用与任务目标不一致的默认数值。
+- `contact_semantics.allowed_support_bodies` 和 `required_contact_bodies` 区分合法支撑与危险冲击；不得把合法手/膝/脚支撑用过强 contact penalty 压掉。
+- `optimization_levers.reward` 和 `optimization_levers.sampling` 选择候选的主要变异方向。
+- `guardrails.do_not_weaken_success_criteria` 表示不能通过降低最终评估阈值获得表面成功。
 
 如果 `ASSET_MANIFEST_JSON` 非空，必须利用其中的：
 

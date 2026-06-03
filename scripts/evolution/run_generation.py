@@ -18,6 +18,7 @@ from genome_ops import normalize_genome_for_config, seed_population
 from minimax_client import MimimaxClientError, MimimaxJSONError, generate_candidates, load_credentials
 from planner import write_plan_files
 from schemas import AlgorithmGenome
+from task_constraints import apply_task_constraint_guard, build_task_constraint_contract
 from validator import validate_genome
 
 
@@ -255,6 +256,7 @@ def config_with_runtime_context(
     history: dict[str, Any],
     feedback: dict[str, Any],
     task_data_contract: dict[str, Any] | None = None,
+    task_constraint_contract: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Add measured baseline context to the prompt without mutating the source config."""
 
@@ -262,6 +264,8 @@ def config_with_runtime_context(
     task = runtime_config.setdefault("task", {})
     if task_data_contract:
         task["task_data_contract"] = task_data_contract
+    if task_constraint_contract:
+        task["task_constraint_contract"] = task_constraint_contract
     baseline = _runtime_baseline_from_context(history, feedback)
     if not baseline:
         return runtime_config
@@ -285,7 +289,13 @@ def render_prompt(
     algorithm_priors = load_algorithm_priors(config)
     task_evolution_pack = load_task_evolution_pack(config)
     task_data_contract = build_task_data_contract(config, task_evolution_pack, asset_manifest, task_profile)
-    prompt_config = config_with_runtime_context(config, history, feedback, task_data_contract)
+    task_constraint_contract = build_task_constraint_contract(
+        config,
+        task_profile=task_profile,
+        task_data_contract=task_data_contract,
+        asset_manifest=asset_manifest,
+    )
+    prompt_config = config_with_runtime_context(config, history, feedback, task_data_contract, task_constraint_contract)
     return (
         template.replace("{{CONFIG_JSON}}", json.dumps(prompt_config, indent=2, ensure_ascii=False))
         .replace("{{TASK_PROFILE_JSON}}", json.dumps(task_profile, indent=2, ensure_ascii=False))
@@ -933,6 +943,7 @@ def _normalize_with_context(
     genome = _apply_high_baseline_guard(genome, config, history, feedback)
     genome = _apply_nonzero_baseline_guard(genome, config, history, feedback)
     genome = _apply_feedback_failure_guard(genome, config, feedback)
+    genome = apply_task_constraint_guard(genome, config, history, feedback)
     genome = _apply_crawl_low_posture_guard(genome, config, history)
     genome = _apply_jump_leap_progress_guard(genome, config, history, feedback)
     genome = _apply_task_data_contract_guard(genome, config)
@@ -1041,7 +1052,18 @@ def main() -> int:
             json.dumps(task_data_contract, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
-    context_config = config_with_runtime_context(config, history, feedback, task_data_contract)
+    task_constraint_contract = build_task_constraint_contract(
+        config,
+        task_profile=task_profile,
+        task_data_contract=task_data_contract,
+        asset_manifest=asset_manifest,
+    )
+    if task_constraint_contract:
+        (output_dir / "task_constraint_contract_snapshot.json").write_text(
+            json.dumps(task_constraint_contract, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+    context_config = config_with_runtime_context(config, history, feedback, task_data_contract, task_constraint_contract)
     if context_config != config:
         (output_dir / "prompt_config_snapshot.json").write_text(
             json.dumps(context_config, indent=2, ensure_ascii=False) + "\n",
