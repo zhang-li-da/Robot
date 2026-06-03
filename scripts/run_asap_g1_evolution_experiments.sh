@@ -94,7 +94,7 @@ run_eval() {
 for task_id in ${TASK_IDS}; do
   eval "$(python scripts/asap_g1_task_suite.py --shell "${task_id}")"
   echo "[ASAP-FORMAL] task=${TASK_NAME} motion=${MOTION_FILE} config=${TASK_CONFIG}"
-  mkdir -p "artifacts/${TASK_NAME}/eval" "outputs/evolution_asap/${TASK_NAME}"
+  mkdir -p "artifacts/${TASK_NAME}/eval" "artifacts/${TASK_NAME}/logs" "outputs/evolution_asap/${TASK_NAME}"
 
   if completed_checkpoint "${TASK_NAME}_baseline" baseline_beyondmimic "${BASELINE_ITERS}"; then
     echo "[SKIP] ${TASK_NAME}_baseline/baseline_beyondmimic already complete"
@@ -113,7 +113,8 @@ for task_id in ${TASK_IDS}; do
       --experiment_name "${TASK_NAME}_baseline" \
       --run_name baseline_beyondmimic \
       --headless \
-      "${LOGGER_ARGS[@]}"
+      "${LOGGER_ARGS[@]}" \
+      2>&1 | tee "artifacts/${TASK_NAME}/logs/baseline_train.log"
   fi
 
   if completed_checkpoint "${TASK_NAME}" adapted_task_rewards "${ADAPTED_ITERS}"; then
@@ -138,7 +139,8 @@ for task_id in ${TASK_IDS}; do
       --run_name adapted_task_rewards \
       --headless \
       "${LOGGER_ARGS[@]}" \
-      "${ADAPTED_ARGS[@]}"
+      "${ADAPTED_ARGS[@]}" \
+      2>&1 | tee "artifacts/${TASK_NAME}/logs/adapted_train.log"
   fi
 
   BASELINE_CKPT="$(latest_checkpoint "${TASK_NAME}_baseline" baseline_beyondmimic)"
