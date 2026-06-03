@@ -114,6 +114,8 @@ cd /root/whole_body_tracking-main
 
 ASAP 任务的 stage2 默认只作为晋级后的短补训验证：`scripts/create_asap_evolution_configs.py` 会把 `stage2_iterations` 设置为 `stage1_iterations + 200`。长预算训练应放在 full/final 阶段，避免 proxy/pretraining 动作在 stage2 过训练后反而退化。
 
+`scripts/evolution/genome_ops.py` 会把 `resource_defaults` 当作未开放资源搜索时的硬上限。例如配置中没有显式给出 `search_space.resource.stage2_iterations` 时，Mimimax M3 即使输出更大的 `resource.stage2_iterations`，也会在本地归一化阶段被压回配置默认值。这保证 LLM 只能在被授权的搜索空间内调整训练预算。
+
 ## 本地密钥配置
 
 推荐使用环境变量：
