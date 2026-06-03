@@ -87,28 +87,6 @@ def _episode_list(data: dict[str, Any], key: str) -> list[float]:
     return out
 
 
-def _eval_priority(path: Path) -> int:
-    name = path.stem
-    if "final" in name:
-        return 3
-    if "stage2" in name:
-        return 2
-    if "stage1" in name:
-        return 1
-    return 0
-
-
-def _selected_eval_paths(output_dir: Path) -> list[Path]:
-    selected: dict[str, tuple[int, float, Path]] = {}
-    for eval_path in sorted(output_dir.glob("*/eval_*.json")):
-        genome_id = eval_path.parent.name
-        rank = (_eval_priority(eval_path), eval_path.stat().st_mtime)
-        current = selected.get(genome_id)
-        if current is None or rank > (current[0], current[1]):
-            selected[genome_id] = (rank[0], rank[1], eval_path)
-    return [item[2] for item in sorted(selected.values(), key=lambda value: str(value[2]))]
-
-
 def _task_type(config: dict[str, Any]) -> str:
     task = config.get("task", {})
     return str(task.get("success_type") or task.get("name") or "progress")
@@ -575,14 +553,13 @@ def build_feedback(
     if baseline_eval is not None and baseline_eval.exists():
         baseline = score_eval_json(baseline_id, baseline_eval, config)
 
-    scores = {score.genome_id: score for score in discover_scores(output_dir, config)}
+    discovered_scores = discover_scores(output_dir, config)
+    scores = {score.genome_id: score for score in discovered_scores}
     candidate_feedback: list[dict[str, Any]] = []
     seen_genome_ids: set[str] = set()
-    for eval_path in _selected_eval_paths(output_dir):
-        genome_id = eval_path.parent.name
-        score = scores.get(genome_id)
-        if score is None:
-            continue
+    for score in discovered_scores:
+        eval_path = Path(score.eval_path)
+        genome_id = score.genome_id
         seen_genome_ids.add(genome_id)
         candidate_feedback.append(_candidate_feedback(genome_id, eval_path, score, config, baseline))
 
