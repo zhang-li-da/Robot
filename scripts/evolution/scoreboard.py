@@ -109,7 +109,7 @@ def _task_margin(data: dict[str, Any], task: dict[str, Any]) -> float:
 
 
 def discover_scores(output_dir: Path, config: dict[str, Any]) -> list[CandidateScore]:
-    scores_by_genome: dict[str, tuple[int, float, CandidateScore]] = {}
+    scores_by_genome: dict[str, tuple[int, float, int, float, CandidateScore]] = {}
     for eval_path in output_dir.glob("*/eval_*.json"):
         genome_id = eval_path.parent.name
         try:
@@ -118,10 +118,13 @@ def discover_scores(output_dir: Path, config: dict[str, Any]) -> list[CandidateS
             continue
         priority = _eval_priority(eval_path)
         current = scores_by_genome.get(genome_id)
-        rank = (priority, eval_path.stat().st_mtime)
-        if current is None or rank > (current[0], current[1]):
-            scores_by_genome[genome_id] = (priority, eval_path.stat().st_mtime, score)
-    return sorted((item[2] for item in scores_by_genome.values()), key=lambda item: item.fitness, reverse=True)
+        final_priority = 1 if priority >= 3 else 0
+        # Stage2 can over-train and regress. For non-final evaluations, keep the
+        # best-scoring stage instead of blindly preferring the latest budget.
+        rank = (final_priority, score.fitness, score.episodes, eval_path.stat().st_mtime)
+        if current is None or rank > (current[0], current[1], current[2], current[3]):
+            scores_by_genome[genome_id] = (final_priority, score.fitness, score.episodes, eval_path.stat().st_mtime, score)
+    return sorted((item[4] for item in scores_by_genome.values()), key=lambda item: item.fitness, reverse=True)
 
 
 def _eval_priority(path: Path) -> int:
