@@ -38,3 +38,21 @@
 3. 高 baseline ceiling 任务应改用质量指标、鲁棒性或 sim2real 风险指标，否则成功率提升不可能达到 8%。
 4. 下一批 extended 实验已加入 `turn_jump_l4`、`squat_l3_lowposture`、`jump_forward_l4`、`side_jump_l4` 和 `cr7_l2_dynamic`，用于补充转体、低姿态和动态平衡方向。
 
+## Extended Formal 阶段性结果
+
+更新时间：2026-06-03 14:40 CST。以下结果来自 extended formal 队列，仍在运行中，除已注明外不是最终 final64 结论。
+
+| 任务 | baseline/adapted | 当前最好 evolved/interim | 当前判断 |
+| --- | --- | --- | --- |
+| `g1_asap_jump_forward_l4` | baseline `3/64 = 4.69%`；hand adapted `0/64` | `gen1_m3_000` stage2 `21/32 = 65.63%` | 明确正向结果，等待 final64 和视频 |
+| `g1_asap_squat_l3_lowposture` | baseline `23/64 = 35.94%` | gen0 stage1 `13/16 = 81.25%`，后续 gen1 退化 | 需要 repair 后做 final64 |
+| `g1_asap_turn_jump_l4` | baseline `27/64 = 42.19%` | evolved stage1 当前 `0/16` | 退化，进入 repair |
+| `g1_asap_side_jump_l4` | baseline `0/64`；adapted `0/64` | gen0 `0/16`，mean_x 最高 `1.046m` | yaw 失败，已修复 yaw/Hydra 反馈链路并等待 repair |
+| `g1_asap_cr7_l2_dynamic` | baseline `0/64`，mean_x `0.919m`；adapted `0/64`，mean_x `1.403m` | `gen0_baseline_000` stage1 `0/16`，mean_x `1.222m`，yaw error `1.920` | 训练曲线恢复但 eval 不达标；后续候选和 repair 需强化 yaw/landing/ee 容忍 |
+
+### CR7 动态任务反馈
+
+- hand adapted 没有产生成功，但把平均前进距离从 `0.919m` 提高到 `1.403m`，并把 final speed 从 `2.876` 降到 `1.071`。
+- hand adapted 的主要新问题是 final yaw error `2.914 > 1.2`，说明 progress reward 在未受 yaw/landing gate 约束时会把策略推向错误朝向。
+- `gen0_baseline_000` 训练尾部 reward 达到约 `7.46`，高于 hand adapted 训练尾部约 `4.98`，但 stage1 eval 仍为 `0/16`，且 final speed `2.096`、final angular speed `4.408`、yaw error `1.920` 均超过阈值。
+- 框架修正已加入：comparison eval 现在会显式输出 progress/apex/final speed/final angular speed/final yaw 失败；候选生成 guard 会把 comparison 失败和训练健康标签转成硬参数约束，避免下一代继续产生 progress-only 或过紧 termination 候选。
