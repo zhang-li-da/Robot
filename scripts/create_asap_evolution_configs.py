@@ -23,6 +23,8 @@ REWARD_SEARCH_DEFAULTS = {
     "contact_force": [-0.35, 0.0],
 }
 
+ASAP_STAGE2_EXTRA_ITERATIONS = 200
+
 SEED_OFFSETS = {
     "g1_asap_jump_forward_l5": 17,
     "g1_asap_jump_forward_l4": 18,
@@ -61,6 +63,15 @@ def enable_task_reward_search(cfg: dict[str, Any]) -> None:
                 search_space[key] = bounds
 
 
+def apply_asap_resource_defaults(cfg: dict[str, Any]) -> None:
+    """Keep ASAP stage2 as a short promotion check; full training is a separate final stage."""
+
+    resource = cfg.setdefault("resource_defaults", {})
+    stage1 = int(resource.get("stage1_iterations", 800))
+    resource["stage2_iterations"] = stage1 + ASAP_STAGE2_EXTRA_ITERATIONS
+    resource["disable_logger"] = True
+
+
 def main() -> int:
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     for index, spec in enumerate(all_specs()):
@@ -70,7 +81,7 @@ def main() -> int:
         cfg["task"]["task_feature_profile"] = str(TASK_PROFILE_DIR / f"{spec['id']}.json")
         cfg["task"]["algorithm_priors"] = "evolution/algorithm_priors/asap_algorithm_priors.json"
         enable_task_reward_search(cfg)
-        cfg.setdefault("resource_defaults", {})["disable_logger"] = True
+        apply_asap_resource_defaults(cfg)
         seed_offset = SEED_OFFSETS.get(spec["id"], 17 + index)
         cfg["evolution"]["random_seed"] = int(cfg["evolution"].get("random_seed", 20260602)) + seed_offset
         cfg.setdefault("llm", {})["timeout_seconds"] = max(float(cfg.get("llm", {}).get("timeout_seconds", 300)), 600)

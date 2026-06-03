@@ -496,6 +496,8 @@ evolution/configs/g1_asap_cr7_l2_dynamic_v1.json
 
 这些配置通过 `task.motion_catalog` 把动作目录注入 Mimimax M3 prompt，并通过 `task.motion_catalog_filter_tasks` 只保留相关动作统计。LLM 因此能看到每类动作的水平位移、root 高度范围、标签和 proxy 边界，再决定 reward、sampling、termination 和 PPO 候选，而不是只根据任务名称泛化调参。
 
+ASAP 任务的 stage2 预算已经收紧为 `stage1_iterations + 200`。原因是当前低姿态代理任务中出现了 stage1 小样本成功率很高、stage2 长补训后退化的现象；因此 stage2 只用于确认晋级候选，真正的大预算训练和视频渲染放到 final/full 阶段。
+
 `scripts/create_asap_task_profiles.py` 会把每个 ASAP 任务进一步转成任务特征 profile，字段包括：
 
 ```text

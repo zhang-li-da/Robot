@@ -112,6 +112,8 @@ cd /root/whole_body_tracking-main
 
 真实后空翻、翻矮墙、钻洞或新机器人数据到位后，先检查 candidate queue 是否被正确归入 `true_flip`、`wall_vault`、`crawl_tunnel` 或对应新任务族；如果仍被归入 `manual_review`，先补充标签/任务规格，再启动正式闭环。
 
+ASAP 任务的 stage2 默认只作为晋级后的短补训验证：`scripts/create_asap_evolution_configs.py` 会把 `stage2_iterations` 设置为 `stage1_iterations + 200`。长预算训练应放在 full/final 阶段，避免 proxy/pretraining 动作在 stage2 过训练后反而退化。
+
 ## 本地密钥配置
 
 推荐使用环境变量：

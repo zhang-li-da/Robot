@@ -75,7 +75,7 @@
   "resource_defaults": {
     "num_envs": 2048,
     "stage1_iterations": 800,
-    "stage2_iterations": 1800,
+    "stage2_iterations": 1000,
     "full_iterations": 4000,
     "save_interval": 400,
     "stage1_eval_episodes": 16,
