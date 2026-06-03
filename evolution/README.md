@@ -34,6 +34,7 @@ scripts/index_asap_assets.py
 scripts/extract_asap_algorithm_priors.py
 scripts/sync_asap_evolution_context.py
 scripts/select_asap_evolution_tasks.py
+scripts/materialize_asap_candidate_task_specs.py
 scripts/create_asap_evolution_configs.py
 scripts/create_asap_task_profiles.py
 scripts/build_asap_task_adaptive_roadmap.py
@@ -44,6 +45,8 @@ evolution/action_catalog/stunt_motion_sources_zh.md
 evolution/action_catalog/asap_motion_catalog.json
 evolution/action_catalog/asap_evolution_candidate_queue.json
 evolution/action_catalog/asap_evolution_candidate_queue_zh.md
+evolution/action_catalog/asap_generated_task_specs.json
+evolution/action_catalog/asap_generated_task_specs_zh.md
 evolution/action_catalog/asap_task_adaptive_roadmap.json
 evolution/action_catalog/asap_task_adaptive_roadmap_zh.md
 evolution/action_catalog/asap_asset_manifest.json
@@ -80,10 +83,11 @@ cd /root/whole_body_tracking-main
   --asap_root /root/ASAP-main \
   --queue_limit 32 \
   --roadmap_limit 24 \
-  --task_pack_limit 12
+  --task_pack_limit 12 \
+  --materialize_limit 8
 ```
 
-该入口只做 CPU 侧同步，不启动 Isaac 训练。它会顺序刷新 motion catalog、ASAP 算法先验、资产清单、任务配置、任务画像、候选队列、任务路线图和五类 task pack，并额外输出：
+该入口只做 CPU 侧同步，不启动 Isaac 训练。它会顺序刷新 motion catalog、ASAP 算法先验、资产清单、候选队列、自动生成任务 spec、任务配置、任务画像、任务路线图和五类 task pack，并额外输出：
 
 ```text
 evolution/action_catalog/asap_context_sync_summary.json
@@ -98,6 +102,7 @@ cd /root/whole_body_tracking-main
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/extract_asap_algorithm_priors.py
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/index_asap_assets.py
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/select_asap_evolution_tasks.py --limit 32
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/materialize_asap_candidate_task_specs.py --max_generated 8
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/build_asap_task_adaptive_roadmap.py --limit 24
 ```
 
@@ -106,11 +111,28 @@ cd /root/whole_body_tracking-main
 - `asap_motion_catalog.json`：记录每个动作的位移、高度、时长、DoF 和语义标签。
 - `asap_asset_manifest.json`：记录 retargeted motion、raw SMPL、ASAP ONNX 和源配置。
 - `asap_evolution_candidate_queue.json`：把动作按后空翻、登墙转身、翻墙、钻洞等任务族排序。
+- `asap_generated_task_specs.json`：把高优先级、未手写配置的 motion 自动转成可训练 task spec。
 - `asap_task_adaptive_roadmap.json`：给实验调度和报告使用，显示已配置任务、当前评估状态和下一批候选。
 - `task_packs/*.json`：按后空翻、翻墙、钻洞、登墙转身等目标动作聚合动作证据、LLM 搜索约束和闭环执行规则。
 - `task_profiles/*.json`：给 Mimimax M3 的任务特征输入，约束 reward、termination、sampling 和评估协议。
 
 真实后空翻、翻矮墙、钻洞或新机器人数据到位后，先检查 candidate queue 是否被正确归入 `true_flip`、`wall_vault`、`crawl_tunnel` 或对应新任务族；如果仍被归入 `manual_review`，先补充标签/任务规格，再启动正式闭环。
+
+自动生成任务不会进入 `python scripts/asap_g1_task_suite.py --list-default` 的默认正式队列，避免新增 proxy 动作无意中占满 GPU。需要训练这些任务时，显式传入 `TASK_IDS`：
+
+```bash
+cd /root/whole_body_tracking-main
+python scripts/asap_g1_task_suite.py --list
+
+TASK_IDS="g1_asap_turn_jump_l3 g1_asap_squat_l2_lowposture g1_asap_jump_forward_l3" \
+  bash scripts/prepare_asap_g1_stunt_motions.sh
+
+TASK_IDS="g1_asap_turn_jump_l3 g1_asap_squat_l2_lowposture g1_asap_jump_forward_l3" \
+  BASELINE_ITERS=800 ADAPTED_ITERS=800 EVO_GENERATIONS=1 EVO_POPULATION=2 \
+  bash scripts/run_asap_g1_evolution_experiments.sh
+```
+
+带 `proxy_note` 的自动任务只允许作为预训练、压力测试或 reward 搜索，不能作为真实后空翻、翻墙或钻洞完成证据。最终报告仍必须使用真实目标动作、目标碰撞几何和不少于 50 次 motion-start 评估。
 
 ASAP 任务的 stage2 默认只作为晋级后的短补训验证：`scripts/create_asap_evolution_configs.py` 会把 `stage2_iterations` 设置为 `stage1_iterations + 200`。长预算训练应放在 full/final 阶段，避免 proxy/pretraining 动作在 stage2 过训练后反而退化。
 
