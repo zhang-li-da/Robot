@@ -96,7 +96,8 @@ def _termination_rates(data: dict[str, Any]) -> dict[str, float]:
 def _dominant_termination(rates: dict[str, float]) -> str:
     if not rates:
         return "unknown"
-    return max(rates.items(), key=lambda item: item[1])[0]
+    name, value = max(rates.items(), key=lambda item: item[1])
+    return name if value > 0.0 else "none"
 
 
 def _episode_list(data: dict[str, Any], key: str) -> list[float]:
