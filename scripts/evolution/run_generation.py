@@ -442,7 +442,11 @@ def _feedback_failure_tags(feedback: dict[str, Any]) -> set[str]:
     for item in feedback.get("population_feedback", {}).get("top_failure_tags", []):
         if isinstance(item, dict) and item.get("tag"):
             tags.add(str(item["tag"]))
+    for tag in feedback.get("population_feedback", {}).get("comparison_failure_tags", []):
+        tags.add(str(tag))
     for tag in feedback.get("llm_feedback_brief", {}).get("baseline_failure_tags", []):
+        tags.add(str(tag))
+    for tag in feedback.get("llm_feedback_brief", {}).get("comparison_failure_tags", []):
         tags.add(str(tag))
     return tags
 
@@ -459,7 +463,13 @@ def _apply_feedback_failure_guard(
     if not tags:
         return guarded
 
-    if "anchor_pos_dominant" in tags or "aerial_phase_tracking_too_strict" in tags:
+    if (
+        "anchor_pos_dominant" in tags
+        or "aerial_phase_tracking_too_strict" in tags
+        or "training_anchor_pos_pressure" in tags
+        or "training_anchor_pos_dominant" in tags
+        or "comparison_anchor_pos_dominant" in tags
+    ):
         guarded.reward.motion_global_anchor_pos_std = _clip_context_value(
             config,
             "reward.motion_global_anchor_pos_std",
@@ -479,7 +489,12 @@ def _apply_feedback_failure_guard(
         if note not in guarded.rationale:
             guarded.rationale = list(guarded.rationale) + [note]
 
-    if "ee_body_pos_dominant" in tags:
+    if (
+        "ee_body_pos_dominant" in tags
+        or "training_ee_body_pos_pressure" in tags
+        or "training_ee_body_pos_dominant" in tags
+        or "comparison_ee_body_pos_dominant" in tags
+    ):
         guarded.termination.ee_body_pos_z_threshold = _clip_context_value(
             config,
             "termination.ee_body_pos_z_threshold",
@@ -489,7 +504,7 @@ def _apply_feedback_failure_guard(
         if note not in guarded.rationale:
             guarded.rationale = list(guarded.rationale) + [note]
 
-    if "mid_phase_progress_failure" in tags:
+    if "mid_phase_progress_failure" in tags or "comparison_progress_shortfall" in tags:
         guarded.reward.phase_progress_weight = _clip_context_value(
             config,
             "reward.phase_progress_weight",
@@ -504,7 +519,11 @@ def _apply_feedback_failure_guard(
         if note not in guarded.rationale:
             guarded.rationale = list(guarded.rationale) + [note]
 
-    if "unstable_landing_rotation" in tags:
+    if (
+        "unstable_landing_rotation" in tags
+        or "comparison_unstable_final_rotation" in tags
+        or "comparison_unstable_final_speed" in tags
+    ):
         guarded.reward.landing_stability_weight = _clip_context_value(
             config,
             "reward.landing_stability_weight",
@@ -519,7 +538,11 @@ def _apply_feedback_failure_guard(
         if note not in guarded.rationale:
             guarded.rationale = list(guarded.rationale) + [note]
 
-    if "yaw_recovery_failure" not in tags:
+    if (
+        "yaw_recovery_failure" not in tags
+        and "comparison_yaw_recovery_failure" not in tags
+        and "comparison_yaw_regressed_without_success_gain" not in tags
+    ):
         return guarded
 
     guarded.reward.yaw_alignment_weight = _clip_context_value(
