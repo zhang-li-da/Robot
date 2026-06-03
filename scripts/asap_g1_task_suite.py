@@ -382,6 +382,12 @@ def source_path(spec: dict[str, Any]) -> Path:
 
 def config_task_payload(spec: dict[str, Any]) -> dict[str, Any]:
     task = deepcopy(spec["task"])
+    criteria = task.setdefault("success_criteria", {})
+    reward_terms = task.setdefault("reward_terms", [])
+    if "max_final_yaw_error" in criteria:
+        criteria.setdefault("target_final_yaw", 0.0)
+        if "yaw_alignment" not in reward_terms:
+            reward_terms.append("yaw_alignment")
     task.update(
         {
             "name": spec["id"],

@@ -151,6 +151,11 @@ class G1BackflipRewardsCfg(RewardsCfg):
         weight=0.0,
         params={"command_name": "motion", "start_phase": 0.20, "end_phase": 0.85},
     )
+    yaw_alignment = RewTerm(
+        func=mdp.target_yaw_alignment,
+        weight=0.0,
+        params={"command_name": "motion", "target_yaw": 0.0, "std": 0.65, "start_phase": 0.55},
+    )
     landing_stability = RewTerm(
         func=mdp.landing_stability,
         weight=0.0,

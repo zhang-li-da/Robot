@@ -28,7 +28,8 @@
       "phase_progress",
       "apex_height",
       "landing_stability",
-      "contact_force"
+      "contact_force",
+      "yaw_alignment"
     ],
     "success_criteria": {
       "description": "use displacement, apex height, and landing stability as the screening metrics",
@@ -37,7 +38,8 @@
       "max_final_anchor_speed": 1.4,
       "max_final_ang_speed": 2.5,
       "max_final_yaw_error": 1.1,
-      "allow_hand_contact": false
+      "allow_hand_contact": false,
+      "target_final_yaw": 0.0
     },
     "eval_script": "scripts/rsl_rl/eval_stunt.py",
     "success_type": "progress",
@@ -168,7 +170,7 @@
     ],
     "reward.yaw_alignment_weight": [
       0.0,
-      0.0
+      1.4
     ],
     "reward.contact_force_weight": [
       -0.3,
