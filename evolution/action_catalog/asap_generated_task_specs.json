@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-03T01:25:56.490485+00:00",
+  "generated_at": "2026-06-03T02:07:53.747876+00:00",
   "source_queue": "evolution/action_catalog/asap_evolution_candidate_queue.json",
   "selection_policy": "top ranked non-hand-authored ASAP candidates with concrete recommended_evolution plan",
   "max_generated": 8,

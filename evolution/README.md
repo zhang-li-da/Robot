@@ -81,9 +81,9 @@ evolution/algorithm_priors/asap_algorithm_priors_zh.md
 cd /root/whole_body_tracking-main
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/sync_asap_evolution_context.py \
   --asap_root /root/ASAP-main \
-  --queue_limit 32 \
+  --queue_limit 40 \
   --roadmap_limit 24 \
-  --task_pack_limit 12 \
+  --task_pack_limit 16 \
   --materialize_limit 8
 ```
 
@@ -204,6 +204,23 @@ eval_commands.sh
 5. 运行下一代时传入历史 scoreboard，让 LLM 和进化算子基于失败原因继续改进。
 
 V1 默认先服务 G1 50cm 膝爬。翻墙和钻洞数据到位后，应新增对应 config，并扩展 task metrics。
+
+闭环支持把人工适配算法、消融实验或旧候选的评估结果作为对比证据输入 LLM：
+
+```bash
+python scripts/evolution/closed_loop.py \
+  --config evolution/configs/g1_asap_jump_forward_l4_v1.json \
+  --output_root outputs/evolution_asap/g1_asap_jump_forward_l4 \
+  --baseline_eval artifacts/g1_asap_jump_forward_l4/eval/baseline_beyondmimic.json \
+  --baseline_id baseline_beyondmimic \
+  --comparison_eval adapted_task_rewards=artifacts/g1_asap_jump_forward_l4/eval/adapted_task_rewards.json \
+  --generations 2 \
+  --population_size 2 \
+  --use_llm \
+  --llm_timeout 600
+```
+
+`--comparison_eval` 不会把对比算法自动当作新 baseline。它只把“成功率退化、任务进度上升但最终成功下降、ee/anchor 终止占优、回报函数与最终指标错配”等消融证据写入 `baseline_feedback.json`、`feedback.json` 和 `llm_feedback_brief`，用于约束下一代候选生成。
 
 ## G1 膝爬 V1 正式执行模板
 

@@ -15,7 +15,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from feedback_analyzer import build_feedback
+from feedback_analyzer import build_comparison_context, build_feedback, parse_comparison_eval_args
 from scoreboard import score_eval_json
 
 
@@ -25,6 +25,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output_root", default="outputs/evolution", type=Path)
     parser.add_argument("--baseline_eval", type=Path, default=None)
     parser.add_argument("--baseline_id", default="baseline")
+    parser.add_argument(
+        "--comparison_eval",
+        action="append",
+        default=[],
+        metavar="ID=PATH",
+        help="Optional extra evaluation JSON used as ablation feedback for generation 0 and later prompts.",
+    )
     parser.add_argument("--generations", type=int, default=None)
     parser.add_argument("--population_size", type=int, default=None)
     parser.add_argument("--start_generation", type=int, default=0)
@@ -138,16 +145,20 @@ def write_baseline_context(
     config: dict[str, Any],
     baseline_eval: Path | None,
     baseline_id: str,
+    comparison_evals: dict[str, Path] | None = None,
 ) -> tuple[Path | None, Path | None]:
     baseline = baseline_summary(config, baseline_eval, baseline_id)
     if baseline is None:
         return None, None
 
     baseline_diagnostics = baseline_failure_context(config, baseline)
+    comparison_context = build_comparison_context(config, baseline_eval, baseline_id, comparison_evals)
     history = {
         "scores": [],
         "baseline": baseline,
         "baseline_diagnostics": baseline_diagnostics,
+        "comparisons": comparison_context.get("comparisons", []),
+        "comparison_failure_tags": comparison_context.get("failure_tags", []),
         "source": "closed_loop_baseline_context",
     }
     history_path = loop_dir / "baseline_history.json"
@@ -167,12 +178,14 @@ def write_baseline_context(
                 "keep enough motion-start coverage and avoid overly strict anchor/ee termination that causes early regression",
             ]
         )
+    must_address.extend(comparison_context.get("must_address", []))
 
     feedback = {
         "schema_version": "1.0",
         "project": config.get("project", "task_adaptive_beyondmimic"),
         "task": config.get("task", {}),
         "baseline": baseline,
+        "comparisons": comparison_context.get("comparisons", []),
         "population_feedback": {
             "population_status": "baseline_context_ready",
             "best_genome_id": baseline_id,
@@ -180,6 +193,7 @@ def write_baseline_context(
             "baseline_success_rate": success_rate,
             "target_met": False,
             "baseline_diagnostics": baseline_diagnostics,
+            "comparison_failure_tags": comparison_context.get("failure_tags", []),
             "next_generation_focus": must_address,
         },
         "candidates": [],
@@ -187,6 +201,7 @@ def write_baseline_context(
             "must_address": must_address,
             "avoid_repeating": [],
             "baseline_failure_tags": baseline_diagnostics.get("failure_tags", []),
+            "comparison_failure_tags": comparison_context.get("failure_tags", []),
             "runtime_failures": [],
             "evaluation_contract": {
                 "baseline_success_rate": success_rate,
@@ -215,6 +230,7 @@ def main() -> int:
     args = parse_args()
     repo = Path.cwd()
     config = load_json(args.config)
+    comparison_evals = parse_comparison_eval_args(args.comparison_eval)
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
     max_generations = int(
@@ -241,6 +257,7 @@ def main() -> int:
         "config": str(args.config),
         "task": config.get("task", {}),
         "baseline": baseline_summary(config, args.baseline_eval, args.baseline_id),
+        "comparison_evals": {name: str(path) for name, path in comparison_evals.items()},
         "created_at": time.time(),
         "generations": [],
     }
@@ -251,6 +268,7 @@ def main() -> int:
         config,
         args.baseline_eval,
         args.baseline_id,
+        comparison_evals,
     )
     history_path: Path | None = args.initial_history if args.initial_history is not None and args.initial_history.exists() else baseline_history_path
     feedback_path: Path | None = args.initial_feedback if args.initial_feedback is not None and args.initial_feedback.exists() else baseline_feedback_path
@@ -328,7 +346,7 @@ def main() -> int:
             if exec_rc != 0:
                 record["status"] = "execute_failed"
 
-        feedback = build_feedback(config, generation_dir, args.baseline_eval, args.baseline_id)
+        feedback = build_feedback(config, generation_dir, args.baseline_eval, args.baseline_id, comparison_evals)
         feedback_path = generation_dir / "feedback.json"
         feedback_path.write_text(json.dumps(feedback, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         history_path = generation_dir / "scoreboard.json"

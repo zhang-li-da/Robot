@@ -34,12 +34,35 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output_dir", required=True, type=Path)
     parser.add_argument("--baseline_eval", type=Path, default=None)
     parser.add_argument("--baseline_id", default="baseline")
+    parser.add_argument(
+        "--comparison_eval",
+        action="append",
+        default=[],
+        metavar="ID=PATH",
+        help="Optional extra evaluation JSON used as an ablation/comparison signal for LLM feedback.",
+    )
     parser.add_argument("--output", type=Path, default=None)
     return parser.parse_args()
 
 
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def parse_comparison_eval_args(values: list[str] | None) -> dict[str, Path]:
+    comparisons: dict[str, Path] = {}
+    for raw in values or []:
+        if "=" not in raw:
+            raise ValueError(f"Invalid --comparison_eval value {raw!r}; expected ID=PATH")
+        comparison_id, raw_path = raw.split("=", 1)
+        comparison_id = comparison_id.strip()
+        raw_path = raw_path.strip()
+        if not comparison_id:
+            raise ValueError(f"Invalid --comparison_eval value {raw!r}; empty ID")
+        if not raw_path:
+            raise ValueError(f"Invalid --comparison_eval value {raw!r}; empty PATH")
+        comparisons[comparison_id] = Path(raw_path)
+    return comparisons
 
 
 def _mean(values: list[float], default: float = 0.0) -> float:
@@ -91,6 +114,121 @@ def _episode_list(data: dict[str, Any], key: str) -> list[float]:
 def _task_type(config: dict[str, Any]) -> str:
     task = config.get("task", {})
     return str(task.get("success_type") or task.get("name") or "progress")
+
+
+def build_comparison_context(
+    config: dict[str, Any],
+    baseline_eval: Path | None,
+    baseline_id: str,
+    comparison_evals: dict[str, Path] | None,
+) -> dict[str, Any]:
+    """Build ablation-style feedback for non-population evaluations."""
+
+    comparison_evals = comparison_evals or {}
+    context: dict[str, Any] = {
+        "comparisons": [],
+        "failure_tags": [],
+        "must_address": [],
+    }
+    if not comparison_evals:
+        return context
+
+    baseline = None
+    if baseline_eval is not None and baseline_eval.exists():
+        baseline = score_eval_json(baseline_id, baseline_eval, config)
+
+    tags: list[str] = []
+    must_address: list[str] = []
+    for comparison_id, eval_path in comparison_evals.items():
+        entry: dict[str, Any] = {
+            "comparison_id": comparison_id,
+            "eval_path": str(eval_path),
+        }
+        if not eval_path.exists():
+            entry["status"] = "missing"
+            tags.append("comparison_eval_missing")
+            must_address.append(
+                f"{comparison_id} comparison eval is missing; do not assume this ablation is better than baseline"
+            )
+            context["comparisons"].append(entry)
+            continue
+
+        try:
+            data = load_json(eval_path)
+            score = score_eval_json(comparison_id, eval_path, config)
+        except (OSError, json.JSONDecodeError, ValueError, TypeError) as exc:
+            entry["status"] = "invalid"
+            entry["error"] = str(exc)
+            tags.append("comparison_eval_invalid")
+            must_address.append(
+                f"{comparison_id} comparison eval is invalid; repair evaluation before using it as a promotion signal"
+            )
+            context["comparisons"].append(entry)
+            continue
+
+        termination_rates = _termination_rates(data)
+        entry.update(
+            {
+                "status": "scored",
+                "score": score.to_dict(),
+                "termination_rates": termination_rates,
+                "dominant_termination": _dominant_termination(termination_rates),
+            }
+        )
+        if baseline is not None:
+            baseline_delta = {
+                "success_rate": score.success_rate - baseline.success_rate,
+                "fitness": score.fitness - baseline.fitness,
+                "mean_return": score.mean_return - baseline.mean_return,
+                "mean_max_torso_x": score.mean_max_torso_x - baseline.mean_max_torso_x,
+                "mean_clearance": score.mean_clearance - baseline.mean_clearance,
+            }
+            entry["baseline_delta"] = baseline_delta
+            if score.success_rate < baseline.success_rate:
+                tags.append("comparison_regressed_vs_baseline")
+                must_address.append(
+                    f"{comparison_id} regressed success rate versus {baseline_id}: "
+                    f"{score.success_rate:.3f} vs {baseline.success_rate:.3f}; treat it as negative ablation evidence"
+                )
+            if score.success_rate <= 0.0 and baseline.success_rate > 0.0:
+                tags.append("comparison_zero_success_regression")
+                must_address.append(
+                    f"{comparison_id} reached zero success while baseline had nonzero success; "
+                    "future candidates must preserve baseline-adjacent tracking before adding task rewards"
+                )
+            if score.mean_max_torso_x > baseline.mean_max_torso_x + 0.05 and score.success_rate < baseline.success_rate:
+                tags.append("comparison_progress_up_success_down")
+                must_address.append(
+                    f"{comparison_id} improved forward progress but reduced success; gate progress/task rewards by stable tracking"
+                )
+            if score.mean_return > baseline.mean_return and score.success_rate < baseline.success_rate:
+                tags.append("comparison_return_up_success_down")
+                must_address.append(
+                    f"{comparison_id} increased return while reducing success; reward weights are misaligned with final criteria"
+                )
+
+        if score.success_rate <= 0.0:
+            tags.append("comparison_no_success")
+        if termination_rates.get("ee_body_pos", 0.0) >= 0.50:
+            tags.append("comparison_ee_body_pos_dominant")
+            must_address.append(
+                f"{comparison_id} is dominated by ee_body_pos termination; keep ee/body tolerance from tightening"
+            )
+        if termination_rates.get("anchor_pos", 0.0) >= 0.35:
+            tags.append("comparison_anchor_pos_dominant")
+            must_address.append(
+                f"{comparison_id} is dominated by anchor_pos termination; avoid stricter anchor position tracking"
+            )
+        context["comparisons"].append(entry)
+
+    if context["comparisons"] and not must_address:
+        must_address.append(
+            "use comparison evals as ablation evidence and require candidates to beat baseline under the final protocol"
+        )
+
+    context["failure_tags"] = sorted(set(tags))
+    context["must_address"] = list(dict.fromkeys(must_address))
+    return context
 
 
 def _runtime_score_stub(genome_id: str, status_path: Path) -> dict[str, Any]:
@@ -575,6 +713,7 @@ def build_feedback(
     output_dir: Path,
     baseline_eval: Path | None,
     baseline_id: str,
+    comparison_evals: dict[str, Path] | None = None,
 ) -> dict[str, Any]:
     baseline = None
     if baseline_eval is not None and baseline_eval.exists():
@@ -604,6 +743,14 @@ def build_feedback(
             candidate_feedback.append(_attach_training_log_feedback(feedback, output_dir / genome_id))
 
     aggregate = _aggregate(candidate_feedback, config, baseline)
+    comparison_context = build_comparison_context(config, baseline_eval, baseline_id, comparison_evals)
+    comparison_focus = comparison_context.get("must_address", [])
+    if comparison_focus:
+        aggregate["next_generation_focus"] = list(
+            dict.fromkeys(comparison_focus + aggregate.get("next_generation_focus", []))
+        )
+        aggregate["comparison_failure_tags"] = comparison_context.get("failure_tags", [])
+        aggregate["comparisons"] = comparison_context.get("comparisons", [])
     payload = {
         "schema_version": "1.0",
         "timestamp": time.time(),
@@ -611,11 +758,13 @@ def build_feedback(
         "task": config.get("task", {}),
         "output_dir": str(output_dir),
         "baseline": baseline.to_dict() if baseline is not None else None,
+        "comparisons": comparison_context.get("comparisons", []),
         "population_feedback": aggregate,
         "candidates": candidate_feedback,
         "llm_feedback_brief": {
             "must_address": aggregate.get("next_generation_focus", []),
             "avoid_repeating": aggregate.get("top_failure_tags", [])[:6],
+            "comparison_failure_tags": comparison_context.get("failure_tags", []),
             "runtime_failures": aggregate.get("runtime_failures", []),
             "evaluation_contract": {
                 "stage1_success_threshold": config.get("evolution", {}).get("stage1_success_threshold"),
@@ -631,7 +780,8 @@ def main() -> int:
     args = parse_args()
     config = load_json(args.config)
     output_dir = args.output_dir.resolve()
-    payload = build_feedback(config, output_dir, args.baseline_eval, args.baseline_id)
+    comparison_evals = parse_comparison_eval_args(args.comparison_eval)
+    payload = build_feedback(config, output_dir, args.baseline_eval, args.baseline_id, comparison_evals)
     output_path = args.output or output_dir / "feedback.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

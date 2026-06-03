@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-03T01:25:57.169358+00:00",
+  "generated_at": "2026-06-03T02:07:54.449545+00:00",
   "purpose": "CPU-only ASAP dataset and algorithm-prior synchronization for LLM-assisted stunt imitation evolution.",
   "asap_root": "/root/ASAP-main",
   "motion_dir": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles",
@@ -110,7 +110,7 @@
       "argv": [
         "scripts/build_asap_task_adaptive_roadmap.py",
         "--limit",
-        "32"
+        "24"
       ],
       "returncode": 0,
       "stdout_json": {

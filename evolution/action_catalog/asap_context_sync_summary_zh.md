@@ -2,7 +2,7 @@
 
 该文件记录新增 ASAP 动作数据接入 LLM 辅助算法自动进化框架后的状态。
 
-- 生成时间：`2026-06-03T01:25:57.169358+00:00`
+- 生成时间：`2026-06-03T02:07:54.449545+00:00`
 - ASAP 根目录：`/root/ASAP-main`
 - motion 目录：`/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles`
 - retargeted G1 motion 数：`52`

@@ -29,9 +29,9 @@ export LD_LIBRARY_PATH="/tmp/nvidia-vulkan-full-550.54.14:/usr/lib/x86_64-linux-
 export VK_ICD_FILENAMES="/tmp/nvidia-vulkan-full-550.54.14/nvidia_icd_abs.json"
 
 python scripts/sync_asap_evolution_context.py \
-  --queue_limit 32 \
+  --queue_limit 40 \
   --roadmap_limit 24 \
-  --task_pack_limit 12
+  --task_pack_limit 16
 
 if [[ -z "${TASK_IDS}" ]]; then
   TASK_IDS="$(python scripts/asap_g1_task_suite.py --list-default)"
@@ -161,6 +161,7 @@ for task_id in ${TASK_IDS}; do
     --output_root "outputs/evolution_asap/${TASK_NAME}" \
     --baseline_eval "artifacts/${TASK_NAME}/eval/baseline_beyondmimic.json" \
     --baseline_id baseline_beyondmimic \
+    --comparison_eval "adapted_task_rewards=artifacts/${TASK_NAME}/eval/adapted_task_rewards.json" \
     --generations "${EVO_GENERATIONS}" \
     --population_size "${EVO_POPULATION}" \
     --use_llm \
