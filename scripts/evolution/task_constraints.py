@@ -141,6 +141,8 @@ def build_task_constraint_contract(
             "reward": reward_levers,
             "sampling": _sampling_levers(task_family),
             "termination": _termination_levers(task_family),
+            "observation": _observation_levers(task_family),
+            "tolerance": _tolerance_levers(task_family, reward_terms),
             "sim2real_sensitive_terms": risk_controls.get(
                 "sim2real_sensitive_terms",
                 ["torque", "action_rate", "joint_limit", "contact_force", "base_angular_velocity"],
@@ -179,6 +181,25 @@ def _termination_levers(task_family: str) -> list[str]:
     return ["preserve final evaluation gates"]
 
 
+def _observation_levers(task_family: str) -> list[str]:
+    if task_family == "crawl_tunnel":
+        return ["reduce anchor/base velocity corruption for low-clearance tracking", "keep joint velocity history robust"]
+    if task_family == "wall_or_vault":
+        return ["reduce approach pose corruption", "preserve angular velocity feedback for yaw recovery"]
+    if task_family in {"jump_leap", "aerial_flip"}:
+        return ["preserve aerial orientation feedback", "tune velocity corruption for landing recovery"]
+    return ["policy observation corruption magnitude"]
+
+
+def _tolerance_levers(task_family: str, reward_terms: set[str]) -> list[str]:
+    levers = ["undesired_contact_threshold"]
+    if "contact_force" in reward_terms:
+        levers.append("contact_force_threshold")
+    if task_family in {"crawl_tunnel", "wall_or_vault"}:
+        levers.append("legal-support contact tolerance")
+    return levers
+
+
 def _best_history_success_rate(history: dict[str, Any]) -> float:
     best = 0.0
     for score in history.get("scores", []):
@@ -214,6 +235,11 @@ def _cap(config: dict[str, Any], dotted: str, current: float, cap: float) -> flo
 
 def _band(config: dict[str, Any], dotted: str, current: float, lo: float, hi: float) -> float:
     return _clip_context_value(config, dotted, min(max(float(current), lo), hi))
+
+
+def _optional_floor(config: dict[str, Any], dotted: str, current: float | None, floor: float) -> float:
+    value = floor if current is None else max(float(current), floor)
+    return _clip_context_value(config, dotted, value)
 
 
 def _append_note(genome: AlgorithmGenome, note: str) -> None:
@@ -275,6 +301,18 @@ def _apply_crawl_contract(genome: AlgorithmGenome, config: dict[str, Any], best_
         genome.sampling.fixed_start_probability = _cap(
             config, "sampling.fixed_start_probability", genome.sampling.fixed_start_probability, 0.70
         )
+    genome.observation.motion_anchor_pos_noise_abs = _cap(
+        config, "observation.motion_anchor_pos_noise_abs", genome.observation.motion_anchor_pos_noise_abs, 0.20
+    )
+    genome.observation.base_lin_vel_noise_abs = _cap(
+        config, "observation.base_lin_vel_noise_abs", genome.observation.base_lin_vel_noise_abs, 0.35
+    )
+    genome.observation.joint_vel_noise_abs = _cap(
+        config, "observation.joint_vel_noise_abs", genome.observation.joint_vel_noise_abs, 0.45
+    )
+    genome.tolerance.undesired_contact_threshold = _optional_floor(
+        config, "tolerance.undesired_contact_threshold", genome.tolerance.undesired_contact_threshold, 2.0
+    )
     _append_note(genome, "任务约束：钻洞需保持低姿态进度和顶部避让")
 
 
@@ -316,6 +354,19 @@ def _apply_wall_contract(
         genome.sampling.fixed_start_probability = _cap(
             config, "sampling.fixed_start_probability", genome.sampling.fixed_start_probability, 0.80
         )
+    genome.observation.motion_anchor_pos_noise_abs = _cap(
+        config, "observation.motion_anchor_pos_noise_abs", genome.observation.motion_anchor_pos_noise_abs, 0.20
+    )
+    genome.observation.base_ang_vel_noise_abs = _cap(
+        config, "observation.base_ang_vel_noise_abs", genome.observation.base_ang_vel_noise_abs, 0.18
+    )
+    genome.tolerance.undesired_contact_threshold = _optional_floor(
+        config, "tolerance.undesired_contact_threshold", genome.tolerance.undesired_contact_threshold, 2.0
+    )
+    if _has_reward(config, "contact_force"):
+        genome.tolerance.contact_force_threshold = _optional_floor(
+            config, "tolerance.contact_force_threshold", genome.tolerance.contact_force_threshold, 950.0
+        )
     _append_note(genome, "任务约束：翻墙/登墙需区分合法支撑和冲击")
 
 
@@ -331,6 +382,16 @@ def _apply_aerial_contract(genome: AlgorithmGenome, config: dict[str, Any]) -> N
     genome.termination.anchor_ori_threshold = _floor(
         config, "termination.anchor_ori_threshold", genome.termination.anchor_ori_threshold, 1.00
     )
+    genome.observation.motion_anchor_ori_noise_abs = _cap(
+        config, "observation.motion_anchor_ori_noise_abs", genome.observation.motion_anchor_ori_noise_abs, 0.05
+    )
+    genome.observation.base_ang_vel_noise_abs = _cap(
+        config, "observation.base_ang_vel_noise_abs", genome.observation.base_ang_vel_noise_abs, 0.20
+    )
+    if _has_reward(config, "contact_force"):
+        genome.tolerance.contact_force_threshold = _optional_floor(
+            config, "tolerance.contact_force_threshold", genome.tolerance.contact_force_threshold, 850.0
+        )
     _append_note(genome, "任务约束：高动态动作需保持空中和落地覆盖")
 
 

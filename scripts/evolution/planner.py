@@ -52,6 +52,21 @@ TERMINATION_OVERRIDES = {
     "ee_body_pos_z_threshold": "env.terminations.ee_body_pos.params.threshold",
 }
 
+OBSERVATION_NOISE_OVERRIDES = {
+    "motion_anchor_pos_noise_abs": "env.observations.policy.motion_anchor_pos_b.noise",
+    "motion_anchor_ori_noise_abs": "env.observations.policy.motion_anchor_ori_b.noise",
+    "base_lin_vel_noise_abs": "env.observations.policy.base_lin_vel.noise",
+    "base_ang_vel_noise_abs": "env.observations.policy.base_ang_vel.noise",
+    "joint_pos_noise_abs": "env.observations.policy.joint_pos.noise",
+    "joint_vel_noise_abs": "env.observations.policy.joint_vel.noise",
+}
+
+TOLERANCE_OVERRIDES = {
+    "undesired_contact_threshold": "env.rewards.undesired_contacts.params.threshold",
+    "contact_force_threshold": "env.rewards.contact_force.params.threshold",
+    "contact_sensor_force_threshold": "env.scene.contact_forces.force_threshold",
+}
+
 PPO_OVERRIDES = {
     "learning_rate": "agent.algorithm.learning_rate",
     "entropy_coef": "agent.algorithm.entropy_coef",
@@ -88,6 +103,14 @@ def _format_value(value: Any) -> str:
 
 def _hydra_override(key: str, value: Any) -> str:
     return f"{key}={_format_value(value)}"
+
+
+def _noise_overrides(base_path: str, value: float) -> list[str]:
+    magnitude = abs(float(value))
+    return [
+        _hydra_override(f"{base_path}.n_min", -magnitude),
+        _hydra_override(f"{base_path}.n_max", magnitude),
+    ]
 
 
 def _available_reward_terms(config: dict[str, Any]) -> set[str]:
@@ -134,6 +157,22 @@ def hydra_overrides(genome: AlgorithmGenome, config: dict[str, Any] | None = Non
     termination = asdict(genome.termination)
     for key, path in TERMINATION_OVERRIDES.items():
         overrides.append(_hydra_override(path, termination[key]))
+
+    observation = asdict(genome.observation)
+    overrides.append(_hydra_override("env.observations.policy.enable_corruption", observation["policy_corruption_enabled"]))
+    for key, path in OBSERVATION_NOISE_OVERRIDES.items():
+        overrides.extend(_noise_overrides(path, observation[key]))
+
+    tolerance = asdict(genome.tolerance)
+    undesired_threshold = tolerance.get("undesired_contact_threshold")
+    if undesired_threshold is not None and (not available_rewards or "undesired_contacts" in available_rewards):
+        overrides.append(_hydra_override(TOLERANCE_OVERRIDES["undesired_contact_threshold"], undesired_threshold))
+    contact_force_threshold = tolerance.get("contact_force_threshold")
+    if contact_force_threshold is not None and (not available_rewards or "contact_force" in available_rewards):
+        overrides.append(_hydra_override(TOLERANCE_OVERRIDES["contact_force_threshold"], contact_force_threshold))
+    contact_sensor_threshold = tolerance.get("contact_sensor_force_threshold")
+    if contact_sensor_threshold is not None:
+        overrides.append(_hydra_override(TOLERANCE_OVERRIDES["contact_sensor_force_threshold"], contact_sensor_threshold))
 
     ppo = asdict(genome.ppo)
     for key, path in PPO_OVERRIDES.items():

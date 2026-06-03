@@ -12,11 +12,13 @@ from schemas import (
     AlgorithmGenome,
     DomainRandomizationGenes,
     GenomeMetadata,
+    ObservationGenes,
     PPOGenes,
     ResourceGenes,
     RewardGenes,
     SamplingGenes,
     TerminationGenes,
+    ToleranceGenes,
 )
 from validator import require_valid_genome
 
@@ -25,6 +27,8 @@ SECTION_CLASSES = {
     "reward": RewardGenes,
     "sampling": SamplingGenes,
     "termination": TerminationGenes,
+    "observation": ObservationGenes,
+    "tolerance": ToleranceGenes,
     "ppo": PPOGenes,
     "domain_randomization": DomainRandomizationGenes,
     "resource": ResourceGenes,
@@ -61,6 +65,9 @@ def _sample_value(rng: random.Random, dotted: str, current: Any, config: dict[st
         if dotted.endswith("activation"):
             return rng.choice(["elu", "relu", "tanh"])
         return copy.deepcopy(current)
+    if current is None:
+        lo, hi = search_space[dotted]
+        return float(rng.uniform(float(lo), float(hi)))
     lo, hi = search_space[dotted]
     if dotted in INT_KEYS:
         value = rng.randint(int(lo), int(hi))
@@ -71,6 +78,8 @@ def _sample_value(rng: random.Random, dotted: str, current: Any, config: dict[st
 
 
 def _clip_to_search_space(dotted: str, value: Any, config: dict[str, Any]) -> Any:
+    if value is None:
+        return None
     if dotted not in config.get("search_space", {}):
         return value
     lo, hi = config["search_space"][dotted]
@@ -185,6 +194,8 @@ def _with_sections(
         reward=RewardGenes(**sections["reward"]),
         sampling=SamplingGenes(**sections["sampling"]),
         termination=TerminationGenes(**sections["termination"]),
+        observation=ObservationGenes(**sections["observation"]),
+        tolerance=ToleranceGenes(**sections["tolerance"]),
         ppo=PPOGenes(**sections["ppo"]),
         domain_randomization=DomainRandomizationGenes(**sections["domain_randomization"]),
         resource=ResourceGenes(**sections["resource"]),
@@ -243,6 +254,8 @@ def seed_population(config: dict[str, Any], population_size: int, generation: in
             "ppo.desired_kl": 0.016,
             "ppo.clip_param": 0.24,
             "ppo.learning_rate": 0.00075,
+            "observation.motion_anchor_pos_noise_abs": 0.18,
+            "observation.base_lin_vel_noise_abs": 0.35,
         },
         {
             "description": "增加摩擦和质心随机化，为后续 sim2real 预留鲁棒性。",
@@ -252,6 +265,8 @@ def seed_population(config: dict[str, Any], population_size: int, generation: in
             "domain_randomization.friction_dynamic_max": 1.35,
             "domain_randomization.joint_default_pos_abs": 0.02,
             "domain_randomization.torso_com_x_abs": 0.035,
+            "tolerance.undesired_contact_threshold": 2.0,
+            "tolerance.contact_force_threshold": 950.0,
         },
     ]
 

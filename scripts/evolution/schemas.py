@@ -61,6 +61,24 @@ class TerminationGenes:
 
 
 @dataclass
+class ObservationGenes:
+    policy_corruption_enabled: bool = True
+    motion_anchor_pos_noise_abs: float = 0.25
+    motion_anchor_ori_noise_abs: float = 0.05
+    base_lin_vel_noise_abs: float = 0.5
+    base_ang_vel_noise_abs: float = 0.2
+    joint_pos_noise_abs: float = 0.01
+    joint_vel_noise_abs: float = 0.5
+
+
+@dataclass
+class ToleranceGenes:
+    undesired_contact_threshold: float | None = None
+    contact_force_threshold: float | None = None
+    contact_sensor_force_threshold: float | None = None
+
+
+@dataclass
 class PPOGenes:
     learning_rate: float = 0.001
     entropy_coef: float = 0.005
@@ -109,6 +127,8 @@ class AlgorithmGenome:
     reward: RewardGenes = field(default_factory=RewardGenes)
     sampling: SamplingGenes = field(default_factory=SamplingGenes)
     termination: TerminationGenes = field(default_factory=TerminationGenes)
+    observation: ObservationGenes = field(default_factory=ObservationGenes)
+    tolerance: ToleranceGenes = field(default_factory=ToleranceGenes)
     ppo: PPOGenes = field(default_factory=PPOGenes)
     domain_randomization: DomainRandomizationGenes = field(default_factory=DomainRandomizationGenes)
     resource: ResourceGenes = field(default_factory=ResourceGenes)
@@ -137,6 +157,8 @@ class AlgorithmGenome:
             reward=RewardGenes(**data["reward"]),
             sampling=SamplingGenes(**data["sampling"]),
             termination=TerminationGenes(**data["termination"]),
+            observation=ObservationGenes(**data.get("observation", {})),
+            tolerance=ToleranceGenes(**data.get("tolerance", {})),
             ppo=PPOGenes(**data["ppo"]),
             domain_randomization=DomainRandomizationGenes(**data["domain_randomization"]),
             resource=ResourceGenes(**data["resource"]),
@@ -159,6 +181,8 @@ SECTION_TYPES = {
     "reward": RewardGenes,
     "sampling": SamplingGenes,
     "termination": TerminationGenes,
+    "observation": ObservationGenes,
+    "tolerance": ToleranceGenes,
     "ppo": PPOGenes,
     "domain_randomization": DomainRandomizationGenes,
     "resource": ResourceGenes,

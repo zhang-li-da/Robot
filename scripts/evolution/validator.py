@@ -31,6 +31,19 @@ ALLOWED_HIDDEN_DIMS = {
     (1024, 512, 256),
 }
 BOOLEAN_FIELDS = {"resource.disable_logger"}
+BOOLEAN_FIELDS.add("observation.policy_corruption_enabled")
+
+DEFAULT_NUMERIC_RANGES = {
+    "observation.motion_anchor_pos_noise_abs": (0.0, 0.8),
+    "observation.motion_anchor_ori_noise_abs": (0.0, 0.25),
+    "observation.base_lin_vel_noise_abs": (0.0, 1.5),
+    "observation.base_ang_vel_noise_abs": (0.0, 0.8),
+    "observation.joint_pos_noise_abs": (0.0, 0.08),
+    "observation.joint_vel_noise_abs": (0.0, 1.5),
+    "tolerance.undesired_contact_threshold": (0.1, 20.0),
+    "tolerance.contact_force_threshold": (200.0, 2000.0),
+    "tolerance.contact_sensor_force_threshold": (1.0, 100.0),
+}
 
 
 class GenomeValidationError(ValueError):
@@ -47,12 +60,16 @@ def _range_for(config: dict[str, Any], dotted_name: str) -> tuple[float, float] 
 
 
 def _validate_number(config: dict[str, Any], dotted_name: str, value: Any, errors: list[str]) -> None:
+    if value is None:
+        return
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         errors.append(f"{dotted_name} must be numeric, got {type(value).__name__}")
         return
     if dotted_name in INTEGER_FIELDS and int(value) != value:
         errors.append(f"{dotted_name} must be an integer, got {value}")
     allowed = _range_for(config, dotted_name)
+    if allowed is None:
+        allowed = DEFAULT_NUMERIC_RANGES.get(dotted_name)
     if allowed is None:
         return
     lo, hi = allowed
@@ -65,7 +82,16 @@ def validate_genome(genome: AlgorithmGenome, config: dict[str, Any]) -> list[str
 
     errors: list[str] = []
     genome_dict = genome.to_dict()
-    for section in ["reward", "sampling", "termination", "ppo", "domain_randomization", "resource"]:
+    for section in [
+        "reward",
+        "sampling",
+        "termination",
+        "observation",
+        "tolerance",
+        "ppo",
+        "domain_randomization",
+        "resource",
+    ]:
         for key, value in genome_dict[section].items():
             dotted = f"{section}.{key}"
             if isinstance(value, list):
@@ -154,7 +180,16 @@ def require_valid_genome(genome: AlgorithmGenome, config: dict[str, Any]) -> Non
 
 def flatten_genome(genome: AlgorithmGenome) -> dict[str, Any]:
     flat: dict[str, Any] = {}
-    for section in ["reward", "sampling", "termination", "ppo", "domain_randomization", "resource"]:
+    for section in [
+        "reward",
+        "sampling",
+        "termination",
+        "observation",
+        "tolerance",
+        "ppo",
+        "domain_randomization",
+        "resource",
+    ]:
         for key, value in asdict(getattr(genome, section)).items():
             flat[f"{section}.{key}"] = value
     return flat

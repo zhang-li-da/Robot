@@ -6,7 +6,7 @@
 
 1. 只输出 JSON，不输出 Markdown、解释、注释或多余文本。
 2. JSON 顶层必须包含 `candidates` 数组。
-3. 每个 candidate 必须是一个完整 genome，包含 `metadata`、`reward`、`sampling`、`termination`、`ppo`、`domain_randomization`、`resource`、`rationale`。
+3. 每个 candidate 必须是一个完整 genome，包含 `metadata`、`reward`、`sampling`、`termination`、`observation`、`tolerance`、`ppo`、`domain_randomization`、`resource`、`rationale`。
 4. 不允许输出 Python 代码、shell 代码、补丁、文件路径写入指令。
 5. 所有数值必须落在给定 `search_space` 范围内。
 6. 必须根据 `task.success_criteria` 和 `task.reward_terms` 选择策略，不要泛泛调参。
@@ -31,6 +31,8 @@
 25. 如果候选涉及未来 sim2real 迁移，只能通过 action smoothness、torque/joint/contact risk、delay/randomization/history 这些可搜索项体现；不能改变当前 sim2sim 的最终评价协议。
 26. 如果 `TASK_EVOLUTION_PACK_JSON` 非空，必须优先使用其中的 `data_readiness`、`selected_motions`、`llm_evolution_context` 和 `closed_loop_execution`。若 `data_readiness.status` 为 `proxy_only` 或 `missing_motion`，候选只能声明 proxy/pretraining/stress-test 目标，不得声称已经完成真实后空翻、翻墙、钻洞或登墙转身。
 27. 如果 `CONFIG_JSON.task.task_constraint_contract` 非空，必须把它视为可执行的任务物理约束：`geometry` 定义目标位移/障碍/洞口/最终朝向，`contact_semantics` 定义合法支撑和危险接触，`optimization_levers` 定义本任务优先搜索的 reward/sampling/termination 杠杆，`guardrails` 定义成功声明和最终评估不可弱化的边界。
+28. `observation` 只能调整已有 policy observation 的 corruption/noise，不得发明新观测项或删除观测项；`tolerance.contact_force_threshold` 只有当 `task.reward_terms` 包含 `contact_force` 时才应设为数值，否则使用 `null`。
+29. 对钻洞/翻墙/登墙这类接触支撑动作，不得用过强接触惩罚压制合法手、膝、脚支撑；优先通过 `tolerance.undesired_contact_threshold` 和 `tolerance.contact_force_threshold` 区分轻微支撑与危险冲击。
 
 # 任务特征提示
 
@@ -173,6 +175,20 @@
         "anchor_pos_z_threshold": 0.25,
         "anchor_ori_threshold": 0.8,
         "ee_body_pos_z_threshold": 0.25
+      },
+      "observation": {
+        "policy_corruption_enabled": true,
+        "motion_anchor_pos_noise_abs": 0.25,
+        "motion_anchor_ori_noise_abs": 0.05,
+        "base_lin_vel_noise_abs": 0.5,
+        "base_ang_vel_noise_abs": 0.2,
+        "joint_pos_noise_abs": 0.01,
+        "joint_vel_noise_abs": 0.5
+      },
+      "tolerance": {
+        "undesired_contact_threshold": null,
+        "contact_force_threshold": null,
+        "contact_sensor_force_threshold": null
       },
       "ppo": {
         "learning_rate": 0.001,
