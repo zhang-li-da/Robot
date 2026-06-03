@@ -1,0 +1,11 @@
+{
+  "task_name": "g1_asap_squat_l3_lowposture",
+  "best_genome": "gen2_m3_001_repair",
+  "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_squat_l3_lowposture/2026-06-03_17-54-17_evo_gen2_m3_001_stage2/model_998.pt",
+  "final_eval": "artifacts/g1_asap_squat_l3_lowposture/eval/best_evolved_repair_gen2_m3_001_64ep.json",
+  "video_dir": "artifacts/g1_asap_squat_l3_lowposture/video/best_evolved_repair_gen2_m3_001",
+  "videos": [
+    "artifacts/g1_asap_squat_l3_lowposture/video/best_evolved_repair_gen2_m3_001/rl-video-step-0.mp4"
+  ],
+  "metrics": "artifacts/g1_asap_squat_l3_lowposture/video/best_evolved_repair_gen2_m3_001/play_metrics.json"
+}

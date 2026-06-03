@@ -1,0 +1,522 @@
+{
+  "schema_version": "1.0",
+  "task_ids": [
+    "g1_asap_turn_jump_l4",
+    "g1_asap_squat_l3_lowposture",
+    "g1_asap_jump_forward_l4",
+    "g1_asap_side_jump_l4",
+    "g1_asap_cr7_l2_dynamic"
+  ],
+  "task_count": 5,
+  "final_count": 5,
+  "interim_count": 0,
+  "missing_count": 0,
+  "target_met_count": 5,
+  "records": [
+    {
+      "task_id": "g1_asap_turn_jump_l4",
+      "status": "final",
+      "summary_path": "artifacts/g1_asap_turn_jump_l4/eval/evolution_summary.json",
+      "baseline": {
+        "genome_id": "baseline",
+        "fitness": 48.71282503318719,
+        "success_rate": 0.421875,
+        "episodes": 64,
+        "mean_return": 4.728553432971239,
+        "mean_max_torso_x": 0.41938156075775623,
+        "mean_clearance": 0.10592447161674501,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 37,
+          "ee_body_pos": 33,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_turn_jump_l4/eval/baseline_beyondmimic.json",
+        "mean_final_speed": 1.6069683874957263,
+        "mean_final_ang_speed": 3.2450059596449137,
+        "mean_final_yaw_error": 0.39348249601789576,
+        "mean_max_body_height": 1.2032856419682503,
+        "mean_flip_rotation": 1.5983398985117674,
+        "successes": 27,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_turn_jump_l4_baseline/2026-06-03_04-02-10_baseline_beyondmimic/model_799.pt"
+      },
+      "adapted": {
+        "genome_id": "adapted_task_rewards",
+        "fitness": 1.603333595598286,
+        "success_rate": 0.0,
+        "episodes": 64,
+        "mean_return": 8.543283089995384,
+        "mean_max_torso_x": 0.07271551340818405,
+        "mean_clearance": 0.10592446230351926,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 64,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_turn_jump_l4/eval/adapted_task_rewards.json",
+        "mean_final_speed": 1.1500012474134564,
+        "mean_final_ang_speed": 7.3985215574502945,
+        "mean_final_yaw_error": 1.3756973594427109,
+        "mean_max_body_height": 1.2032856475561857,
+        "mean_flip_rotation": 1.5873300712555647,
+        "successes": 0,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_turn_jump_l4/2026-06-03_04-23-31_adapted_task_rewards/model_799.pt"
+      },
+      "best_evolved": {
+        "genome_id": "gen0_m3_000",
+        "fitness": 12.325045111775399,
+        "success_rate": 0.0,
+        "episodes": 16,
+        "mean_return": 14.000902235507965,
+        "mean_max_torso_x": 0.5790207497775555,
+        "mean_clearance": 0.31252086102962495,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 3,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "/root/whole_body_tracking-main/outputs/evolution_asap/g1_asap_turn_jump_l4/20260603_044548_577906_gen00/gen0_m3_000/eval_stage1.json",
+        "success_rate_delta_vs_baseline": -0.421875,
+        "fitness_delta_vs_baseline": -36.38777992141179
+      },
+      "final_eval": {
+        "genome_id": "gen0_m3_000_final64",
+        "fitness": 70.2512131549418,
+        "success_rate": 0.578125,
+        "episodes": 64,
+        "mean_return": 14.399263098835945,
+        "mean_max_torso_x": 0.5575978308916092,
+        "mean_clearance": 0.3283450811728835,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 9,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_turn_jump_l4/eval/best_evolved_64ep.json",
+        "mean_final_speed": 0.2596236174576916,
+        "mean_final_ang_speed": 1.0638393249828368,
+        "mean_final_yaw_error": 0.6426079913508147,
+        "mean_max_body_height": 1.440679345279932,
+        "mean_flip_rotation": 3.111726948991418,
+        "successes": 37,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_turn_jump_l4/2026-06-03_04-47-34_evo_gen0_m3_000_stage1/model_799.pt"
+      },
+      "comparison_label": "final_eval",
+      "success_rate_improvement": 0.15625,
+      "required_improvement": 0.08,
+      "target_met": true,
+      "dominant_termination": {
+        "baseline": "anchor_pos",
+        "adapted": "anchor_pos",
+        "comparison": "anchor_pos"
+      }
+    },
+    {
+      "task_id": "g1_asap_squat_l3_lowposture",
+      "status": "final",
+      "summary_path": "artifacts/g1_asap_squat_l3_lowposture/eval/evolution_summary.json",
+      "baseline": {
+        "genome_id": "baseline",
+        "fitness": 47.46318241581321,
+        "success_rate": 0.359375,
+        "episodes": 64,
+        "mean_return": 15.513648316264153,
+        "mean_max_torso_x": 0.07168074324727058,
+        "mean_clearance": 0.22120693959295745,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 10,
+          "ee_body_pos": 40,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_squat_l3_lowposture/eval/baseline_beyondmimic.json",
+        "mean_final_speed": 0.7943451616447419,
+        "mean_final_ang_speed": 1.5482601476833224,
+        "mean_final_yaw_error": 0.37663231664555497,
+        "mean_max_body_height": 1.202934330329299,
+        "mean_flip_rotation": 2.641803761012852,
+        "successes": 23,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_squat_l3_lowposture_baseline/2026-06-03_06-21-06_baseline_beyondmimic/model_799.pt"
+      },
+      "adapted": {
+        "genome_id": "adapted_task_rewards",
+        "fitness": 53.210863755643366,
+        "success_rate": 0.421875,
+        "episodes": 64,
+        "mean_return": 19.507230699062347,
+        "mean_max_torso_x": 0.2161926720291376,
+        "mean_clearance": 0.11099386103451248,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 1,
+          "ee_body_pos": 6,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_squat_l3_lowposture/eval/adapted_task_rewards.json",
+        "mean_final_speed": 0.25819314823456807,
+        "mean_final_ang_speed": 0.5561746683670208,
+        "mean_final_yaw_error": 0.4160051792568993,
+        "mean_max_body_height": 1.2029343415051699,
+        "mean_flip_rotation": 3.113696813583374,
+        "successes": 27,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_squat_l3_lowposture/2026-06-03_06-44-58_adapted_task_rewards/model_799.pt"
+      },
+      "best_evolved": {
+        "genome_id": "gen2_m3_001",
+        "fitness": 112.53191621303559,
+        "success_rate": 1.0,
+        "episodes": 16,
+        "mean_return": 21.26332426071167,
+        "mean_max_torso_x": 0.27416959404945374,
+        "mean_clearance": 0.3620300970971584,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 2,
+          "ee_body_pos": 3,
+          "time_out": 0
+        },
+        "eval_path": "outputs/evolution_asap/g1_asap_squat_l3_lowposture/20260603_165940_426435_gen02/gen2_m3_001/eval_stage1.json",
+        "success_rate_delta_vs_baseline": 0.640625,
+        "fitness_delta_vs_baseline": 65.06873379722238
+      },
+      "final_eval": {
+        "genome_id": "gen2_m3_001_repair_final64",
+        "fitness": 95.22765641212463,
+        "success_rate": 0.828125,
+        "episodes": 64,
+        "mean_return": 21.115628242492676,
+        "mean_max_torso_x": 0.24579456634819508,
+        "mean_clearance": 0.3695262193679809,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 16,
+          "ee_body_pos": 6,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_squat_l3_lowposture/eval/best_evolved_repair_gen2_m3_001_64ep.json",
+        "mean_final_speed": 0.7701166840270162,
+        "mean_final_ang_speed": 0.918264122446999,
+        "mean_final_yaw_error": 0.3083173171035014,
+        "mean_max_body_height": 1.2029341459274292,
+        "mean_flip_rotation": 3.501965206116438,
+        "successes": 53,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_squat_l3_lowposture/2026-06-03_17-54-17_evo_gen2_m3_001_stage2/model_998.pt"
+      },
+      "comparison_label": "final_eval",
+      "success_rate_improvement": 0.46875,
+      "required_improvement": 0.08,
+      "target_met": true,
+      "dominant_termination": {
+        "baseline": "ee_body_pos",
+        "adapted": "ee_body_pos",
+        "comparison": "anchor_pos"
+      }
+    },
+    {
+      "task_id": "g1_asap_jump_forward_l4",
+      "status": "final",
+      "summary_path": "artifacts/g1_asap_jump_forward_l4/eval/evolution_summary.json",
+      "baseline": {
+        "genome_id": "baseline",
+        "fitness": 8.918017180636525,
+        "success_rate": 0.046875,
+        "episodes": 64,
+        "mean_return": 9.457154832780361,
+        "mean_max_torso_x": 0.5809225477278233,
+        "mean_clearance": 0.13015233501791956,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 32,
+          "ee_body_pos": 32,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_jump_forward_l4/eval/baseline_beyondmimic.json",
+        "mean_final_speed": 2.903609800618142,
+        "mean_final_ang_speed": 4.163443322759122,
+        "mean_final_yaw_error": 0.66950111319602,
+        "mean_max_body_height": 1.2179616633802652,
+        "mean_flip_rotation": 3.2623501624912024,
+        "successes": 3,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_jump_forward_l4_baseline/2026-06-03_09-10-23_baseline_beyondmimic/model_799.pt"
+      },
+      "adapted": {
+        "genome_id": "adapted_task_rewards",
+        "fitness": 4.898663330823183,
+        "success_rate": 0.0,
+        "episodes": 64,
+        "mean_return": 10.33058412373066,
+        "mean_max_torso_x": 0.6886300146579742,
+        "mean_clearance": 0.13015232756733897,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 6,
+          "ee_body_pos": 63,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_jump_forward_l4/eval/adapted_task_rewards.json",
+        "mean_final_speed": 2.0358996111899614,
+        "mean_final_ang_speed": 2.629897978156805,
+        "mean_final_yaw_error": 0.15001463997396058,
+        "mean_max_body_height": 1.2179616298526525,
+        "mean_flip_rotation": 2.407514287158847,
+        "successes": 0,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_jump_forward_l4/2026-06-03_09-32-01_adapted_task_rewards/model_799.pt"
+      },
+      "best_evolved": {
+        "genome_id": "gen1_m3_000",
+        "fitness": 77.88005813360215,
+        "success_rate": 0.65625,
+        "episodes": 32,
+        "mean_return": 18.034199059009552,
+        "mean_max_torso_x": 1.7379761040210724,
+        "mean_clearance": 0.16766740903258326,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "/root/whole_body_tracking-main/outputs/evolution_asap/g1_asap_jump_forward_l4/20260603_104051_130201_gen01/gen1_m3_000/eval_stage2.json",
+        "success_rate_delta_vs_baseline": 0.609375,
+        "fitness_delta_vs_baseline": 68.96204095296562
+      },
+      "final_eval": {
+        "genome_id": "gen1_m3_000_final64",
+        "fitness": 102.85346252024173,
+        "success_rate": 0.90625,
+        "episodes": 64,
+        "mean_return": 17.980966478586197,
+        "mean_max_torso_x": 1.8001048788428307,
+        "mean_clearance": 0.1664707098156214,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_jump_forward_l4/eval/best_evolved_64ep.json",
+        "mean_final_speed": 0.22706453342107125,
+        "mean_final_ang_speed": 0.39195362222380936,
+        "mean_final_yaw_error": 0.3408219744451344,
+        "mean_max_body_height": 1.2413229141384363,
+        "mean_flip_rotation": 4.129463132470846,
+        "successes": 58,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_jump_forward_l4/2026-06-03_11-07-07_evo_gen1_m3_000_stage2/model_998.pt"
+      },
+      "comparison_label": "final_eval",
+      "success_rate_improvement": 0.859375,
+      "required_improvement": 0.08,
+      "target_met": true,
+      "dominant_termination": {
+        "baseline": "anchor_pos",
+        "adapted": "ee_body_pos",
+        "comparison": "none"
+      }
+    },
+    {
+      "task_id": "g1_asap_side_jump_l4",
+      "status": "final",
+      "summary_path": "artifacts/g1_asap_side_jump_l4/eval/evolution_summary.json",
+      "baseline": {
+        "genome_id": "baseline",
+        "fitness": 9.22568617388606,
+        "success_rate": 0.0,
+        "episodes": 64,
+        "mean_return": 13.59703442454338,
+        "mean_max_torso_x": 0.8604133948683739,
+        "mean_clearance": 0.15195943627506492,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_side_jump_l4/eval/baseline_beyondmimic.json",
+        "mean_final_speed": 0.22182209021411836,
+        "mean_final_ang_speed": 0.7631963519379497,
+        "mean_final_yaw_error": 1.4920637179166079,
+        "mean_max_body_height": 1.1513132248073816,
+        "mean_flip_rotation": 1.929809384047985,
+        "successes": 0,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_side_jump_l4_baseline/2026-06-03_11-43-03_baseline_beyondmimic/model_799.pt"
+      },
+      "adapted": {
+        "genome_id": "adapted_task_rewards",
+        "fitness": 8.132658307999371,
+        "success_rate": 0.0,
+        "episodes": 64,
+        "mean_return": 13.547393232584,
+        "mean_max_torso_x": 0.690015647560358,
+        "mean_clearance": 0.15195942509919402,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_side_jump_l4/eval/adapted_task_rewards.json",
+        "mean_final_speed": 0.24533384368987754,
+        "mean_final_ang_speed": 0.9411242897622287,
+        "mean_final_yaw_error": 1.5528791062533855,
+        "mean_max_body_height": 1.0902189686894417,
+        "mean_flip_rotation": 1.9353015888482332,
+        "successes": 0,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_side_jump_l4/2026-06-03_12-06-11_adapted_task_rewards/model_799.pt"
+      },
+      "best_evolved": {
+        "genome_id": "gen0_m3_001",
+        "fitness": 10.431937897205353,
+        "success_rate": 0.0,
+        "episodes": 16,
+        "mean_return": 13.945377588272095,
+        "mean_max_torso_x": 1.0461693108081818,
+        "mean_clearance": 0.1519592714309692,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "/root/whole_body_tracking-main/outputs/evolution_asap/g1_asap_side_jump_l4/20260603_123034_749488_gen00/gen0_m3_001/eval_stage1.json",
+        "success_rate_delta_vs_baseline": 0.0,
+        "fitness_delta_vs_baseline": 1.2062517233192924
+      },
+      "final_eval": {
+        "genome_id": "gen0_m3_001_final64",
+        "fitness": 19.882980139553545,
+        "success_rate": 0.09375,
+        "episodes": 64,
+        "mean_return": 13.947213530540466,
+        "mean_max_torso_x": 1.058036096394062,
+        "mean_clearance": 0.1519594223052263,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_side_jump_l4/eval/best_evolved_64ep.json",
+        "mean_final_speed": 0.2366509674466215,
+        "mean_final_ang_speed": 1.1666215467266738,
+        "mean_final_yaw_error": 0.3313895434839651,
+        "mean_max_body_height": 1.094378361478448,
+        "mean_flip_rotation": 2.081393713131547,
+        "successes": 6,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_side_jump_l4/2026-06-03_12-56-59_evo_gen0_m3_001_stage1/model_799.pt"
+      },
+      "comparison_label": "final_eval",
+      "success_rate_improvement": 0.09375,
+      "required_improvement": 0.08,
+      "target_met": true,
+      "dominant_termination": {
+        "baseline": "none",
+        "adapted": "none",
+        "comparison": "none"
+      }
+    },
+    {
+      "task_id": "g1_asap_cr7_l2_dynamic",
+      "status": "final",
+      "summary_path": "artifacts/g1_asap_cr7_l2_dynamic/eval/evolution_summary.json",
+      "baseline": {
+        "genome_id": "baseline",
+        "fitness": 4.789428097382188,
+        "success_rate": 0.0,
+        "episodes": 64,
+        "mean_return": 6.697727911174297,
+        "mean_max_torso_x": 0.9189269579946995,
+        "mean_clearance": 0.06994847059249876,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 2,
+          "ee_body_pos": 63,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_cr7_l2_dynamic/eval/baseline_beyondmimic.json",
+        "mean_final_speed": 2.8755806274712086,
+        "mean_final_ang_speed": 3.9691783040761948,
+        "mean_final_yaw_error": 0.9846222045598552,
+        "mean_max_body_height": 1.2071107421070337,
+        "mean_flip_rotation": 1.296196156181395,
+        "successes": 0,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_cr7_l2_dynamic_baseline/2026-06-03_13-24-07_baseline_beyondmimic/model_799.pt"
+      },
+      "adapted": {
+        "genome_id": "adapted_task_rewards",
+        "fitness": 7.43154953867197,
+        "success_rate": 0.0,
+        "episodes": 64,
+        "mean_return": 10.017294973134995,
+        "mean_max_torso_x": 1.4032180719077587,
+        "mean_clearance": 0.06994847152382133,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 1,
+          "ee_body_pos": 62,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_cr7_l2_dynamic/eval/adapted_task_rewards.json",
+        "mean_final_speed": 1.0713594970293343,
+        "mean_final_ang_speed": 2.771118076518178,
+        "mean_final_yaw_error": 2.913799189031124,
+        "mean_max_body_height": 1.2071107495576143,
+        "mean_flip_rotation": 1.794042557477951,
+        "successes": 0,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_cr7_l2_dynamic/2026-06-03_13-46-35_adapted_task_rewards/model_799.pt"
+      },
+      "best_evolved": {
+        "genome_id": "gen1_m3_001",
+        "fitness": 111.22933726757765,
+        "success_rate": 1.0,
+        "episodes": 32,
+        "mean_return": 17.839644849300385,
+        "mean_max_torso_x": 1.9929620921611786,
+        "mean_clearance": 0.11686775125563142,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "outputs/evolution_asap/g1_asap_cr7_l2_dynamic/20260603_150000_020302_gen01/gen1_m3_001/eval_stage2_motion_final.json",
+        "success_rate_delta_vs_baseline": 1.0,
+        "fitness_delta_vs_baseline": 106.43990917019546
+      },
+      "final_eval": {
+        "genome_id": "gen1_m3_001_final64",
+        "fitness": 109.6128029152751,
+        "success_rate": 0.984375,
+        "episodes": 64,
+        "mean_return": 17.838980555534363,
+        "mean_max_torso_x": 1.9848047755658627,
+        "mean_clearance": 0.11416769437491892,
+        "termination_counts": {
+          "anchor_ori": 0,
+          "anchor_pos": 0,
+          "ee_body_pos": 0,
+          "time_out": 0
+        },
+        "eval_path": "artifacts/g1_asap_cr7_l2_dynamic/eval/best_evolved_64ep.json",
+        "mean_final_speed": 0.16376220498932526,
+        "mean_final_ang_speed": 0.405402178352233,
+        "mean_final_yaw_error": 0.0538980181208899,
+        "mean_max_body_height": 1.2811889108270407,
+        "mean_flip_rotation": 2.087265867739916,
+        "successes": 63,
+        "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_cr7_l2_dynamic/2026-06-03_15-59-14_evo_gen1_m3_001_stage2/model_998.pt"
+      },
+      "comparison_label": "final_eval",
+      "success_rate_improvement": 0.984375,
+      "required_improvement": 0.08,
+      "target_met": true,
+      "dominant_termination": {
+        "baseline": "ee_body_pos",
+        "adapted": "ee_body_pos",
+        "comparison": "none"
+      }
+    }
+  ]
+}

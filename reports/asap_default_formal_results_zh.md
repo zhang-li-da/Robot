@@ -59,12 +59,12 @@
 
 ## Extended Formal Final64 结果
 
-更新时间：2026-06-03 16:20 CST。extended formal 队列已完成 5 个任务的 `64 episode` 复评和视频录制。
+更新时间：2026-06-03 18:10 CST。extended formal 队列已完成 5 个任务的 `64 episode` 复评和视频录制；其中 `squat_l3_lowposture` 已完成一次 repair final64 复评。
 
 | 任务 | baseline | evolved final64 | 提升 | 最佳候选 | 视频 |
 | --- | ---: | ---: | ---: | --- | --- |
 | `g1_asap_turn_jump_l4` | `27/64 = 42.19%` | `37/64 = 57.81%` | `+15.63%` | `gen0_m3_000` | `artifacts/g1_asap_turn_jump_l4/video/best_evolved_gen0_m3_000/rl-video-step-0.mp4` |
-| `g1_asap_squat_l3_lowposture` | `23/64 = 35.94%` | `31/64 = 48.44%` | `+12.50%` | `gen0_m3_000` | `artifacts/g1_asap_squat_l3_lowposture/video/best_evolved_gen0_m3_000/rl-video-step-0.mp4` |
+| `g1_asap_squat_l3_lowposture` | `23/64 = 35.94%` | `53/64 = 82.81%` | `+46.88%` | `gen2_m3_001_repair` | `artifacts/g1_asap_squat_l3_lowposture/video/best_evolved_repair_gen2_m3_001/rl-video-step-0.mp4` |
 | `g1_asap_jump_forward_l4` | `3/64 = 4.69%` | `58/64 = 90.63%` | `+85.94%` | `gen1_m3_000` | `artifacts/g1_asap_jump_forward_l4/video/best_evolved_gen1_m3_000/rl-video-step-0.mp4` |
 | `g1_asap_side_jump_l4` | `0/64 = 0.00%` | `6/64 = 9.38%` | `+9.38%` | `gen0_m3_001` | `artifacts/g1_asap_side_jump_l4/video/best_evolved_gen0_m3_001/rl-video-step-0.mp4` |
 | `g1_asap_cr7_l2_dynamic` | `0/64 = 0.00%` | `63/64 = 98.44%` | `+98.44%` | `gen1_m3_001` | `artifacts/g1_asap_cr7_l2_dynamic/video/best_evolved_gen1_m3_001/rl-video-step-0.mp4` |
@@ -72,6 +72,7 @@
 ### Extended 结论
 
 - `jump_forward_l4` 和 `cr7_l2_dynamic` 已经达到高成功率：分别为 `90.63%` 和 `98.44%`。其中 CR7 的最终平均 yaw error 为 `0.054 rad`，无 `anchor_pos`、`anchor_ori`、`ee_body_pos` 终止。
+- `squat_l3_lowposture` repair 后 final64 达到 `82.81%`，比原 baseline 提升 `46.88%`，也高于 hand adapted 的 `42.19%`。关键修正是让 LLM 候选继承历史成功候选的高 fixed-start 覆盖、较强 body tracking 和适中 ee/anchor termination，而不是盲目放宽所有阈值。
 - `turn_jump_l4`、`squat_l3_lowposture`、`side_jump_l4` 均相对 baseline 提升超过 `8%`。其中 `side_jump_l4` 只是刚过考核阈值，质量仍弱，主要瓶颈是前进距离不足：final64 平均 `x=1.058m < 1.25m`，不是 yaw 问题。
 - CR7 早期 scoreboard 被旧 `target_yaw=0.0` 污染；参考动作末端 yaw 实际为 `-2.330 rad`。框架已修正为 `target_yaw=motion_final`，并加入离线修复工具 `scripts/evolution/repair_motion_final_yaw_eval.py`，避免 LLM 把错误评估协议误判为 yaw 奖励不足。
 - `play_stunt.py` 已修正为在参考 clip 结束帧采样 success metrics；视频仍可保留尾帧，但不会再用 clip 结束后的额外步数误判 CR7 失败。
@@ -79,5 +80,5 @@
 ### 下一轮 repair 重点
 
 - `side_jump_l4`：提高 progress/phase sampling 和水平位移完成率，保持当前 motion-final yaw gate；不要继续把主要问题归因于 yaw。
-- `squat_l3_lowposture`：提升低姿态保持时长和进入低姿态区域的稳定性，避免 gen1 中出现的 baseline 回退。
+- `squat_l3_lowposture`：repair 已将 final64 从 `48.44%` 提升到 `82.81%`；下一步不再优先扩大 reward 搜索，而是保留历史成功保护并转向真实钻洞 motion/mesh 数据。
 - `turn_jump_l4`：当前已达 +15.63%，但仍低于高质量视频目标；下一轮应提高 `anchor_pos` 容忍下的转体完成率，同时保留 motion-final yaw 评估。
