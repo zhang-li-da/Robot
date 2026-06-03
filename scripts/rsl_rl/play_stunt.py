@@ -227,6 +227,14 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
     final_yaw_value = 0.0
     final_yaw_error = float(math.pi)
     final_done = False
+    metric_step = 0
+    metric_captured = False
+    metric_max_torso_x = max_torso_x
+    metric_max_torso_height = max_torso_height
+    metric_final_speed = final_speed
+    metric_final_ang_speed = final_ang_speed
+    metric_final_yaw_value = final_yaw_value
+    metric_final_yaw_error = final_yaw_error
     timestep = 0
 
     while simulation_app.is_running() and timestep < rollout_steps:
@@ -239,6 +247,15 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         final_yaw = yaw_from_quat_wxyz(robot.data.body_quat_w[0:1, torso_id])[0]
         final_yaw_value = float(final_yaw.item())
         final_yaw_error = float(torch.abs(_wrap_to_pi(final_yaw - args_cli.target_yaw)).item())
+        if not metric_captured and timestep >= max(clip_steps - 1, 0):
+            metric_step = timestep
+            metric_max_torso_x = max_torso_x
+            metric_max_torso_height = max_torso_height
+            metric_final_speed = final_speed
+            metric_final_ang_speed = final_ang_speed
+            metric_final_yaw_value = final_yaw_value
+            metric_final_yaw_error = final_yaw_error
+            metric_captured = True
 
         with torch.inference_mode():
             actions = policy(obs)
@@ -248,13 +265,22 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         if final_done:
             break
 
+    if not metric_captured:
+        metric_step = timestep
+        metric_max_torso_x = max_torso_x
+        metric_max_torso_height = max_torso_height
+        metric_final_speed = final_speed
+        metric_final_ang_speed = final_ang_speed
+        metric_final_yaw_value = final_yaw_value
+        metric_final_yaw_error = final_yaw_error
+
     success = (
-        max_torso_x >= args_cli.target_x
-        and max_torso_height >= args_cli.min_root_height
-        and max_torso_height >= args_cli.min_apex_height
-        and final_speed <= args_cli.max_final_speed
-        and final_ang_speed <= args_cli.max_final_ang_speed
-        and final_yaw_error <= args_cli.max_yaw_error
+        metric_max_torso_x >= args_cli.target_x
+        and metric_max_torso_height >= args_cli.min_root_height
+        and metric_max_torso_height >= args_cli.min_apex_height
+        and metric_final_speed <= args_cli.max_final_speed
+        and metric_final_ang_speed <= args_cli.max_final_ang_speed
+        and metric_final_yaw_error <= args_cli.max_yaw_error
     )
     metrics = {
         "checkpoint": checkpoint_path,
@@ -262,14 +288,15 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         "task": args_cli.task,
         "steps": timestep,
         "clip_steps": clip_steps,
+        "metric_step": metric_step,
         "done": final_done,
         "success": success,
-        "max_torso_x": max_torso_x,
-        "max_torso_height": max_torso_height,
-        "final_speed": final_speed,
-        "final_ang_speed": final_ang_speed,
-        "final_yaw": final_yaw_value,
-        "final_yaw_error": final_yaw_error,
+        "max_torso_x": metric_max_torso_x,
+        "max_torso_height": metric_max_torso_height,
+        "final_speed": metric_final_speed,
+        "final_ang_speed": metric_final_ang_speed,
+        "final_yaw": metric_final_yaw_value,
+        "final_yaw_error": metric_final_yaw_error,
         "target_x": args_cli.target_x,
         "min_root_height": args_cli.min_root_height,
         "min_apex_height": args_cli.min_apex_height,
