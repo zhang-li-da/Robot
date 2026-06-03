@@ -16,6 +16,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from scoreboard import CandidateScore, discover_scores, score_eval_json
+from training_log_analyzer import summarize_candidate_training_logs
 
 RUNTIME_FAILURE_STATUSES = {
     "train_failed",
@@ -200,6 +201,24 @@ def _runtime_failure_feedback(genome_id: str, status_path: Path, config: dict[st
         "suggested_levers": sorted(set(levers)),
         "recommendation": "eliminate_or_repair",
     }
+
+
+def _attach_training_log_feedback(candidate: dict[str, Any], genome_dir: Path) -> dict[str, Any]:
+    training = summarize_candidate_training_logs(genome_dir)
+    if not training:
+        return candidate
+    candidate["training_log_health"] = training
+    candidate.setdefault("failure_tags", [])
+    candidate.setdefault("suggested_levers", [])
+    candidate["failure_tags"] = sorted(set(candidate["failure_tags"] + training.get("failure_tags", [])))
+    candidate["suggested_levers"] = sorted(
+        set(candidate["suggested_levers"] + training.get("suggested_levers", []))
+    )
+    status = training.get("health_status")
+    if status == "collapsing" and candidate.get("recommendation") == "promote_to_stage2":
+        candidate["recommendation"] = "mutate_and_retry"
+        candidate.setdefault("hypotheses", []).append("training log indicates active collapse despite eval-level promotion")
+    return candidate
 
 
 def _candidate_feedback(
@@ -497,6 +516,14 @@ def _aggregate(candidate_feedback: list[dict[str, Any]], config: dict[str, Any],
         focus.append("make clearance reward progress-gated and contact-phase aware")
     if "deterministic_collapse" in tag_names:
         focus.append("increase behavior diversity through entropy, phase sampling, or warm-start curriculum")
+    if "training_active_collapse" in tag_names:
+        focus.append("repair training collapse before reward search: lower fixed-start pressure and relax stage1 anchor/ee termination")
+    if "training_recovered_from_collapse" in tag_names:
+        focus.append("preserve recovery-friendly sampling and avoid stricter early termination in the next generation")
+    if "training_ee_body_pos_pressure" in tag_names or "training_ee_body_pos_dominant" in tag_names:
+        focus.append("keep ee_body_pos tolerance from tightening until motion tracking survives the dynamic phase")
+    if "training_anchor_pos_pressure" in tag_names:
+        focus.append("avoid stricter anchor_pos termination; tune task rewards only after anchor tracking stabilizes")
     if "severe_regression_vs_baseline" in tag_names:
         focus.append("prefer repairing baseline-adjacent candidates over training short from-scratch candidates")
     if not target_improvement_feasible:
@@ -561,7 +588,8 @@ def build_feedback(
         eval_path = Path(score.eval_path)
         genome_id = score.genome_id
         seen_genome_ids.add(genome_id)
-        candidate_feedback.append(_candidate_feedback(genome_id, eval_path, score, config, baseline))
+        feedback = _candidate_feedback(genome_id, eval_path, score, config, baseline)
+        candidate_feedback.append(_attach_training_log_feedback(feedback, output_dir / genome_id))
 
     for status_path in sorted(output_dir.glob("*/status.json")):
         genome_id = status_path.parent.name
@@ -572,7 +600,8 @@ def build_feedback(
         except (OSError, json.JSONDecodeError):
             continue
         if str(status.get("status", "")) in RUNTIME_FAILURE_STATUSES:
-            candidate_feedback.append(_runtime_failure_feedback(genome_id, status_path, config))
+            feedback = _runtime_failure_feedback(genome_id, status_path, config)
+            candidate_feedback.append(_attach_training_log_feedback(feedback, output_dir / genome_id))
 
     aggregate = _aggregate(candidate_feedback, config, baseline)
     payload = {
