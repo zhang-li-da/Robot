@@ -451,9 +451,22 @@ def _is_crawl_or_low_posture_task(config: dict[str, Any]) -> bool:
     )
 
 
+def _best_history_success_rate(history: dict[str, Any]) -> float:
+    best = 0.0
+    for score in history.get("scores", []):
+        if not isinstance(score, dict):
+            continue
+        try:
+            best = max(best, float(score.get("success_rate", 0.0) or 0.0))
+        except (TypeError, ValueError):
+            continue
+    return best
+
+
 def _apply_crawl_low_posture_guard(
     genome: AlgorithmGenome,
     config: dict[str, Any],
+    history: dict[str, Any],
 ) -> AlgorithmGenome:
     """Keep low-posture/crawl search from collapsing on strict early tracking termination."""
 
@@ -461,6 +474,79 @@ def _apply_crawl_low_posture_guard(
         return genome
 
     guarded = genome
+    if _best_history_success_rate(history) >= 0.70:
+        guarded.reward.motion_global_anchor_pos_weight = _clip_context_value(
+            config,
+            "reward.motion_global_anchor_pos_weight",
+            max(float(guarded.reward.motion_global_anchor_pos_weight), 0.50),
+        )
+        guarded.reward.motion_global_anchor_pos_std = _clip_context_value(
+            config,
+            "reward.motion_global_anchor_pos_std",
+            min(float(guarded.reward.motion_global_anchor_pos_std), 0.36),
+        )
+        guarded.reward.motion_body_pos_weight = _clip_context_value(
+            config,
+            "reward.motion_body_pos_weight",
+            max(float(guarded.reward.motion_body_pos_weight), 1.30),
+        )
+        guarded.reward.motion_body_pos_std = _clip_context_value(
+            config,
+            "reward.motion_body_pos_std",
+            min(float(guarded.reward.motion_body_pos_std), 0.30),
+        )
+        guarded.reward.motion_body_ori_weight = _clip_context_value(
+            config,
+            "reward.motion_body_ori_weight",
+            max(float(guarded.reward.motion_body_ori_weight), 1.00),
+        )
+        guarded.reward.phase_progress_weight = _clip_context_value(
+            config,
+            "reward.phase_progress_weight",
+            max(float(guarded.reward.phase_progress_weight), 0.70),
+        )
+        guarded.sampling.adaptive_uniform_ratio = _clip_context_value(
+            config,
+            "sampling.adaptive_uniform_ratio",
+            max(float(guarded.sampling.adaptive_uniform_ratio), 1.00),
+        )
+        guarded.sampling.adaptive_alpha = _clip_context_value(
+            config,
+            "sampling.adaptive_alpha",
+            min(float(guarded.sampling.adaptive_alpha), 0.003),
+        )
+        guarded.sampling.fixed_start_probability = _clip_context_value(
+            config,
+            "sampling.fixed_start_probability",
+            max(float(guarded.sampling.fixed_start_probability), 0.80),
+        )
+        guarded.sampling.fixed_start_time_steps = int(
+            _clip_context_value(
+                config,
+                "sampling.fixed_start_time_steps",
+                max(float(guarded.sampling.fixed_start_time_steps), 8.0),
+            )
+        )
+        guarded.termination.anchor_pos_z_threshold = _clip_context_value(
+            config,
+            "termination.anchor_pos_z_threshold",
+            min(float(guarded.termination.anchor_pos_z_threshold), 0.30),
+        )
+        guarded.termination.anchor_ori_threshold = _clip_context_value(
+            config,
+            "termination.anchor_ori_threshold",
+            max(float(guarded.termination.anchor_ori_threshold), 0.95),
+        )
+        guarded.termination.ee_body_pos_z_threshold = _clip_context_value(
+            config,
+            "termination.ee_body_pos_z_threshold",
+            min(max(float(guarded.termination.ee_body_pos_z_threshold), 0.42), 0.45),
+        )
+        note = "低姿态历史最佳保护：贴近已恢复成功的gen0配置"
+        if note not in guarded.rationale:
+            guarded.rationale = list(guarded.rationale) + [note]
+        return guarded
+
     guarded.reward.motion_global_anchor_pos_std = _clip_context_value(
         config,
         "reward.motion_global_anchor_pos_std",
@@ -717,7 +803,7 @@ def _normalize_with_context(
     genome = _apply_high_baseline_guard(genome, config, history, feedback)
     genome = _apply_nonzero_baseline_guard(genome, config, history, feedback)
     genome = _apply_feedback_failure_guard(genome, config, feedback)
-    genome = _apply_crawl_low_posture_guard(genome, config)
+    genome = _apply_crawl_low_posture_guard(genome, config, history)
     genome = _apply_task_data_contract_guard(genome, config)
     return normalize_genome_for_config(genome, config)
 
