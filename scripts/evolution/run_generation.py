@@ -588,6 +588,136 @@ def _apply_crawl_low_posture_guard(
     return guarded
 
 
+def _is_jump_leap_progress_task(config: dict[str, Any]) -> bool:
+    task = config.get("task", {})
+    task_name = str(task.get("name", "")).lower()
+    isaac_task = str(task.get("isaac_task", "")).lower()
+    success_type = str(task.get("success_type", "")).lower()
+    return (
+        success_type == "progress"
+        and (
+            "jumpleap" in isaac_task
+            or "jump_forward" in task_name
+            or "side_jump" in task_name
+        )
+    )
+
+
+def _best_history_metric(history: dict[str, Any], key: str) -> float:
+    best = 0.0
+    for score in history.get("scores", []):
+        if not isinstance(score, dict):
+            continue
+        try:
+            best = max(best, float(score.get(key, 0.0) or 0.0))
+        except (TypeError, ValueError):
+            continue
+    return best
+
+
+def _apply_jump_leap_progress_guard(
+    genome: AlgorithmGenome,
+    config: dict[str, Any],
+    history: dict[str, Any],
+    feedback: dict[str, Any],
+) -> AlgorithmGenome:
+    """Bias aerial jump/leap repair toward measured displacement shortfall."""
+
+    if not _is_jump_leap_progress_task(config):
+        return genome
+
+    task = config.get("task", {})
+    task_name = str(task.get("name", "")).lower()
+    target_x = float(task.get("target_x", 1.0) or 1.0)
+    best_x = _best_history_metric(history, "mean_max_torso_x")
+    best_success = _best_history_success_rate(history)
+    tags = _feedback_failure_tags(feedback)
+    progress_shortfall = (
+        best_success < 0.20
+        and target_x > 0.0
+        and (best_x <= 0.0 or best_x < target_x * 0.94)
+    ) or "mid_phase_progress_failure" in tags or "comparison_progress_shortfall" in tags
+    if not progress_shortfall:
+        return genome
+
+    guarded = genome
+    is_side_jump = "side_jump" in task_name
+    guarded.reward.task_progress_weight = _clip_context_value(
+        config,
+        "reward.task_progress_weight",
+        max(float(guarded.reward.task_progress_weight), 1.25 if is_side_jump else 0.90),
+    )
+    phase_weight = max(float(guarded.reward.phase_progress_weight), 0.45 if is_side_jump else 0.65)
+    if is_side_jump:
+        phase_weight = min(phase_weight, 0.60)
+    guarded.reward.phase_progress_weight = _clip_context_value(
+        config,
+        "reward.phase_progress_weight",
+        phase_weight,
+    )
+    guarded.reward.motion_body_lin_vel_weight = _clip_context_value(
+        config,
+        "reward.motion_body_lin_vel_weight",
+        max(float(guarded.reward.motion_body_lin_vel_weight), 1.15 if is_side_jump else 1.00),
+    )
+    guarded.reward.motion_global_anchor_pos_std = _clip_context_value(
+        config,
+        "reward.motion_global_anchor_pos_std",
+        max(float(guarded.reward.motion_global_anchor_pos_std), 0.38),
+    )
+    guarded.reward.motion_body_pos_std = _clip_context_value(
+        config,
+        "reward.motion_body_pos_std",
+        max(float(guarded.reward.motion_body_pos_std), 0.34),
+    )
+    guarded.reward.apex_height_weight = _clip_context_value(
+        config,
+        "reward.apex_height_weight",
+        max(float(guarded.reward.apex_height_weight), 0.75),
+    )
+    guarded.reward.landing_stability_weight = _clip_context_value(
+        config,
+        "reward.landing_stability_weight",
+        max(float(guarded.reward.landing_stability_weight), 0.75),
+    )
+    guarded.sampling.adaptive_uniform_ratio = _clip_context_value(
+        config,
+        "sampling.adaptive_uniform_ratio",
+        max(float(guarded.sampling.adaptive_uniform_ratio), 1.00),
+    )
+    guarded.sampling.adaptive_alpha = _clip_context_value(
+        config,
+        "sampling.adaptive_alpha",
+        min(max(float(guarded.sampling.adaptive_alpha), 0.002), 0.006),
+    )
+    guarded.sampling.fixed_start_probability = _clip_context_value(
+        config,
+        "sampling.fixed_start_probability",
+        min(max(float(guarded.sampling.fixed_start_probability), 0.58), 0.72),
+    )
+    guarded.sampling.fixed_start_time_steps = int(
+        _clip_context_value(
+            config,
+            "sampling.fixed_start_time_steps",
+            max(float(guarded.sampling.fixed_start_time_steps), 2.0),
+        )
+    )
+    guarded.termination.anchor_pos_z_threshold = _clip_context_value(
+        config,
+        "termination.anchor_pos_z_threshold",
+        max(float(guarded.termination.anchor_pos_z_threshold), 0.40),
+    )
+    guarded.termination.ee_body_pos_z_threshold = _clip_context_value(
+        config,
+        "termination.ee_body_pos_z_threshold",
+        max(float(guarded.termination.ee_body_pos_z_threshold), 0.38),
+    )
+    note = f"JumpLeap位移短板保护：best_x={best_x:.3f}, target_x={target_x:.3f}"
+    if note not in guarded.rationale:
+        guarded.rationale = list(guarded.rationale) + [note]
+    return guarded
+
+
 def _feedback_failure_tags(feedback: dict[str, Any]) -> set[str]:
     tags: set[str] = set()
     for item in feedback.get("candidates", []):
@@ -804,6 +934,7 @@ def _normalize_with_context(
     genome = _apply_nonzero_baseline_guard(genome, config, history, feedback)
     genome = _apply_feedback_failure_guard(genome, config, feedback)
     genome = _apply_crawl_low_posture_guard(genome, config, history)
+    genome = _apply_jump_leap_progress_guard(genome, config, history, feedback)
     genome = _apply_task_data_contract_guard(genome, config)
     return normalize_genome_for_config(genome, config)
 

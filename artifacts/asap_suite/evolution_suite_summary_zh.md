@@ -12,7 +12,7 @@
 | g1_asap_turn_jump_l4 | final | final_eval | 0.422 | 0.000 | 0.578 | 0.156 | yes | anchor_pos |
 | g1_asap_squat_l3_lowposture | final | final_eval | 0.359 | 0.422 | 0.828 | 0.469 | yes | anchor_pos |
 | g1_asap_jump_forward_l4 | final | final_eval | 0.047 | 0.000 | 0.906 | 0.859 | yes | none |
-| g1_asap_side_jump_l4 | final | final_eval | 0.000 | 0.000 | 0.094 | 0.094 | yes | none |
+| g1_asap_side_jump_l4 | final | final_eval | 0.000 | 0.000 | 0.969 | 0.969 | yes | none |
 | g1_asap_cr7_l2_dynamic | final | final_eval | 0.000 | 0.000 | 0.984 | 0.984 | yes | none |
 
 ## 说明

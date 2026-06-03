@@ -1,0 +1,63 @@
+{
+  "selected_genome_id": "gen6_m3_000",
+  "selected_final_label": "gen6_m3_000_final64",
+  "selection_reason": "64-episode final evaluation has higher success rate than gen6_baseline_000 and old gen0 candidate.",
+  "final_eval_path": "artifacts/g1_asap_side_jump_l4/eval/best_evolved_gen6_m3_000_64ep.json",
+  "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_side_jump_l4/2026-06-03_20-11-41_evo_gen6_m3_000_stage2/model_998.pt",
+  "baseline_success_rate": 0.0,
+  "old_best_success_rate": 0.09375,
+  "final_success_rate": 0.96875,
+  "success_rate_improvement_vs_baseline": 0.96875,
+  "candidate_final64": {
+    "gen6_m3_000": {
+      "genome_id": "gen6_m3_000_final64",
+      "fitness": 108.6085549466312,
+      "success_rate": 0.96875,
+      "episodes": 64,
+      "mean_return": 13.887390360236168,
+      "mean_max_torso_x": 1.5555511452257633,
+      "mean_clearance": 0.1519592714309692,
+      "termination_counts": {
+        "anchor_ori": 0,
+        "anchor_pos": 0,
+        "ee_body_pos": 0,
+        "time_out": 0
+      },
+      "eval_path": "artifacts/g1_asap_side_jump_l4/eval/best_evolved_gen6_m3_000_64ep.json",
+      "mean_final_speed": 0.8012880189344287,
+      "mean_final_ang_speed": 1.015497684944421,
+      "mean_final_yaw_error": 0.3296435489319265,
+      "mean_max_body_height": 1.1074302103370428,
+      "mean_flip_rotation": 1.8822081740945578,
+      "successes": 62,
+      "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_side_jump_l4/2026-06-03_20-11-41_evo_gen6_m3_000_stage2/model_998.pt",
+      "success_rate_delta_vs_baseline": 0.96875,
+      "fitness_delta_vs_baseline": 99.38286877274514
+    },
+    "gen6_baseline_000": {
+      "genome_id": "gen6_baseline_000_final64",
+      "fitness": 103.91524690464139,
+      "success_rate": 0.921875,
+      "episodes": 64,
+      "mean_return": 13.771229520440102,
+      "mean_max_torso_x": 1.516281932592392,
+      "mean_clearance": 0.1519592714309692,
+      "termination_counts": {
+        "anchor_ori": 0,
+        "anchor_pos": 0,
+        "ee_body_pos": 0,
+        "time_out": 0
+      },
+      "eval_path": "artifacts/g1_asap_side_jump_l4/eval/best_evolved_gen6_baseline_000_64ep.json",
+      "mean_final_speed": 0.6200931943021715,
+      "mean_final_ang_speed": 1.0532410452142358,
+      "mean_final_yaw_error": 0.33133214293047786,
+      "mean_max_body_height": 1.0947762373834848,
+      "mean_flip_rotation": 1.949335902929306,
+      "successes": 59,
+      "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_side_jump_l4/2026-06-03_19-41-21_evo_gen6_baseline_000_stage2/model_998.pt",
+      "success_rate_delta_vs_baseline": 0.921875,
+      "fitness_delta_vs_baseline": 94.68956073075533
+    }
+  }
+}

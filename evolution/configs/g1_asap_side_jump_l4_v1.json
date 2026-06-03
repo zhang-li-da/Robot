@@ -27,7 +27,6 @@
       "task_progress",
       "phase_progress",
       "apex_height",
-      "yaw_alignment",
       "landing_stability",
       "contact_force"
     ],
@@ -40,6 +39,14 @@
       "max_final_ang_speed": 2.4,
       "max_final_yaw_error": 1.1,
       "allow_hand_contact": false
+    },
+    "reward_param_overrides": {
+      "task_progress": {
+        "velocity_scale": 0.75,
+        "velocity_target": 1.2,
+        "stagnation_penalty_scale": 0.2,
+        "stagnation_velocity": 0.12
+      }
     },
     "eval_script": "scripts/rsl_rl/eval_stunt.py",
     "success_type": "progress",

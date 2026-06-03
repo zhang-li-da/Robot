@@ -1,0 +1,11 @@
+{
+  "task_name": "g1_asap_side_jump_l4",
+  "best_genome": "gen6_m3_000",
+  "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_side_jump_l4/2026-06-03_20-11-41_evo_gen6_m3_000_stage2/model_998.pt",
+  "final_eval": "artifacts/g1_asap_side_jump_l4/eval/best_evolved_gen6_m3_000_64ep.json",
+  "video_dir": "artifacts/g1_asap_side_jump_l4/video/best_evolved_gen6_m3_000",
+  "videos": [
+    "artifacts/g1_asap_side_jump_l4/video/best_evolved_gen6_m3_000/rl-video-step-0.mp4"
+  ],
+  "metrics": "artifacts/g1_asap_side_jump_l4/video/best_evolved_gen6_m3_000/play_metrics.json"
+}

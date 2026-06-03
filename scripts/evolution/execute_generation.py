@@ -23,6 +23,13 @@ DEFAULT_CONDA_ENV = "/root/shared-nvme/conda_envs/isaaclab210"
 DEFAULT_DRIVER_LIB = "/tmp/evo_cuda_driver_lib"
 DEFAULT_NVIDIA_VULKAN_LIB = "/tmp/nvidia-vulkan-full-550.54.14"
 DEFAULT_NVIDIA_DRIVER_ROOT = "/root/shared-nvme/nvidia-driver-550.54.14/NVIDIA-Linux-x86_64-550.54.14"
+FATAL_LOG_MARKERS = (
+    "Traceback (most recent call last):",
+    "ModuleNotFoundError:",
+    "ImportError:",
+    "Could not override",
+    "Error executing job with overrides",
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -62,8 +69,13 @@ def run_command(command: list[str], cwd: Path, log_path: Path, env: dict[str, st
         log_file.write("$ " + " ".join(command) + "\n")
         log_file.flush()
         process = subprocess.run(command, cwd=str(cwd), stdout=log_file, stderr=subprocess.STDOUT, env=env, text=True)
-        log_file.write(f"[exit_code] {process.returncode}\n")
-        return int(process.returncode)
+        log_file.flush()
+        return_code = int(process.returncode)
+        if return_code == 0 and log_has_fatal_exception(log_path):
+            return_code = 1
+            log_file.write("[fatal_log_detected] overriding zero process return code\n")
+        log_file.write(f"[exit_code] {return_code}\n")
+        return return_code
 
 
 def run_training_command(
@@ -107,10 +119,14 @@ def run_training_command(
         while True:
             return_code = process.poll()
             if return_code is not None:
-                log_file.write(f"[exit_code] {return_code}\n")
+                final_return_code = int(return_code)
+                if final_return_code == 0 and log_has_fatal_exception(log_path):
+                    final_return_code = 1
+                    log_file.write("[fatal_log_detected] overriding zero process return code\n")
+                log_file.write(f"[exit_code] {final_return_code}\n")
                 log_file.flush()
                 details["training_log_health"] = last_summary or summarize_training_log(log_path)
-                return int(return_code), details
+                return final_return_code, details
 
             time.sleep(max(1.0, check_interval_s))
             last_summary = summarize_training_log(log_path)
@@ -173,6 +189,11 @@ def tail_text(path: Path, max_bytes: int = 12000) -> str:
         size = stream.tell()
         stream.seek(max(0, size - max_bytes), os.SEEK_SET)
         return stream.read().decode("utf-8", errors="replace")
+
+
+def log_has_fatal_exception(path: Path) -> bool:
+    tail = tail_text(path, max_bytes=24000)
+    return any(marker in tail for marker in FATAL_LOG_MARKERS)
 
 
 def signal_name(return_code: int) -> str | None:
@@ -332,6 +353,8 @@ def build_env(conda_env: str, nvidia_vulkan_lib: str = DEFAULT_NVIDIA_VULKAN_LIB
     env["CONDA_PREFIX"] = conda_env
     env["PATH"] = f"{conda_env}/bin:" + env.get("PATH", "")
     env["PYTHON_EXECUTABLE"] = f"{conda_env}/bin/python"
+    source_path = str(Path.cwd() / "source" / "whole_body_tracking")
+    env["PYTHONPATH"] = f"{source_path}:" + env.get("PYTHONPATH", "")
     env["OMNI_KIT_ACCEPT_EULA"] = "YES"
     env["ACCEPT_EULA"] = "Y"
     vulkan_dir = Path(nvidia_vulkan_lib)

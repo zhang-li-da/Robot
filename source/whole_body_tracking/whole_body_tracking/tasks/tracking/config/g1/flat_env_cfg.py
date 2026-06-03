@@ -182,7 +182,16 @@ class G1JumpLeapRewardsCfg(RewardsCfg):
     task_progress = RewTerm(
         func=mdp.motion_anchor_progress,
         weight=0.35,
-        params={"command_name": "motion", "target_x": 5.00, "min_x": 0.0, "max_reward": 1.0},
+        params={
+            "command_name": "motion",
+            "target_x": 5.00,
+            "min_x": 0.0,
+            "max_reward": 1.0,
+            "velocity_scale": 0.0,
+            "velocity_target": 1.0,
+            "stagnation_penalty_scale": 0.0,
+            "stagnation_velocity": 0.0,
+        },
     )
     phase_progress = RewTerm(
         func=mdp.motion_phase_progress,

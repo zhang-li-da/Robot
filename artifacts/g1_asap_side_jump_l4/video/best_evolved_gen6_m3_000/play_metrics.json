@@ -1,0 +1,23 @@
+{
+  "checkpoint": "/root/whole_body_tracking-main/logs/rsl_rl/g1_asap_side_jump_l4/2026-06-03_20-11-41_evo_gen6_m3_000_stage2/model_998.pt",
+  "clip_steps": 166,
+  "done": false,
+  "final_ang_speed": 1.044378638267517,
+  "final_speed": 0.7937599420547485,
+  "final_yaw": -1.6067692041397095,
+  "final_yaw_error": 0.24793694913387299,
+  "max_final_ang_speed": 2.4,
+  "max_final_speed": 1.4,
+  "max_torso_height": 0.9319592714309692,
+  "max_torso_x": 1.4673289060592651,
+  "max_yaw_error": 1.1,
+  "metric_step": 165,
+  "min_apex_height": 0.78,
+  "min_root_height": 0.78,
+  "motion_file": "/root/whole_body_tracking-main/artifacts/g1_asap_side_jump_l4/motion/motion.npz",
+  "steps": 186,
+  "success": true,
+  "target_x": 1.25,
+  "target_yaw": -1.8547061390188282,
+  "task": "Tracking-JumpLeap-G1-v0"
+}

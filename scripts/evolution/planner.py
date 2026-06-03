@@ -94,6 +94,26 @@ def _available_reward_terms(config: dict[str, Any]) -> set[str]:
     return set(config.get("task", {}).get("reward_terms", []))
 
 
+def _task_reward_param_overrides(config: dict[str, Any]) -> list[str]:
+    """Bind task-level success targets to reward params that are fixed in env cfgs."""
+
+    task = config.get("task", {})
+    success = task.get("success_criteria", {}) or {}
+    available_rewards = _available_reward_terms(config)
+    overrides: list[str] = []
+    if "task_progress" in available_rewards and task.get("target_x") is not None:
+        overrides.append(_hydra_override("env.rewards.task_progress.params.target_x", task["target_x"]))
+        overrides.append(_hydra_override("env.rewards.task_progress.params.min_x", 0.0))
+        task_progress_params = (task.get("reward_param_overrides", {}) or {}).get("task_progress", {}) or {}
+        for key, value in task_progress_params.items():
+            overrides.append(_hydra_override(f"env.rewards.task_progress.params.{key}", value))
+    if "apex_height" in available_rewards:
+        min_height = success.get("min_apex_height", task.get("min_root_height"))
+        if min_height is not None:
+            overrides.append(_hydra_override("env.rewards.apex_height.params.min_height", min_height))
+    return overrides
+
+
 def hydra_overrides(genome: AlgorithmGenome, config: dict[str, Any] | None = None) -> list[str]:
     overrides: list[str] = []
     available_rewards = _available_reward_terms(config or {})
@@ -104,6 +124,8 @@ def hydra_overrides(genome: AlgorithmGenome, config: dict[str, Any] | None = Non
         if available_rewards and reward_name not in available_rewards:
             continue
         overrides.append(_hydra_override(path, reward[key]))
+    if config:
+        overrides.extend(_task_reward_param_overrides(config))
 
     sampling = asdict(genome.sampling)
     for key, path in SAMPLING_OVERRIDES.items():

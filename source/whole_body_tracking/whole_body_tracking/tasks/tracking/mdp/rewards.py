@@ -88,12 +88,29 @@ def motion_anchor_progress(
     target_x: float,
     min_x: float = 0.0,
     max_reward: float = 1.0,
+    velocity_scale: float = 0.0,
+    velocity_target: float = 1.0,
+    stagnation_penalty_scale: float = 0.0,
+    stagnation_velocity: float = 0.0,
 ) -> torch.Tensor:
-    """Dense local-x progress reward for obstacle tasks."""
+    """Dense local-x progress reward for obstacle tasks.
+
+    Optional velocity shaping is used for jump/leap tasks where sparse final
+    displacement is otherwise too easy to replace with long stationary survival.
+    """
     command: MotionCommand = env.command_manager.get_term(command_name)
     rel_x = command.robot_anchor_pos_w[:, 0] - env.scene.env_origins[:, 0]
     progress = (rel_x - min_x) / max(target_x - min_x, 1.0e-6)
-    return torch.clamp(progress, min=0.0, max=max_reward)
+    reward = torch.clamp(progress, min=0.0, max=max_reward)
+    if velocity_scale > 0.0:
+        velocity = command.robot_anchor_lin_vel_w[:, 0]
+        velocity_reward = torch.clamp(velocity / max(velocity_target, 1.0e-6), min=0.0, max=1.0)
+        reward = reward + velocity_scale * velocity_reward
+    if stagnation_penalty_scale > 0.0 and stagnation_velocity > 0.0:
+        velocity = command.robot_anchor_lin_vel_w[:, 0]
+        stagnation = torch.clamp((stagnation_velocity - velocity) / stagnation_velocity, min=0.0, max=1.0)
+        reward = reward - stagnation_penalty_scale * stagnation
+    return reward
 
 
 def motion_phase_progress(
