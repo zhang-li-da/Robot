@@ -15,7 +15,12 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from feedback_analyzer import build_comparison_context, build_feedback, parse_comparison_eval_args
+from feedback_analyzer import (
+    build_comparison_context,
+    build_feedback,
+    discover_default_comparison_evals,
+    parse_comparison_eval_args,
+)
 from scoreboard import score_eval_json
 
 
@@ -230,7 +235,11 @@ def main() -> int:
     args = parse_args()
     repo = Path.cwd()
     config = load_json(args.config)
-    comparison_evals = parse_comparison_eval_args(args.comparison_eval)
+    comparison_evals = discover_default_comparison_evals(
+        config,
+        args.baseline_eval,
+        parse_comparison_eval_args(args.comparison_eval),
+    )
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
     max_generations = int(

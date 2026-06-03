@@ -66,6 +66,37 @@ def parse_comparison_eval_args(values: list[str] | None) -> dict[str, Path]:
     return comparisons
 
 
+def discover_default_comparison_evals(
+    config: dict[str, Any],
+    baseline_eval: Path | None,
+    comparison_evals: dict[str, Path] | None,
+) -> dict[str, Path]:
+    """Add standard ablation evals when callers omit explicit comparison paths."""
+
+    comparisons = dict(comparison_evals or {})
+    if "adapted_task_rewards" in comparisons:
+        return comparisons
+
+    candidates: list[Path] = []
+    task_name = str(config.get("task", {}).get("name") or "").strip()
+    if task_name:
+        candidates.append(Path("artifacts") / task_name / "eval" / "adapted_task_rewards.json")
+    if baseline_eval is not None:
+        candidates.append(baseline_eval.parent / "adapted_task_rewards.json")
+
+    seen: set[Path] = set()
+    for candidate in candidates:
+        candidate = candidate.expanduser()
+        key = candidate.resolve() if candidate.exists() else candidate
+        if key in seen:
+            continue
+        seen.add(key)
+        if candidate.exists():
+            comparisons["adapted_task_rewards"] = candidate
+            break
+    return comparisons
+
+
 def _mean(values: list[float], default: float = 0.0) -> float:
     return float(sum(values) / len(values)) if values else default
 
@@ -207,6 +238,22 @@ def build_comparison_context(
                 tags.append("comparison_return_up_success_down")
                 must_address.append(
                     f"{comparison_id} increased return while reducing success; reward weights are misaligned with final criteria"
+                )
+            if (
+                score.success_rate <= baseline.success_rate
+                and score.mean_max_torso_x < baseline.mean_max_torso_x - 0.05
+            ):
+                tags.append("comparison_progress_regressed_without_success_gain")
+                must_address.append(
+                    f"{comparison_id} reduced progress without improving success: "
+                    f"mean_x {score.mean_max_torso_x:.3f} vs {baseline.mean_max_torso_x:.3f}; "
+                    "avoid this reward/termination balance in future candidates"
+                )
+            if score.success_rate <= baseline.success_rate and score.mean_return < baseline.mean_return - 0.5:
+                tags.append("comparison_return_regressed_without_success_gain")
+                must_address.append(
+                    f"{comparison_id} reduced return without improving success: "
+                    f"{score.mean_return:.3f} vs {baseline.mean_return:.3f}; keep task rewards baseline-adjacent"
                 )
 
         if score.success_rate <= 0.0:
@@ -842,7 +889,11 @@ def main() -> int:
     args = parse_args()
     config = load_json(args.config)
     output_dir = args.output_dir.resolve()
-    comparison_evals = parse_comparison_eval_args(args.comparison_eval)
+    comparison_evals = discover_default_comparison_evals(
+        config,
+        args.baseline_eval,
+        parse_comparison_eval_args(args.comparison_eval),
+    )
     payload = build_feedback(config, output_dir, args.baseline_eval, args.baseline_id, comparison_evals)
     output_path = args.output or output_dir / "feedback.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)
