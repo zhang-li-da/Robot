@@ -769,6 +769,8 @@ def _aggregate(candidate_feedback: list[dict[str, Any]], config: dict[str, Any],
         focus.append("apply dynamic resource downscaling for unstable candidates before full evaluation")
     if "runtime_train_failed" in tag_names:
         focus.append("separate train/runtime failures from policy-quality failures and retry only repaired variants")
+    if "hydra_override_key_missing" in tag_names or "search_space_env_mismatch" in tag_names:
+        focus.append("repair Hydra search-space mismatch before retry: add missing env terms with zero default weight or remove unsupported levers")
     if "ee_body_pos_dominant" in tag_names:
         focus.append("differentiate legal support contact from ee/body tracking failure")
     if "aerial_phase_tracking_too_strict" in tag_names:
