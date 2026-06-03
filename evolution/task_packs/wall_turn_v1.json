@@ -18,7 +18,7 @@
     "status": "proxy_only",
     "real_motion_available": false,
     "real_motion_count": 0,
-    "proxy_motion_count": 10,
+    "proxy_motion_count": 12,
     "known_limitations": [
       "当前动作库只有相邻/代理动作，只能用于预训练、压力测试或参数搜索。",
       "No explicit backflip filename is present in the current ASAP package.",
@@ -452,6 +452,84 @@
         "search_note": "use to improve landing recovery after aerial or wall-contact tasks"
       },
       "goal_match_score": 298.192
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level2_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level2_filter_amass.pkl",
+      "clip_key": "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level2_filter_amass",
+      "rank_score": 104.671,
+      "already_configured": false,
+      "archetype": "recovery_pretraining",
+      "tags": [
+        "forward_step",
+        "landing_recovery",
+        "locomotion",
+        "recovery_step"
+      ],
+      "suggested_tasks": [
+        "g1_jump_leap",
+        "g1_recovery"
+      ],
+      "stats": {
+        "duration_s": 4.333333333333333,
+        "horizontal_displacement": 0.7012771964073181,
+        "root_height_range": 0.08129310607910156,
+        "min_root_height": 0.8038782477378845,
+        "max_root_height": 0.8851713538169861,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "recovery_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use to improve landing recovery after aerial or wall-contact tasks"
+      },
+      "goal_match_score": 284.671
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level1_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level1_filter_amass.pkl",
+      "clip_key": "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level1_filter_amass",
+      "rank_score": 96.779,
+      "already_configured": false,
+      "archetype": "recovery_pretraining",
+      "tags": [
+        "forward_step",
+        "landing_recovery",
+        "locomotion",
+        "recovery_step"
+      ],
+      "suggested_tasks": [
+        "g1_jump_leap",
+        "g1_recovery"
+      ],
+      "stats": {
+        "duration_s": 3.6333333333333333,
+        "horizontal_displacement": 0.468007355928421,
+        "root_height_range": 0.024431347846984863,
+        "min_root_height": 0.8078980445861816,
+        "max_root_height": 0.8323293924331665,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "recovery_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use to improve landing recovery after aerial or wall-contact tasks"
+      },
+      "goal_match_score": 276.779
     }
   ],
   "baseline_context": {

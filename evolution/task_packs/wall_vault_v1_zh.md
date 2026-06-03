@@ -4,7 +4,7 @@
 - 任务族：`wall_or_vault`
 - 数据状态：`proxy_only`
 - 真实动作数：`0`
-- 代理动作数：`10`
+- 代理动作数：`12`
 - 成功声明约束：final claim requires wall/obstacle geometry and >=50 task trials
 
 ## 数据限制
@@ -30,6 +30,8 @@
 | 8 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass` | `aerial_jump` | yes | 409.6 | 1.82m / 0.34m / 4.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
 | 9 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass` | `aerial_jump` | no | 389.1 | 1.54m / 0.28m / 4.23s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
 | 10 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass` | `aerial_jump` | no | 383.7 | 1.11m / 0.33m / 3.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 11 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level4_filter_amass` | `aerial_jump` | yes | 363.8 | 1.47m / 0.20m / 3.33s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 12 | `0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass` | `recovery_pretraining` | no | 356.0 | 0.05m / 0.39m / 4.43s | phase_progress, landing_stability, contact_force |
 
 ## LLM 搜索约束
 

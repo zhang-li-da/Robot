@@ -18,7 +18,7 @@
     "status": "proxy_only",
     "real_motion_available": false,
     "real_motion_count": 0,
-    "proxy_motion_count": 10,
+    "proxy_motion_count": 12,
     "known_limitations": [
       "当前动作库只有相邻/代理动作，只能用于预训练、压力测试或参数搜索。",
       "No explicit backflip filename is present in the current ASAP package.",
@@ -448,6 +448,88 @@
         "search_note": "use as robustness and coordination pretraining rather than obstacle success evidence"
       },
       "goal_match_score": 346.93
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_CR7_level1_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_CR7_level1_filter_amass.pkl",
+      "clip_key": "0-motions_raw_tairantestbed_smpl_video_CR7_level1_filter_amass",
+      "rank_score": 166.93,
+      "already_configured": false,
+      "archetype": "dynamic_balance",
+      "tags": [
+        "large_height_transition",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "locomotion",
+        "low_root_height",
+        "sports_motion",
+        "upper_lower_coordination"
+      ],
+      "suggested_tasks": [
+        "g1_dynamic_balance"
+      ],
+      "stats": {
+        "duration_s": 3.933333333333333,
+        "horizontal_displacement": 0.5275705456733704,
+        "root_height_range": 0.5478724837303162,
+        "min_root_height": 0.7153331637382507,
+        "max_root_height": 1.263205647468567,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "dynamic_balance",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use as robustness and coordination pretraining rather than obstacle success evidence"
+      },
+      "goal_match_score": 346.93
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass.pkl",
+      "clip_key": "0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass",
+      "rank_score": 165.809,
+      "already_configured": false,
+      "archetype": "aerial_jump",
+      "tags": [
+        "aerial",
+        "landing",
+        "lateral_jump",
+        "locomotion",
+        "low_root_height"
+      ],
+      "suggested_tasks": [
+        "g1_jump_leap"
+      ],
+      "stats": {
+        "duration_s": 3.6333333333333333,
+        "horizontal_displacement": 1.2487660646438599,
+        "root_height_range": 0.1849154233932495,
+        "min_root_height": 0.7066913843154907,
+        "max_root_height": 0.8916068077087402,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use displacement, apex height, and landing stability as the screening metrics"
+      },
+      "goal_match_score": 345.809
     }
   ],
   "baseline_context": {

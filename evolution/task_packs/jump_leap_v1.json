@@ -17,7 +17,7 @@
   "data_readiness": {
     "status": "real_motion_available",
     "real_motion_available": true,
-    "real_motion_count": 10,
+    "real_motion_count": 12,
     "proxy_motion_count": 0,
     "known_limitations": [
       "当前动作库中存在目标动作族的直接 motion，可进入正式任务配置。",
@@ -455,6 +455,88 @@
         "search_note": "use displacement, apex height, and landing stability as the screening metrics"
       },
       "goal_match_score": 763.844
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass.pkl",
+      "clip_key": "0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass",
+      "rank_score": 165.809,
+      "already_configured": false,
+      "archetype": "aerial_jump",
+      "tags": [
+        "aerial",
+        "landing",
+        "lateral_jump",
+        "locomotion",
+        "low_root_height"
+      ],
+      "suggested_tasks": [
+        "g1_jump_leap"
+      ],
+      "stats": {
+        "duration_s": 3.6333333333333333,
+        "horizontal_displacement": 1.2487660646438599,
+        "root_height_range": 0.1849154233932495,
+        "min_root_height": 0.7066913843154907,
+        "max_root_height": 0.8916068077087402,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use displacement, apex height, and landing stability as the screening metrics"
+      },
+      "goal_match_score": 745.809
+    },
+    {
+      "id": "0-motions_raw_tairantestbed_smpl_video_side_jump_level2_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_side_jump_level2_filter_amass.pkl",
+      "clip_key": "0-motions_raw_tairantestbed_smpl_video_side_jump_level2_filter_amass",
+      "rank_score": 153.749,
+      "already_configured": false,
+      "archetype": "aerial_jump",
+      "tags": [
+        "aerial",
+        "landing",
+        "lateral_jump",
+        "locomotion",
+        "low_root_height"
+      ],
+      "suggested_tasks": [
+        "g1_jump_leap"
+      ],
+      "stats": {
+        "duration_s": 3.533333333333333,
+        "horizontal_displacement": 0.7519751787185669,
+        "root_height_range": 0.09397339820861816,
+        "min_root_height": 0.732736349105835,
+        "max_root_height": 0.8267097473144531,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use displacement, apex height, and landing stability as the screening metrics"
+      },
+      "goal_match_score": 733.749
     }
   ],
   "baseline_context": {

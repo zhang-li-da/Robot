@@ -215,9 +215,9 @@ def render_markdown(summary: dict[str, Any]) -> str:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Refresh ASAP context artifacts for LLM-assisted evolution.")
     parser.add_argument("--asap_root", type=Path, default=None)
-    parser.add_argument("--queue_limit", type=int, default=24)
-    parser.add_argument("--roadmap_limit", type=int, default=18)
-    parser.add_argument("--task_pack_limit", type=int, default=10)
+    parser.add_argument("--queue_limit", type=int, default=32)
+    parser.add_argument("--roadmap_limit", type=int, default=24)
+    parser.add_argument("--task_pack_limit", type=int, default=12)
     parser.add_argument("--goals", nargs="+", default=list(DEFAULT_GOALS), choices=list(DEFAULT_GOALS))
     parser.add_argument("--summary_json", type=Path, default=DEFAULT_SUMMARY_JSON)
     parser.add_argument("--summary_md", type=Path, default=DEFAULT_SUMMARY_MD)

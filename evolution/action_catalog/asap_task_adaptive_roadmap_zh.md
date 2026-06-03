@@ -19,7 +19,7 @@
 
 | 任务 | 动作ID | 类型 | baseline | adapted | best evolved | 说明 |
 | --- | --- | --- | ---: | ---: | ---: | --- |
-| `g1_asap_squat_l3_lowposture` | `0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass` | `low_posture_pretraining` |  |  |  | use to tune low-posture transitions before real tunnel or crawl clips are added |
+| `g1_asap_squat_l3_lowposture` | `0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass` | `low_posture_pretraining` | 0.359 | 0.422 |  | use to tune low-posture transitions before real tunnel or crawl clips are added |
 | `g1_asap_spiderman_l2` | `0-motions_raw_tairantestbed_smpl_video_SpiderMan_level2_amass` | `wall_contact_proxy` | 0.984 | 0.984 | 1.000 | proxy for wall-contact coordination, not a final wall-vault claim |
 | `g1_asap_turn_jump_l5` | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass` | `aerial_turn_jump` | 0.000 | 0.000 | 0.000 | relax aerial orientation termination while keeping final yaw recovery strict |
 | `g1_asap_turn_jump_l4` | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass` | `aerial_turn_jump` | 0.422 | 0.000 |  | relax aerial orientation termination while keeping final yaw recovery strict |
@@ -51,6 +51,12 @@
 | 16 | `0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level2_filter_amass` | `single_leg_balance_pretraining` | `robustness_pretraining` | 0.07m / 0.25m / 9.70s | phase_progress, landing_stability, contact_force |
 | 17 | `0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level3_filter_amass` | `single_leg_balance_pretraining` | `robustness_pretraining` | 0.07m / 0.05m / 9.00s | phase_progress, landing_stability, contact_force |
 | 18 | `0-motions_raw_tairantestbed_smpl_video_Kobe_level1_amass` | `dynamic_balance` | `robustness_pretraining` | 0.71m / 0.41m / 4.13s | phase_progress, landing_stability, contact_force |
+| 19 | `0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level3_filter_amass` | `recovery_pretraining` | `robustness_pretraining` | 0.96m / 0.17m / 4.43s | phase_progress, landing_stability, contact_force |
+| 20 | `0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level1_filter_amass` | `single_leg_balance_pretraining` | `robustness_pretraining` | 0.01m / 0.05m / 7.23s | phase_progress, landing_stability, contact_force |
+| 21 | `0-motions_raw_tairantestbed_smpl_video_step_forward_back_level3_filter_amass` | `recovery_pretraining` | `robustness_pretraining` | 0.09m / 0.23m / 5.03s | phase_progress, landing_stability, contact_force |
+| 22 | `0-motions_raw_tairantestbed_smpl_video_shoot_level3_filter_amass` | `dynamic_balance` | `robustness_pretraining` | 2.07m / 0.14m / 4.13s | phase_progress, landing_stability, contact_force |
+| 23 | `0-motions_raw_tairantestbed_smpl_video_walk_level4_filter_amass` | `locomotion_pretraining` | `warm_start` | 2.07m / 0.09m / 4.43s | phase_progress, landing_stability |
+| 24 | `0-motions_raw_tairantestbed_smpl_video_walk_level3_filter_amass` | `locomotion_pretraining` | `warm_start` | 2.22m / 0.10m / 4.73s | phase_progress, landing_stability |
 
 ## 任务族到算法进化杠杆
 

@@ -237,13 +237,13 @@ python scripts/extract_asap_algorithm_priors.py
 python scripts/index_asap_assets.py
 python scripts/create_asap_evolution_configs.py
 python scripts/create_asap_task_profiles.py
-python scripts/select_asap_evolution_tasks.py --limit 24
-python scripts/build_asap_task_adaptive_roadmap.py --limit 18
-python scripts/evolution/build_task_evolution_pack.py --goal backflip --limit 10
-python scripts/evolution/build_task_evolution_pack.py --goal wall_vault --limit 10
-python scripts/evolution/build_task_evolution_pack.py --goal crawl_tunnel --limit 10
-python scripts/evolution/build_task_evolution_pack.py --goal wall_turn --limit 10
-python scripts/evolution/build_task_evolution_pack.py --goal jump_leap --limit 10
+python scripts/select_asap_evolution_tasks.py --limit 32
+python scripts/build_asap_task_adaptive_roadmap.py --limit 24
+python scripts/evolution/build_task_evolution_pack.py --goal backflip --limit 12
+python scripts/evolution/build_task_evolution_pack.py --goal wall_vault --limit 12
+python scripts/evolution/build_task_evolution_pack.py --goal crawl_tunnel --limit 12
+python scripts/evolution/build_task_evolution_pack.py --goal wall_turn --limit 12
+python scripts/evolution/build_task_evolution_pack.py --goal jump_leap --limit 12
 ```
 
 ## V1.4 多动作数据驱动的任务族进化
@@ -425,9 +425,9 @@ cd /root/whole_body_tracking-main
 conda activate /root/shared-nvme/conda_envs/isaaclab210
 python scripts/index_asap_motion_catalog.py
 python scripts/index_asap_assets.py
-python scripts/select_asap_evolution_tasks.py --limit 24
+python scripts/select_asap_evolution_tasks.py --limit 32
 python scripts/create_asap_task_profiles.py
-python scripts/build_asap_task_adaptive_roadmap.py --limit 18
+python scripts/build_asap_task_adaptive_roadmap.py --limit 24
 ```
 
 输出文件：

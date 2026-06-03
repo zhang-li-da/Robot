@@ -78,9 +78,9 @@ evolution/algorithm_priors/asap_algorithm_priors_zh.md
 cd /root/whole_body_tracking-main
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/sync_asap_evolution_context.py \
   --asap_root /root/ASAP-main \
-  --queue_limit 24 \
-  --roadmap_limit 18 \
-  --task_pack_limit 10
+  --queue_limit 32 \
+  --roadmap_limit 24 \
+  --task_pack_limit 12
 ```
 
 该入口只做 CPU 侧同步，不启动 Isaac 训练。它会顺序刷新 motion catalog、ASAP 算法先验、资产清单、任务配置、任务画像、候选队列、任务路线图和五类 task pack，并额外输出：
@@ -97,8 +97,8 @@ cd /root/whole_body_tracking-main
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/index_asap_motion_catalog.py
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/extract_asap_algorithm_priors.py
 /root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/index_asap_assets.py
-/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/select_asap_evolution_tasks.py --limit 24
-/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/build_asap_task_adaptive_roadmap.py --limit 18
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/select_asap_evolution_tasks.py --limit 32
+/root/shared-nvme/conda_envs/isaaclab210/bin/python scripts/build_asap_task_adaptive_roadmap.py --limit 24
 ```
 
 生成物职责如下：

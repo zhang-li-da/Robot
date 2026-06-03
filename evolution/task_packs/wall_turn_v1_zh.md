@@ -4,7 +4,7 @@
 - 任务族：`wall_turn`
 - 数据状态：`proxy_only`
 - 真实动作数：`0`
-- 代理动作数：`10`
+- 代理动作数：`12`
 - 成功声明约束：final claim requires wall-contact turn motion and >=50 task trials
 
 ## 数据限制
@@ -30,6 +30,8 @@
 | 8 | `0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level4_filter_amass` | `recovery_pretraining` | no | 351.7 | 1.20m / 0.30m / 4.23s | phase_progress, landing_stability, contact_force |
 | 9 | `0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level3_filter_amass` | `recovery_pretraining` | no | 302.3 | 0.96m / 0.17m / 4.43s | phase_progress, landing_stability, contact_force |
 | 10 | `0-motions_raw_tairantestbed_smpl_video_step_forward_back_level3_filter_amass` | `recovery_pretraining` | no | 298.2 | 0.09m / 0.23m / 5.03s | phase_progress, landing_stability, contact_force |
+| 11 | `0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level2_filter_amass` | `recovery_pretraining` | no | 284.7 | 0.70m / 0.08m / 4.33s | phase_progress, landing_stability, contact_force |
+| 12 | `0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level1_filter_amass` | `recovery_pretraining` | no | 276.8 | 0.47m / 0.02m / 3.63s | phase_progress, landing_stability, contact_force |
 
 ## LLM 搜索约束
 

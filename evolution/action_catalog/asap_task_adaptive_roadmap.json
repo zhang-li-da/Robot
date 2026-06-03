@@ -82,11 +82,11 @@
       },
       "status": {
         "task_name": "g1_asap_squat_l3_lowposture",
-        "baseline_success_rate": null,
-        "adapted_success_rate": null,
+        "baseline_success_rate": 0.359375,
+        "adapted_success_rate": 0.421875,
         "best_evolved_success_rate": null,
         "best_evolved_fitness": null,
-        "has_eval": false,
+        "has_eval": true,
         "eval_dir": "artifacts/g1_asap_squat_l3_lowposture/eval"
       }
     },
@@ -965,6 +965,202 @@
           "contact_force"
         ],
         "search_note": "use as robustness and coordination pretraining rather than obstacle success evidence"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level3_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level3_filter_amass.pkl",
+      "archetype": "recovery_pretraining",
+      "rank_score": 122.314,
+      "tags": [
+        "forward_step",
+        "landing_recovery",
+        "locomotion",
+        "low_root_height",
+        "recovery_step"
+      ],
+      "stats": {
+        "duration_s": 4.433333333333334,
+        "horizontal_displacement": 0.9585670828819275,
+        "root_height_range": 0.17173367738723755,
+        "min_root_height": 0.7414563298225403,
+        "max_root_height": 0.9131900072097778,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "robustness_pretraining",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "recovery_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use to improve landing recovery after aerial or wall-contact tasks"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level1_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_single_foot_balance_level1_filter_amass.pkl",
+      "archetype": "single_leg_balance_pretraining",
+      "rank_score": 118.41,
+      "tags": [
+        "balance",
+        "long_sequence",
+        "single_foot_balance",
+        "single_leg_support",
+        "stability_pretraining"
+      ],
+      "stats": {
+        "duration_s": 7.233333333333333,
+        "horizontal_displacement": 0.014576399698853493,
+        "root_height_range": 0.050313591957092285,
+        "min_root_height": 0.8183544874191284,
+        "max_root_height": 0.8686680793762207,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "robustness_pretraining",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "balance_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use for single-leg support and recovery robustness, not as final stunt evidence"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level3_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_step_forward_back_level3_filter_amass.pkl",
+      "archetype": "recovery_pretraining",
+      "rank_score": 118.192,
+      "tags": [
+        "direction_change",
+        "landing_recovery",
+        "long_sequence",
+        "low_root_height",
+        "recovery_step"
+      ],
+      "stats": {
+        "duration_s": 5.033333333333333,
+        "horizontal_displacement": 0.08960141986608505,
+        "root_height_range": 0.22879862785339355,
+        "min_root_height": 0.6131452322006226,
+        "max_root_height": 0.8419438600540161,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "robustness_pretraining",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "recovery_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use to improve landing recovery after aerial or wall-contact tasks"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_shoot_level3_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_shoot_level3_filter_amass.pkl",
+      "archetype": "dynamic_balance",
+      "rank_score": 79.917,
+      "tags": [
+        "locomotion",
+        "sports_motion",
+        "upper_lower_coordination"
+      ],
+      "stats": {
+        "duration_s": 4.133333333333334,
+        "horizontal_displacement": 2.069221258163452,
+        "root_height_range": 0.138327956199646,
+        "min_root_height": 0.7952111959457397,
+        "max_root_height": 0.9335391521453857,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "robustness_pretraining",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "dynamic_balance",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability",
+          "contact_force"
+        ],
+        "search_note": "use as robustness and coordination pretraining rather than obstacle success evidence"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_walk_level4_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_walk_level4_filter_amass.pkl",
+      "archetype": "locomotion_pretraining",
+      "rank_score": 70.529,
+      "tags": [
+        "gait",
+        "locomotion",
+        "walk"
+      ],
+      "stats": {
+        "duration_s": 4.433333333333334,
+        "horizontal_displacement": 2.0659141540527344,
+        "root_height_range": 0.08598923683166504,
+        "min_root_height": 0.7984559535980225,
+        "max_root_height": 0.8844451904296875,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "warm_start",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "locomotion_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability"
+        ],
+        "search_note": "use as gait/recovery warm start rather than a formal stunt task"
+      }
+    },
+    {
+      "motion_id": "0-motions_raw_tairantestbed_smpl_video_walk_level3_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_walk_level3_filter_amass.pkl",
+      "archetype": "locomotion_pretraining",
+      "rank_score": 69.841,
+      "tags": [
+        "gait",
+        "locomotion",
+        "walk"
+      ],
+      "stats": {
+        "duration_s": 4.733333333333333,
+        "horizontal_displacement": 2.2249085903167725,
+        "root_height_range": 0.10205352306365967,
+        "min_root_height": 0.7817213535308838,
+        "max_root_height": 0.8837748765945435,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "role": "warm_start",
+      "recommended_evolution": {
+        "base_config": "g1_jump_leap_v1.json",
+        "isaac_task": "Tracking-JumpLeap-G1-v0",
+        "success_type": "locomotion_pretraining",
+        "reward_focus": [
+          "phase_progress",
+          "landing_stability"
+        ],
+        "search_note": "use as gait/recovery warm start rather than a formal stunt task"
       }
     }
   ],

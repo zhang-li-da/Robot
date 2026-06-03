@@ -3,7 +3,7 @@
 - goal: `jump_leap`
 - 任务族：`jump_leap`
 - 数据状态：`real_motion_available`
-- 真实动作数：`10`
+- 真实动作数：`12`
 - 代理动作数：`0`
 - 成功声明约束：formal claim requires target distance/height criteria and >=50 trials
 
@@ -30,6 +30,8 @@
 | 8 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass` | `aerial_jump` | no | 789.0 | 1.54m / 0.28m / 4.23s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
 | 9 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass` | `aerial_jump` | no | 783.7 | 1.11m / 0.33m / 3.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
 | 10 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level4_filter_amass` | `aerial_jump` | yes | 763.8 | 1.47m / 0.20m / 3.33s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 11 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass` | `aerial_jump` | no | 745.8 | 1.25m / 0.18m / 3.63s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 12 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level2_filter_amass` | `aerial_jump` | no | 733.7 | 0.75m / 0.09m / 3.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
 
 ## LLM 搜索约束
 
