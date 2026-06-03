@@ -11,6 +11,8 @@ import time
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
@@ -118,6 +120,92 @@ def _safe_float(data: dict[str, Any], key: str, default: float = 0.0) -> float:
         return default
 
 
+def _optional_float(data: dict[str, Any], key: str) -> float | None:
+    if key not in data:
+        return None
+    try:
+        value = data.get(key)
+        if value is None or isinstance(value, bool):
+            return None
+        result = float(value)
+        if math.isnan(result) or math.isinf(result):
+            return None
+        return result
+    except (TypeError, ValueError):
+        return None
+
+
+def _wrap_scalar_to_pi(value: float) -> float:
+    return math.atan2(math.sin(value), math.cos(value))
+
+
+def _yaw_from_quat_wxyz(quat: np.ndarray) -> float:
+    w, x, y, z = [float(v) for v in quat]
+    siny_cosp = 2.0 * (w * z + x * y)
+    cosy_cosp = 1.0 - 2.0 * (y * y + z * z)
+    return math.atan2(siny_cosp, cosy_cosp)
+
+
+def _motion_final_yaw(motion_file: str | None) -> float | None:
+    if not motion_file:
+        return None
+    try:
+        motion = np.load(motion_file, allow_pickle=True)
+        if "base_quat_w" in motion:
+            quat = motion["base_quat_w"][-1]
+        elif "body_quat_w" in motion:
+            quat = motion["body_quat_w"][-1, 0]
+        else:
+            return None
+        return _wrap_scalar_to_pi(_yaw_from_quat_wxyz(quat))
+    except Exception:
+        return None
+
+
+def _expected_target_yaw(task: dict[str, Any]) -> float | None:
+    criteria = task.get("success_criteria", {}) or {}
+    raw = criteria.get("target_final_yaw")
+    if raw is None:
+        return None
+    if isinstance(raw, str) and raw.strip().lower() in {
+        "motion_final",
+        "motion_final_yaw",
+        "reference_final",
+        "ref_final",
+    }:
+        return _motion_final_yaw(str(task.get("motion_file", "")))
+    try:
+        return _wrap_scalar_to_pi(float(raw))
+    except (TypeError, ValueError):
+        return None
+
+
+def _yaw_protocol_context(data: dict[str, Any], task: dict[str, Any]) -> dict[str, Any]:
+    expected = _expected_target_yaw(task)
+    observed = _optional_float(data, "target_yaw")
+    episode_yaws = _episode_list(data, "episode_final_yaw")
+    mean_final_yaw = _optional_float(data, "mean_final_yaw")
+    corrected_error = None
+    if expected is not None:
+        if episode_yaws:
+            corrected_error = _mean([abs(_wrap_scalar_to_pi(yaw - expected)) for yaw in episode_yaws])
+        elif mean_final_yaw is not None:
+            corrected_error = abs(_wrap_scalar_to_pi(mean_final_yaw - expected))
+    target_mismatch = (
+        expected is not None
+        and observed is not None
+        and abs(_wrap_scalar_to_pi(observed - expected)) > 0.05
+    )
+    target_unverified = expected is not None and observed is None and corrected_error is None
+    return {
+        "expected_target_yaw": expected,
+        "observed_target_yaw": observed,
+        "target_mismatch": target_mismatch,
+        "target_unverified": target_unverified,
+        "corrected_mean_final_yaw_error": corrected_error,
+    }
+
+
 def _termination_rates(data: dict[str, Any]) -> dict[str, float]:
     episodes = max(int(data.get("episodes", 0) or 0), 1)
     counts = data.get("termination_counts", {}) or {}
@@ -219,11 +307,31 @@ def build_comparison_context(
             "mean_final_ang_speed": _safe_float(data, "mean_final_ang_speed"),
             "mean_final_yaw_error": _safe_float(data, "mean_final_yaw_error"),
         }
+        yaw_protocol = _yaw_protocol_context(data, task)
+        if yaw_protocol["target_mismatch"]:
+            tags.append("comparison_eval_protocol_stale_target_yaw")
+            must_address.append(
+                f"{comparison_id} was evaluated with target_yaw={yaw_protocol['observed_target_yaw']:.3f}, "
+                f"but the current protocol expects {yaw_protocol['expected_target_yaw']:.3f}; "
+                "rerun this comparison under --target_yaw motion_final before treating yaw failure as algorithmic"
+            )
+        elif yaw_protocol["target_unverified"]:
+            tags.append("comparison_eval_protocol_target_yaw_unverified")
+            must_address.append(
+                f"{comparison_id} does not record target_yaw/final_yaw under the current motion_final protocol; "
+                "rerun this comparison before using yaw error as mutation evidence"
+            )
+        if yaw_protocol["corrected_mean_final_yaw_error"] is not None:
+            comparison_metrics["motion_final_yaw_error"] = yaw_protocol["corrected_mean_final_yaw_error"]
+        feedback_comparison_yaw_error = float(
+            comparison_metrics.get("motion_final_yaw_error", comparison_metrics["mean_final_yaw_error"])
+        )
         entry.update(
             {
                 "status": "scored",
                 "score": score.to_dict(),
                 "criteria_metrics": comparison_metrics,
+                "yaw_protocol": yaw_protocol,
                 "termination_rates": termination_rates,
                 "dominant_termination": _dominant_termination(termination_rates),
             }
@@ -281,11 +389,15 @@ def build_comparison_context(
                 and score.success_rate <= baseline.success_rate
             ):
                 baseline_yaw_error = _safe_float(baseline_data, "mean_final_yaw_error")
-                if comparison_metrics["mean_final_yaw_error"] > baseline_yaw_error + 0.25:
+                if (
+                    not yaw_protocol["target_mismatch"]
+                    and not yaw_protocol["target_unverified"]
+                    and feedback_comparison_yaw_error > baseline_yaw_error + 0.25
+                ):
                     tags.append("comparison_yaw_regressed_without_success_gain")
                     must_address.append(
                         f"{comparison_id} worsened final yaw without success gain: "
-                        f"{comparison_metrics['mean_final_yaw_error']:.3f} vs {baseline_yaw_error:.3f}; "
+                        f"{feedback_comparison_yaw_error:.3f} vs {baseline_yaw_error:.3f}; "
                         "gate progress rewards by yaw recovery and landing stability"
                     )
 
@@ -315,11 +427,16 @@ def build_comparison_context(
                 f"{comparison_id} violates final angular-speed gate: "
                 f"{comparison_metrics['mean_final_ang_speed']:.3f} > {max_final_ang_speed:.3f}; stabilize landing rotation"
             )
-        if max_final_yaw_error > 0.0 and comparison_metrics["mean_final_yaw_error"] > max_final_yaw_error:
+        if (
+            max_final_yaw_error > 0.0
+            and not yaw_protocol["target_mismatch"]
+            and not yaw_protocol["target_unverified"]
+            and feedback_comparison_yaw_error > max_final_yaw_error
+        ):
             tags.append("comparison_yaw_recovery_failure")
             must_address.append(
                 f"{comparison_id} violates final yaw gate: "
-                f"{comparison_metrics['mean_final_yaw_error']:.3f} > {max_final_yaw_error:.3f}; "
+                f"{feedback_comparison_yaw_error:.3f} > {max_final_yaw_error:.3f}; "
                 "increase yaw_alignment and avoid progress-only candidates"
             )
         if termination_rates.get("ee_body_pos", 0.0) >= 0.50:
@@ -564,6 +681,12 @@ def _candidate_feedback(
     final_speed = _safe_float(data, "mean_final_speed")
     final_ang_speed = _safe_float(data, "mean_final_ang_speed")
     final_yaw_error = _safe_float(data, "mean_final_yaw_error")
+    yaw_protocol = _yaw_protocol_context(data, task)
+    feedback_yaw_error = (
+        float(yaw_protocol["corrected_mean_final_yaw_error"])
+        if yaw_protocol["corrected_mean_final_yaw_error"] is not None
+        else final_yaw_error
+    )
     flip_rotation = _safe_float(data, "mean_flip_rotation")
     progress_ratio = progress / target_x
 
@@ -616,6 +739,18 @@ def _candidate_feedback(
     reward_terms = set(task.get("reward_terms", []))
     task_name = str(task.get("name", "")).lower()
     has_final_yaw_gate = "max_final_yaw_error" in criteria
+    if yaw_protocol["target_mismatch"]:
+        tags.append("eval_protocol_stale_target_yaw")
+        hypotheses.append(
+            "evaluation target_yaw does not match the current motion_final protocol, so yaw failure/success may be a false signal"
+        )
+        levers.append("rerun evaluation with --target_yaw motion_final before mutating reward or termination settings")
+    elif yaw_protocol["target_unverified"]:
+        tags.append("eval_protocol_target_yaw_unverified")
+        hypotheses.append(
+            "evaluation JSON does not record target_yaw/final_yaw for the current motion_final protocol, so yaw error cannot be trusted"
+        )
+        levers.append("rerun evaluation with the updated eval_stunt.py before using yaw failure as LLM feedback")
     is_aerial_turn_jump = (
         "turn_jump" in task_name
         or (
@@ -626,7 +761,11 @@ def _candidate_feedback(
     )
     if has_final_yaw_gate:
         max_yaw_error = float(criteria.get("max_final_yaw_error", 1.1))
-        if final_yaw_error > max_yaw_error:
+        if (
+            feedback_yaw_error > max_yaw_error
+            and not yaw_protocol["target_mismatch"]
+            and not yaw_protocol["target_unverified"]
+        ):
             tags.append("yaw_recovery_failure")
             hypotheses.append("policy does not recover the target heading by the end of the clip")
             if "yaw_alignment" in reward_terms:
@@ -659,7 +798,12 @@ def _candidate_feedback(
             tags.append("insufficient_apex")
             hypotheses.append("turn-jump policy does not create enough aerial margin for yaw recovery")
             levers.extend(["increase apex_height reward", "sample takeoff and aerial phases more uniformly"])
-        if final_yaw_error > max_yaw_error and "yaw_recovery_failure" not in tags:
+        if (
+            feedback_yaw_error > max_yaw_error
+            and "yaw_recovery_failure" not in tags
+            and not yaw_protocol["target_mismatch"]
+            and not yaw_protocol["target_unverified"]
+        ):
             tags.append("yaw_recovery_failure")
             hypotheses.append("policy does not recover the target heading by the end of the clip")
             levers.extend(["increase yaw_alignment reward", "avoid over-tight orientation termination during aerial phase"])
@@ -757,12 +901,14 @@ def _candidate_feedback(
             "mean_final_speed": final_speed,
             "mean_final_ang_speed": final_ang_speed,
             "mean_final_yaw_error": final_yaw_error,
+            "motion_final_yaw_error": yaw_protocol["corrected_mean_final_yaw_error"],
             "mean_flip_rotation": flip_rotation,
             "episode_length_mean": _mean(episode_lengths),
             "episode_length_std": _std(episode_lengths),
             "episode_progress_std": _std(episode_x),
             "episode_clearance_std": _std(episode_clearance),
         },
+        "yaw_protocol": yaw_protocol,
         "termination_rates": termination_rates,
         "dominant_termination": dominant,
         "failure_tags": sorted(set(tags)),
@@ -833,6 +979,8 @@ def _aggregate(candidate_feedback: list[dict[str, Any]], config: dict[str, Any],
         focus.append("apply dynamic resource downscaling for unstable candidates before full evaluation")
     if "runtime_train_failed" in tag_names:
         focus.append("separate train/runtime failures from policy-quality failures and retry only repaired variants")
+    if "eval_protocol_stale_target_yaw" in tag_names or "eval_protocol_target_yaw_unverified" in tag_names:
+        focus.append("rerun affected evaluations with --target_yaw motion_final before using yaw failures as LLM mutation evidence")
     if "hydra_override_key_missing" in tag_names or "search_space_env_mismatch" in tag_names:
         focus.append("repair Hydra search-space mismatch before retry: add missing env terms with zero default weight or remove unsupported levers")
     if "ee_body_pos_dominant" in tag_names:
@@ -870,6 +1018,8 @@ def _aggregate(candidate_feedback: list[dict[str, Any]], config: dict[str, Any],
 
     if target_met:
         population_status = "target_met"
+    elif "eval_protocol_stale_target_yaw" in tag_names or "eval_protocol_target_yaw_unverified" in tag_names:
+        population_status = "needs_protocol_reevaluation"
     elif not evaluated and runtime_failures:
         population_status = "needs_runtime_repair"
     elif evaluated and not target_improvement_feasible and best_success >= baseline_success:
