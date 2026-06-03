@@ -22,13 +22,13 @@
 | ---: | --- | --- | --- | ---: | --- | --- |
 | 1 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level5_filter_amass` | `aerial_turn_jump` | yes | 860.1 | 0.79m / 0.54m / 4.43s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
 | 2 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level4_filter_amass` | `aerial_turn_jump` | yes | 855.8 | 0.57m / 0.56m / 4.23s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
-| 3 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass` | `aerial_jump` | yes | 833.4 | 1.97m / 0.50m / 4.03s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
-| 4 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass` | `aerial_turn_jump` | no | 827.2 | 0.17m / 0.61m / 4.43s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
-| 5 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass` | `aerial_turn_jump` | no | 821.3 | 0.26m / 0.53m / 4.13s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
-| 6 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass` | `aerial_turn_jump` | no | 819.4 | 0.16m / 0.58m / 4.43s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
+| 3 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass` | `aerial_turn_jump` | yes | 839.2 | 0.17m / 0.61m / 4.43s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
+| 4 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass` | `aerial_jump` | yes | 833.4 | 1.97m / 0.50m / 4.03s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 5 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass` | `aerial_turn_jump` | yes | 833.3 | 0.26m / 0.53m / 4.13s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
+| 6 | `0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass` | `aerial_turn_jump` | yes | 831.4 | 0.16m / 0.58m / 4.43s | task_progress, phase_progress, apex_height, yaw_alignment, landing_stability |
 | 7 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass` | `aerial_jump` | yes | 809.6 | 1.82m / 0.34m / 4.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
-| 8 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass` | `aerial_jump` | no | 789.0 | 1.54m / 0.28m / 4.23s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
-| 9 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass` | `aerial_jump` | no | 783.7 | 1.11m / 0.33m / 3.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 8 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass` | `aerial_jump` | yes | 801.0 | 1.54m / 0.28m / 4.23s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 9 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass` | `aerial_jump` | yes | 795.7 | 1.11m / 0.33m / 3.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
 | 10 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level4_filter_amass` | `aerial_jump` | yes | 763.8 | 1.47m / 0.20m / 3.33s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
 | 11 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level3_filter_amass` | `aerial_jump` | no | 745.8 | 1.25m / 0.18m / 3.63s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
 | 12 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level2_filter_amass` | `aerial_jump` | no | 733.7 | 0.75m / 0.09m / 3.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |

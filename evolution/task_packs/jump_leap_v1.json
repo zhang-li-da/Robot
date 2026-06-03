@@ -118,6 +118,49 @@
       "goal_match_score": 855.762
     },
     {
+      "id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass.pkl",
+      "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass",
+      "rank_score": 279.178,
+      "already_configured": true,
+      "archetype": "aerial_turn_jump",
+      "tags": [
+        "aerial",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "low_root_height",
+        "turn_jump",
+        "yaw_control"
+      ],
+      "suggested_tasks": [
+        "g1_jump_leap",
+        "g1_wall_turn"
+      ],
+      "stats": {
+        "duration_s": 4.433333333333334,
+        "horizontal_displacement": 0.17109894752502441,
+        "root_height_range": 0.6103744506835938,
+        "min_root_height": 0.7134584188461304,
+        "max_root_height": 1.3238328695297241,
+        "dof_dim": 23,
+        "fps": 30.0
+      },
+      "recommended_evolution": {
+        "base_config": "g1_wall_turn_v1.json",
+        "isaac_task": "Tracking-WallTurn-G1-v0",
+        "success_type": "progress",
+        "reward_focus": [
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "yaw_alignment",
+          "landing_stability"
+        ],
+        "search_note": "relax aerial orientation termination while keeping final yaw recovery strict"
+      },
+      "goal_match_score": 839.178
+    },
+    {
       "id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass",
@@ -161,54 +204,11 @@
       "goal_match_score": 833.394
     },
     {
-      "id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass",
-      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass.pkl",
-      "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass",
-      "rank_score": 287.178,
-      "already_configured": false,
-      "archetype": "aerial_turn_jump",
-      "tags": [
-        "aerial",
-        "large_joint_excursion",
-        "large_vertical_motion",
-        "low_root_height",
-        "turn_jump",
-        "yaw_control"
-      ],
-      "suggested_tasks": [
-        "g1_jump_leap",
-        "g1_wall_turn"
-      ],
-      "stats": {
-        "duration_s": 4.433333333333334,
-        "horizontal_displacement": 0.17109894752502441,
-        "root_height_range": 0.6103744506835938,
-        "min_root_height": 0.7134584188461304,
-        "max_root_height": 1.3238328695297241,
-        "dof_dim": 23,
-        "fps": 30.0
-      },
-      "recommended_evolution": {
-        "base_config": "g1_wall_turn_v1.json",
-        "isaac_task": "Tracking-WallTurn-G1-v0",
-        "success_type": "progress",
-        "reward_focus": [
-          "task_progress",
-          "phase_progress",
-          "apex_height",
-          "yaw_alignment",
-          "landing_stability"
-        ],
-        "search_note": "relax aerial orientation termination while keeping final yaw recovery strict"
-      },
-      "goal_match_score": 827.178
-    },
-    {
       "id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass",
-      "rank_score": 281.326,
-      "already_configured": false,
+      "rank_score": 273.326,
+      "already_configured": true,
       "archetype": "aerial_turn_jump",
       "tags": [
         "aerial",
@@ -244,14 +244,14 @@
         ],
         "search_note": "relax aerial orientation termination while keeping final yaw recovery strict"
       },
-      "goal_match_score": 821.326
+      "goal_match_score": 833.326
     },
     {
       "id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass",
-      "rank_score": 279.445,
-      "already_configured": false,
+      "rank_score": 271.445,
+      "already_configured": true,
       "archetype": "aerial_turn_jump",
       "tags": [
         "aerial",
@@ -287,7 +287,7 @@
         ],
         "search_note": "relax aerial orientation termination while keeping final yaw recovery strict"
       },
-      "goal_match_score": 819.445
+      "goal_match_score": 831.445
     },
     {
       "id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass",
@@ -335,8 +335,8 @@
       "id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass",
-      "rank_score": 209.05,
-      "already_configured": false,
+      "rank_score": 201.05,
+      "already_configured": true,
       "archetype": "aerial_jump",
       "tags": [
         "aerial",
@@ -371,14 +371,14 @@
         ],
         "search_note": "use displacement, apex height, and landing stability as the screening metrics"
       },
-      "goal_match_score": 789.05
+      "goal_match_score": 801.05
     },
     {
       "id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass",
-      "rank_score": 203.746,
-      "already_configured": false,
+      "rank_score": 195.746,
+      "already_configured": true,
       "archetype": "aerial_jump",
       "tags": [
         "aerial",
@@ -413,7 +413,7 @@
         ],
         "search_note": "use displacement, apex height, and landing stability as the screening metrics"
       },
-      "goal_match_score": 783.746
+      "goal_match_score": 795.746
     },
     {
       "id": "0-motions_raw_tairantestbed_smpl_video_side_jump_level4_filter_amass",

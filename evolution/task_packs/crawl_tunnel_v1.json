@@ -78,8 +78,8 @@
       "id": "0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass",
-      "rank_score": 281.111,
-      "already_configured": false,
+      "rank_score": 273.111,
+      "already_configured": true,
       "archetype": "low_posture_pretraining",
       "tags": [
         "in_place_high_dynamic",
@@ -116,14 +116,14 @@
         ],
         "search_note": "use to tune low-posture transitions before real tunnel or crawl clips are added"
       },
-      "goal_match_score": 461.111
+      "goal_match_score": 473.111
     },
     {
       "id": "0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass",
-      "rank_score": 204.134,
-      "already_configured": false,
+      "rank_score": 196.134,
+      "already_configured": true,
       "archetype": "low_posture_pretraining",
       "tags": [
         "long_sequence",
@@ -157,7 +157,7 @@
         ],
         "search_note": "use to tune low-posture transitions before real tunnel or crawl clips are added"
       },
-      "goal_match_score": 384.134
+      "goal_match_score": 396.134
     },
     {
       "id": "0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass",

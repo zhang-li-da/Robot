@@ -22,10 +22,10 @@
 | ---: | --- | --- | --- | ---: | --- | --- |
 | 1 | `0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level2_filter_amass` | `flip_proxy_single_foot_jump` | yes | 445.5 | 0.18m / 0.46m / 5.63s | phase_progress, apex_height, landing_stability, contact_force |
 | 2 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass` | `aerial_jump` | yes | 433.4 | 1.97m / 0.50m / 4.03s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
-| 3 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass` | `aerial_jump` | yes | 409.6 | 1.82m / 0.34m / 4.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
-| 4 | `0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level1_filter_amass` | `flip_proxy_single_foot_jump` | no | 401.4 | 0.07m / 0.33m / 5.23s | phase_progress, apex_height, landing_stability, contact_force |
-| 5 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass` | `aerial_jump` | no | 389.1 | 1.54m / 0.28m / 4.23s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
-| 6 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass` | `aerial_jump` | no | 383.7 | 1.11m / 0.33m / 3.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 3 | `0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level1_filter_amass` | `flip_proxy_single_foot_jump` | yes | 413.4 | 0.07m / 0.33m / 5.23s | phase_progress, apex_height, landing_stability, contact_force |
+| 4 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level4_filter_amass` | `aerial_jump` | yes | 409.6 | 1.82m / 0.34m / 4.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 5 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass` | `aerial_jump` | yes | 401.1 | 1.54m / 0.28m / 4.23s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
+| 6 | `0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass` | `aerial_jump` | yes | 395.7 | 1.11m / 0.33m / 3.53s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
 | 7 | `0-motions_raw_tairantestbed_smpl_video_side_jump_level4_filter_amass` | `aerial_jump` | yes | 363.8 | 1.47m / 0.20m / 3.33s | task_progress, phase_progress, apex_height, landing_stability, contact_force |
 | 8 | `0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass` | `recovery_pretraining` | no | 356.0 | 0.05m / 0.39m / 4.43s | phase_progress, landing_stability, contact_force |
 | 9 | `0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level4_filter_amass` | `recovery_pretraining` | no | 351.7 | 1.20m / 0.30m / 4.23s | phase_progress, landing_stability, contact_force |

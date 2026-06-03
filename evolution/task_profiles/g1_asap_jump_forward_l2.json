@@ -1,0 +1,137 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Task feature profile consumed by LLM-assisted BeyondMimic evolution",
+  "task_identity": {
+    "task_name": "g1_asap_jump_forward_l2",
+    "task_family": "humanoid_stunt_imitation",
+    "task_type": "aerial_jump",
+    "isaac_task": "Tracking-JumpLeap-G1-v0",
+    "baseline_task": "Tracking-Flat-G1-v0"
+  },
+  "robot_profile": {
+    "robot_name": "unitree_g1_29dof",
+    "motion_source_dof": 23,
+    "simulation_dof": 29,
+    "missing_joint_policy": "fill_absent_wrist_joints_from_isaaclab_default",
+    "actuator_limits_source": "IsaacLab G1 asset config"
+  },
+  "motion_profile": {
+    "dataset": "ASAP-main / HumanoidVerse retargeted G1 TairanTestbed singles",
+    "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass.pkl",
+    "motion_file": "artifacts/g1_asap_jump_forward_l2/motion/motion.npz",
+    "convert_flags": [
+      "--align-displacement-to-plus-x"
+    ],
+    "motion_catalog": "evolution/action_catalog/asap_motion_catalog.json",
+    "catalog_clip": {
+      "id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass.pkl",
+      "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass",
+      "motion_archetype": "aerial_jump",
+      "tags": [
+        "aerial",
+        "forward_jump",
+        "landing",
+        "large_vertical_motion",
+        "locomotion",
+        "low_root_height"
+      ],
+      "suggested_tasks": [
+        "g1_jump_leap"
+      ],
+      "frames": 107,
+      "fps": 30.0,
+      "duration_s": 3.533333333333333,
+      "dof_dim": 23,
+      "root_start": [
+        0.014174945652484894,
+        -0.2272149920463562,
+        0.8856371641159058
+      ],
+      "root_end": [
+        0.5528843998908997,
+        -1.1920840740203857,
+        0.8748167753219604
+      ],
+      "root_displacement": [
+        0.5387094616889954,
+        -0.9648690819740295,
+        -0.010820388793945312
+      ],
+      "horizontal_displacement": 1.1050702333450317,
+      "raw_travel_yaw_rad": -1.0615848814003075,
+      "min_root_height": 0.6660720109939575,
+      "max_root_height": 0.9926244020462036,
+      "root_height_range": 0.3265523910522461,
+      "mean_root_height": 0.8453928828239441,
+      "max_abs_dof": 1.6480367183685303
+    },
+    "motion_start_evaluation": true,
+    "proxy_note": ""
+  },
+  "environment_profile": {
+    "obstacle_type": "none_or_proxy",
+    "obstacle_height_m": 0.0,
+    "target_x_m": 0.939,
+    "min_root_height_m": 0.743,
+    "ceiling_height_m": null,
+    "wall_or_tunnel_zone": null
+  },
+  "success_criteria": {
+    "minimum_trials": 64,
+    "primary_metric": "success_rate",
+    "success_type": "progress",
+    "target_relative_improvement": 0.08,
+    "criteria": {
+      "description": "use displacement, apex height, and landing stability as the screening metrics",
+      "min_progress_x": 0.939,
+      "min_apex_height": 0.913,
+      "max_final_anchor_speed": 1.4,
+      "max_final_ang_speed": 2.5,
+      "max_final_yaw_error": 1.1,
+      "allow_hand_contact": false
+    }
+  },
+  "legal_contacts": {
+    "allowed_support_bodies": [
+      "left_ankle_roll_link",
+      "right_ankle_roll_link"
+    ],
+    "allow_hand_contact": false,
+    "allow_knee_hand_contact": false,
+    "forbidden_contacts": [
+      "head_link hard impact",
+      "torso_link hard impact unless task profile explicitly allows body support"
+    ]
+  },
+  "risk_controls": {
+    "sim2real_sensitive_terms": [
+      "torque",
+      "action_rate",
+      "joint_limit",
+      "contact_force",
+      "base_angular_velocity",
+      "landing_impact"
+    ],
+    "must_preserve": [
+      "final evaluation success criteria",
+      "legal contact semantics",
+      "minimum uniform phase coverage",
+      "proxy-vs-real-motion distinction"
+    ]
+  },
+  "baseline_contract": {
+    "baseline_id": "baseline_beyondmimic",
+    "baseline_task": "Tracking-Flat-G1-v0",
+    "baseline_eval_json": "artifacts/g1_asap_jump_forward_l2/eval/baseline_beyondmimic.json",
+    "comparison_protocol": "motion-start evaluation, >=50 episodes for final claims"
+  },
+  "algorithm_priors": {
+    "source": "evolution/algorithm_priors/asap_algorithm_priors.json",
+    "usage": [
+      "phase motion tracking priors guide imitation naturalness and safety penalties",
+      "history observation and domain randomization guide robustness and sim2real preparation",
+      "delta-action priors are reserved for second-stage sim2real residual adaptation"
+    ]
+  }
+}

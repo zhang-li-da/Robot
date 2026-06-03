@@ -1,0 +1,429 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-06-03T01:25:56.490485+00:00",
+  "source_queue": "evolution/action_catalog/asap_evolution_candidate_queue.json",
+  "selection_policy": "top ranked non-hand-authored ASAP candidates with concrete recommended_evolution plan",
+  "max_generated": 8,
+  "specs": [
+    {
+      "id": "g1_asap_turn_jump_l3",
+      "source": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass.pkl",
+      "artifact": "artifacts/g1_asap_turn_jump_l3/motion/motion.npz",
+      "base_config": "g1_wall_turn_v1.json",
+      "output_config": "g1_asap_turn_jump_l3_v1.json",
+      "isaac_task": "Tracking-WallTurn-G1-v0",
+      "baseline_task": "Tracking-Flat-G1-v0",
+      "convert_flags": [
+        "--align-displacement-to-plus-x"
+      ],
+      "task": {
+        "name": "g1_asap_turn_jump_l3",
+        "target_x": 0.137,
+        "obstacle_height": 0.0,
+        "min_root_height": 0.9,
+        "success_type": "progress",
+        "motion_catalog_filter_tasks": [
+          "g1_jump_leap",
+          "g1_wall_turn"
+        ],
+        "reward_terms": [
+          "motion_global_anchor_pos",
+          "motion_global_anchor_ori",
+          "motion_body_pos",
+          "motion_body_ori",
+          "motion_body_lin_vel",
+          "motion_body_ang_vel",
+          "action_rate_l2",
+          "joint_limit",
+          "undesired_contacts",
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "yaw_alignment",
+          "landing_stability"
+        ],
+        "success_criteria": {
+          "description": "relax aerial orientation termination while keeping final yaw recovery strict",
+          "min_progress_x": 0.137,
+          "min_apex_height": 1.1,
+          "max_final_anchor_speed": 1.4,
+          "max_final_ang_speed": 2.5,
+          "max_final_yaw_error": 1.1,
+          "allow_hand_contact": false,
+          "target_final_yaw": 0.0
+        },
+        "auto_materialized": {
+          "source_motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass",
+          "archetype": "aerial_turn_jump",
+          "rank_score": 279.178
+        }
+      }
+    },
+    {
+      "id": "g1_asap_turn_jump_l2",
+      "source": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass.pkl",
+      "artifact": "artifacts/g1_asap_turn_jump_l2/motion/motion.npz",
+      "base_config": "g1_wall_turn_v1.json",
+      "output_config": "g1_asap_turn_jump_l2_v1.json",
+      "isaac_task": "Tracking-WallTurn-G1-v0",
+      "baseline_task": "Tracking-Flat-G1-v0",
+      "convert_flags": [
+        "--align-displacement-to-plus-x"
+      ],
+      "task": {
+        "name": "g1_asap_turn_jump_l2",
+        "target_x": 0.21,
+        "obstacle_height": 0.0,
+        "min_root_height": 0.9,
+        "success_type": "progress",
+        "motion_catalog_filter_tasks": [
+          "g1_jump_leap",
+          "g1_wall_turn"
+        ],
+        "reward_terms": [
+          "motion_global_anchor_pos",
+          "motion_global_anchor_ori",
+          "motion_body_pos",
+          "motion_body_ori",
+          "motion_body_lin_vel",
+          "motion_body_ang_vel",
+          "action_rate_l2",
+          "joint_limit",
+          "undesired_contacts",
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "yaw_alignment",
+          "landing_stability"
+        ],
+        "success_criteria": {
+          "description": "relax aerial orientation termination while keeping final yaw recovery strict",
+          "min_progress_x": 0.21,
+          "min_apex_height": 1.1,
+          "max_final_anchor_speed": 1.4,
+          "max_final_ang_speed": 2.5,
+          "max_final_yaw_error": 1.1,
+          "allow_hand_contact": false,
+          "target_final_yaw": 0.0
+        },
+        "auto_materialized": {
+          "source_motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass",
+          "archetype": "aerial_turn_jump",
+          "rank_score": 273.326
+        }
+      }
+    },
+    {
+      "id": "g1_asap_squat_l2_lowposture",
+      "source": "0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass.pkl",
+      "artifact": "artifacts/g1_asap_squat_l2_lowposture/motion/motion.npz",
+      "base_config": "g1_crawl_tunnel_v1.json",
+      "output_config": "g1_asap_squat_l2_lowposture_v1.json",
+      "isaac_task": "Tracking-CrawlTunnel-G1-v0",
+      "baseline_task": "Tracking-Flat-G1-v0",
+      "convert_flags": [
+        "--zero-initial-heading"
+      ],
+      "task": {
+        "name": "g1_asap_squat_l2_lowposture",
+        "target_x": 0.063,
+        "obstacle_height": 0.945,
+        "min_root_height": 0.577,
+        "success_type": "low_posture",
+        "motion_catalog_filter_tasks": [
+          "g1_crawl_tunnel",
+          "g1_dynamic_balance"
+        ],
+        "reward_terms": [
+          "motion_global_anchor_pos",
+          "motion_global_anchor_ori",
+          "motion_body_pos",
+          "motion_body_ori",
+          "motion_body_lin_vel",
+          "motion_body_ang_vel",
+          "action_rate_l2",
+          "joint_limit",
+          "undesired_contacts",
+          "phase_progress",
+          "ceiling_clearance",
+          "landing_stability"
+        ],
+        "success_criteria": {
+          "description": "use to tune low-posture transitions before real tunnel or crawl clips are added",
+          "max_head_or_torso_height": 0.945,
+          "min_low_posture_fraction": 0.18,
+          "ceiling_min_x": -0.1,
+          "ceiling_max_x": 0.25,
+          "allow_knee_hand_contact": true,
+          "proxy_note": "Auto-materialized low-posture proxy; not final tunnel traversal evidence."
+        },
+        "auto_materialized": {
+          "source_motion_id": "0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass",
+          "archetype": "low_posture_pretraining",
+          "rank_score": 273.111
+        }
+      }
+    },
+    {
+      "id": "g1_asap_turn_jump_l1",
+      "source": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass.pkl",
+      "artifact": "artifacts/g1_asap_turn_jump_l1/motion/motion.npz",
+      "base_config": "g1_wall_turn_v1.json",
+      "output_config": "g1_asap_turn_jump_l1_v1.json",
+      "isaac_task": "Tracking-WallTurn-G1-v0",
+      "baseline_task": "Tracking-Flat-G1-v0",
+      "convert_flags": [
+        "--align-displacement-to-plus-x"
+      ],
+      "task": {
+        "name": "g1_asap_turn_jump_l1",
+        "target_x": 0.125,
+        "obstacle_height": 0.0,
+        "min_root_height": 0.9,
+        "success_type": "progress",
+        "motion_catalog_filter_tasks": [
+          "g1_jump_leap",
+          "g1_wall_turn"
+        ],
+        "reward_terms": [
+          "motion_global_anchor_pos",
+          "motion_global_anchor_ori",
+          "motion_body_pos",
+          "motion_body_ori",
+          "motion_body_lin_vel",
+          "motion_body_ang_vel",
+          "action_rate_l2",
+          "joint_limit",
+          "undesired_contacts",
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "yaw_alignment",
+          "landing_stability"
+        ],
+        "success_criteria": {
+          "description": "relax aerial orientation termination while keeping final yaw recovery strict",
+          "min_progress_x": 0.125,
+          "min_apex_height": 1.1,
+          "max_final_anchor_speed": 1.4,
+          "max_final_ang_speed": 2.5,
+          "max_final_yaw_error": 1.1,
+          "allow_hand_contact": false,
+          "target_final_yaw": 0.0
+        },
+        "auto_materialized": {
+          "source_motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass",
+          "archetype": "aerial_turn_jump",
+          "rank_score": 271.445
+        }
+      }
+    },
+    {
+      "id": "g1_asap_single_foot_jump_l1",
+      "source": "0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level1_filter_amass.pkl",
+      "artifact": "artifacts/g1_asap_single_foot_jump_l1/motion/motion.npz",
+      "base_config": "g1_backflip_v1.json",
+      "output_config": "g1_asap_single_foot_jump_l1_v1.json",
+      "isaac_task": "Tracking-Backflip-G1-v0",
+      "baseline_task": "Tracking-Flat-G1-v0",
+      "convert_flags": [
+        "--zero-initial-heading"
+      ],
+      "task": {
+        "name": "g1_asap_single_foot_jump_l1",
+        "target_x": 0.058,
+        "obstacle_height": 0.0,
+        "min_root_height": 0.78,
+        "success_type": "backflip",
+        "motion_catalog_filter_tasks": [
+          "g1_jump_leap"
+        ],
+        "reward_terms": [
+          "motion_global_anchor_pos",
+          "motion_global_anchor_ori",
+          "motion_body_pos",
+          "motion_body_ori",
+          "motion_body_lin_vel",
+          "motion_body_ang_vel",
+          "action_rate_l2",
+          "joint_limit",
+          "undesired_contacts",
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "success_criteria": {
+          "description": "use only as flip pretraining or stress testing until true flip motion is added",
+          "min_progress_x": 0.058,
+          "min_apex_height": 1.029,
+          "max_final_anchor_speed": 1.4,
+          "max_final_ang_speed": 2.5,
+          "max_final_yaw_error": 1.1,
+          "allow_hand_contact": false,
+          "proxy_note": "Auto-materialized proxy/pretraining clip; do not use as final backflip, wall-vault, or tunnel success evidence."
+        },
+        "auto_materialized": {
+          "source_motion_id": "0-motions_raw_tairantestbed_smpl_video_single_foot_jump_level1_filter_amass",
+          "archetype": "flip_proxy_single_foot_jump",
+          "rank_score": 213.379
+        }
+      }
+    },
+    {
+      "id": "g1_asap_jump_forward_l3",
+      "source": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass.pkl",
+      "artifact": "artifacts/g1_asap_jump_forward_l3/motion/motion.npz",
+      "base_config": "g1_jump_leap_v1.json",
+      "output_config": "g1_asap_jump_forward_l3_v1.json",
+      "isaac_task": "Tracking-JumpLeap-G1-v0",
+      "baseline_task": "Tracking-Flat-G1-v0",
+      "convert_flags": [
+        "--align-displacement-to-plus-x"
+      ],
+      "task": {
+        "name": "g1_asap_jump_forward_l3",
+        "target_x": 1.307,
+        "obstacle_height": 0.0,
+        "min_root_height": 0.72,
+        "success_type": "progress",
+        "motion_catalog_filter_tasks": [
+          "g1_jump_leap"
+        ],
+        "reward_terms": [
+          "motion_global_anchor_pos",
+          "motion_global_anchor_ori",
+          "motion_body_pos",
+          "motion_body_ori",
+          "motion_body_lin_vel",
+          "motion_body_ang_vel",
+          "action_rate_l2",
+          "joint_limit",
+          "undesired_contacts",
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "success_criteria": {
+          "description": "use displacement, apex height, and landing stability as the screening metrics",
+          "min_progress_x": 1.307,
+          "min_apex_height": 0.867,
+          "max_final_anchor_speed": 1.4,
+          "max_final_ang_speed": 2.5,
+          "max_final_yaw_error": 1.1,
+          "allow_hand_contact": false
+        },
+        "auto_materialized": {
+          "source_motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass",
+          "archetype": "aerial_jump",
+          "rank_score": 201.05
+        }
+      }
+    },
+    {
+      "id": "g1_asap_squat_l1_lowposture",
+      "source": "0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass.pkl",
+      "artifact": "artifacts/g1_asap_squat_l1_lowposture/motion/motion.npz",
+      "base_config": "g1_crawl_tunnel_v1.json",
+      "output_config": "g1_asap_squat_l1_lowposture_v1.json",
+      "isaac_task": "Tracking-CrawlTunnel-G1-v0",
+      "baseline_task": "Tracking-Flat-G1-v0",
+      "convert_flags": [
+        "--zero-initial-heading"
+      ],
+      "task": {
+        "name": "g1_asap_squat_l1_lowposture",
+        "target_x": 0.057,
+        "obstacle_height": 0.933,
+        "min_root_height": 0.696,
+        "success_type": "low_posture",
+        "motion_catalog_filter_tasks": [
+          "g1_crawl_tunnel",
+          "g1_dynamic_balance"
+        ],
+        "reward_terms": [
+          "motion_global_anchor_pos",
+          "motion_global_anchor_ori",
+          "motion_body_pos",
+          "motion_body_ori",
+          "motion_body_lin_vel",
+          "motion_body_ang_vel",
+          "action_rate_l2",
+          "joint_limit",
+          "undesired_contacts",
+          "phase_progress",
+          "ceiling_clearance",
+          "landing_stability"
+        ],
+        "success_criteria": {
+          "description": "use to tune low-posture transitions before real tunnel or crawl clips are added",
+          "max_head_or_torso_height": 0.933,
+          "min_low_posture_fraction": 0.18,
+          "ceiling_min_x": -0.1,
+          "ceiling_max_x": 0.25,
+          "allow_knee_hand_contact": true,
+          "proxy_note": "Auto-materialized low-posture proxy; not final tunnel traversal evidence."
+        },
+        "auto_materialized": {
+          "source_motion_id": "0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass",
+          "archetype": "low_posture_pretraining",
+          "rank_score": 196.134
+        }
+      }
+    },
+    {
+      "id": "g1_asap_jump_forward_l2",
+      "source": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass.pkl",
+      "artifact": "artifacts/g1_asap_jump_forward_l2/motion/motion.npz",
+      "base_config": "g1_jump_leap_v1.json",
+      "output_config": "g1_asap_jump_forward_l2_v1.json",
+      "isaac_task": "Tracking-JumpLeap-G1-v0",
+      "baseline_task": "Tracking-Flat-G1-v0",
+      "convert_flags": [
+        "--align-displacement-to-plus-x"
+      ],
+      "task": {
+        "name": "g1_asap_jump_forward_l2",
+        "target_x": 0.939,
+        "obstacle_height": 0.0,
+        "min_root_height": 0.743,
+        "success_type": "progress",
+        "motion_catalog_filter_tasks": [
+          "g1_jump_leap"
+        ],
+        "reward_terms": [
+          "motion_global_anchor_pos",
+          "motion_global_anchor_ori",
+          "motion_body_pos",
+          "motion_body_ori",
+          "motion_body_lin_vel",
+          "motion_body_ang_vel",
+          "action_rate_l2",
+          "joint_limit",
+          "undesired_contacts",
+          "task_progress",
+          "phase_progress",
+          "apex_height",
+          "landing_stability",
+          "contact_force"
+        ],
+        "success_criteria": {
+          "description": "use displacement, apex height, and landing stability as the screening metrics",
+          "min_progress_x": 0.939,
+          "min_apex_height": 0.913,
+          "max_final_anchor_speed": 1.4,
+          "max_final_ang_speed": 2.5,
+          "max_final_yaw_error": 1.1,
+          "allow_hand_contact": false
+        },
+        "auto_materialized": {
+          "source_motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass",
+          "archetype": "aerial_jump",
+          "rank_score": 195.746
+        }
+      }
+    }
+  ]
+}

@@ -166,8 +166,8 @@
       "id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass",
-      "rank_score": 287.178,
-      "already_configured": false,
+      "rank_score": 279.178,
+      "already_configured": true,
       "archetype": "aerial_turn_jump",
       "tags": [
         "aerial",
@@ -203,14 +203,14 @@
         ],
         "search_note": "relax aerial orientation termination while keeping final yaw recovery strict"
       },
-      "goal_match_score": 467.178
+      "goal_match_score": 479.178
     },
     {
       "id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass",
-      "rank_score": 281.326,
-      "already_configured": false,
+      "rank_score": 273.326,
+      "already_configured": true,
       "archetype": "aerial_turn_jump",
       "tags": [
         "aerial",
@@ -246,14 +246,14 @@
         ],
         "search_note": "relax aerial orientation termination while keeping final yaw recovery strict"
       },
-      "goal_match_score": 461.326
+      "goal_match_score": 473.326
     },
     {
       "id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass",
-      "rank_score": 279.445,
-      "already_configured": false,
+      "rank_score": 271.445,
+      "already_configured": true,
       "archetype": "aerial_turn_jump",
       "tags": [
         "aerial",
@@ -289,7 +289,7 @@
         ],
         "search_note": "relax aerial orientation termination while keeping final yaw recovery strict"
       },
-      "goal_match_score": 459.445
+      "goal_match_score": 471.445
     },
     {
       "id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level5_filter_amass",
@@ -380,8 +380,8 @@
       "id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level3_filter_amass",
-      "rank_score": 209.05,
-      "already_configured": false,
+      "rank_score": 201.05,
+      "already_configured": true,
       "archetype": "aerial_jump",
       "tags": [
         "aerial",
@@ -416,14 +416,14 @@
         ],
         "search_note": "use displacement, apex height, and landing stability as the screening metrics"
       },
-      "goal_match_score": 389.05
+      "goal_match_score": 401.05
     },
     {
       "id": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass",
       "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass.pkl",
       "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_forward_level2_filter_amass",
-      "rank_score": 203.746,
-      "already_configured": false,
+      "rank_score": 195.746,
+      "already_configured": true,
       "archetype": "aerial_jump",
       "tags": [
         "aerial",
@@ -458,7 +458,7 @@
         ],
         "search_note": "use displacement, apex height, and landing stability as the screening metrics"
       },
-      "goal_match_score": 383.746
+      "goal_match_score": 395.746
     },
     {
       "id": "0-motions_raw_tairantestbed_smpl_video_side_jump_level4_filter_amass",

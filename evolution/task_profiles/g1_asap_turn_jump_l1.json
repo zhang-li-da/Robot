@@ -1,0 +1,139 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Task feature profile consumed by LLM-assisted BeyondMimic evolution",
+  "task_identity": {
+    "task_name": "g1_asap_turn_jump_l1",
+    "task_family": "humanoid_stunt_imitation",
+    "task_type": "aerial_turn_jump",
+    "isaac_task": "Tracking-WallTurn-G1-v0",
+    "baseline_task": "Tracking-Flat-G1-v0"
+  },
+  "robot_profile": {
+    "robot_name": "unitree_g1_29dof",
+    "motion_source_dof": 23,
+    "simulation_dof": 29,
+    "missing_joint_policy": "fill_absent_wrist_joints_from_isaaclab_default",
+    "actuator_limits_source": "IsaacLab G1 asset config"
+  },
+  "motion_profile": {
+    "dataset": "ASAP-main / HumanoidVerse retargeted G1 TairanTestbed singles",
+    "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass.pkl",
+    "motion_file": "artifacts/g1_asap_turn_jump_l1/motion/motion.npz",
+    "convert_flags": [
+      "--align-displacement-to-plus-x"
+    ],
+    "motion_catalog": "evolution/action_catalog/asap_motion_catalog.json",
+    "catalog_clip": {
+      "id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass.pkl",
+      "clip_key": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass",
+      "motion_archetype": "aerial_turn_jump",
+      "tags": [
+        "aerial",
+        "large_joint_excursion",
+        "large_vertical_motion",
+        "low_root_height",
+        "turn_jump",
+        "yaw_control"
+      ],
+      "suggested_tasks": [
+        "g1_jump_leap",
+        "g1_wall_turn"
+      ],
+      "frames": 134,
+      "fps": 30.0,
+      "duration_s": 4.433333333333334,
+      "dof_dim": 23,
+      "root_start": [
+        0.0022271540947258472,
+        -0.22532141208648682,
+        0.9337565898895264
+      ],
+      "root_end": [
+        0.06085459515452385,
+        -0.36967259645462036,
+        0.9093029499053955
+      ],
+      "root_displacement": [
+        0.05862744152545929,
+        -0.14435118436813354,
+        -0.02445363998413086
+      ],
+      "horizontal_displacement": 0.15580256283283234,
+      "raw_travel_yaw_rad": -1.1850042041792723,
+      "min_root_height": 0.7258584499359131,
+      "max_root_height": 1.3011281490325928,
+      "root_height_range": 0.5752696990966797,
+      "mean_root_height": 0.9294193387031555,
+      "max_abs_dof": 2.4283883571624756
+    },
+    "motion_start_evaluation": true,
+    "proxy_note": ""
+  },
+  "environment_profile": {
+    "obstacle_type": "none_or_proxy",
+    "obstacle_height_m": 0.0,
+    "target_x_m": 0.125,
+    "min_root_height_m": 0.9,
+    "ceiling_height_m": null,
+    "wall_or_tunnel_zone": null
+  },
+  "success_criteria": {
+    "minimum_trials": 64,
+    "primary_metric": "success_rate",
+    "success_type": "progress",
+    "target_relative_improvement": 0.08,
+    "criteria": {
+      "description": "relax aerial orientation termination while keeping final yaw recovery strict",
+      "min_progress_x": 0.125,
+      "min_apex_height": 1.1,
+      "max_final_anchor_speed": 1.4,
+      "max_final_ang_speed": 2.5,
+      "max_final_yaw_error": 1.1,
+      "allow_hand_contact": false,
+      "target_final_yaw": 0.0
+    }
+  },
+  "legal_contacts": {
+    "allowed_support_bodies": [
+      "left_ankle_roll_link",
+      "right_ankle_roll_link"
+    ],
+    "allow_hand_contact": false,
+    "allow_knee_hand_contact": false,
+    "forbidden_contacts": [
+      "head_link hard impact",
+      "torso_link hard impact unless task profile explicitly allows body support"
+    ]
+  },
+  "risk_controls": {
+    "sim2real_sensitive_terms": [
+      "torque",
+      "action_rate",
+      "joint_limit",
+      "contact_force",
+      "base_angular_velocity",
+      "landing_impact"
+    ],
+    "must_preserve": [
+      "final evaluation success criteria",
+      "legal contact semantics",
+      "minimum uniform phase coverage",
+      "proxy-vs-real-motion distinction"
+    ]
+  },
+  "baseline_contract": {
+    "baseline_id": "baseline_beyondmimic",
+    "baseline_task": "Tracking-Flat-G1-v0",
+    "baseline_eval_json": "artifacts/g1_asap_turn_jump_l1/eval/baseline_beyondmimic.json",
+    "comparison_protocol": "motion-start evaluation, >=50 episodes for final claims"
+  },
+  "algorithm_priors": {
+    "source": "evolution/algorithm_priors/asap_algorithm_priors.json",
+    "usage": [
+      "phase motion tracking priors guide imitation naturalness and safety penalties",
+      "history observation and domain randomization guide robustness and sim2real preparation",
+      "delta-action priors are reserved for second-stage sim2real residual adaptation"
+    ]
+  }
+}

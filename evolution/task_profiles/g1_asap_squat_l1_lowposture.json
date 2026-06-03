@@ -1,0 +1,145 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Task feature profile consumed by LLM-assisted BeyondMimic evolution",
+  "task_identity": {
+    "task_name": "g1_asap_squat_l1_lowposture",
+    "task_family": "humanoid_stunt_imitation",
+    "task_type": "low_posture_pretraining",
+    "isaac_task": "Tracking-CrawlTunnel-G1-v0",
+    "baseline_task": "Tracking-Flat-G1-v0"
+  },
+  "robot_profile": {
+    "robot_name": "unitree_g1_29dof",
+    "motion_source_dof": 23,
+    "simulation_dof": 29,
+    "missing_joint_policy": "fill_absent_wrist_joints_from_isaaclab_default",
+    "actuator_limits_source": "IsaacLab G1 asset config"
+  },
+  "motion_profile": {
+    "dataset": "ASAP-main / HumanoidVerse retargeted G1 TairanTestbed singles",
+    "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass.pkl",
+    "motion_file": "artifacts/g1_asap_squat_l1_lowposture/motion/motion.npz",
+    "convert_flags": [
+      "--zero-initial-heading"
+    ],
+    "motion_catalog": "evolution/action_catalog/asap_motion_catalog.json",
+    "catalog_clip": {
+      "id": "0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass",
+      "source_file": "/root/ASAP-main/humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass.pkl",
+      "clip_key": "0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass",
+      "motion_archetype": "low_posture_pretraining",
+      "tags": [
+        "long_sequence",
+        "low_posture",
+        "low_posture_transition",
+        "low_root_height",
+        "squat",
+        "strength_pose"
+      ],
+      "suggested_tasks": [
+        "g1_crawl_tunnel",
+        "g1_dynamic_balance"
+      ],
+      "frames": 158,
+      "fps": 30.0,
+      "duration_s": 5.233333333333333,
+      "dof_dim": 23,
+      "root_start": [
+        0.02194419875741005,
+        -0.2085096836090088,
+        0.8832060694694519
+      ],
+      "root_end": [
+        0.029491128399968147,
+        -0.13763535022735596,
+        0.8762499690055847
+      ],
+      "root_displacement": [
+        0.007546929642558098,
+        0.07087433338165283,
+        -0.0069561004638671875
+      ],
+      "horizontal_displacement": 0.0712750107049942,
+      "raw_travel_yaw_rad": 1.4647128167383388,
+      "min_root_height": 0.6960652470588684,
+      "max_root_height": 0.8832060694694519,
+      "root_height_range": 0.1871408224105835,
+      "mean_root_height": 0.8305835723876953,
+      "max_abs_dof": 1.3894497156143188
+    },
+    "motion_start_evaluation": true,
+    "proxy_note": "Auto-materialized low-posture proxy; not final tunnel traversal evidence."
+  },
+  "environment_profile": {
+    "obstacle_type": "none_or_proxy",
+    "obstacle_height_m": 0.933,
+    "target_x_m": 0.057,
+    "min_root_height_m": 0.696,
+    "ceiling_height_m": 0.933,
+    "wall_or_tunnel_zone": {
+      "x_min": -0.1,
+      "x_max": 0.25
+    }
+  },
+  "success_criteria": {
+    "minimum_trials": 64,
+    "primary_metric": "success_rate",
+    "success_type": "low_posture",
+    "target_relative_improvement": 0.08,
+    "criteria": {
+      "description": "use to tune low-posture transitions before real tunnel or crawl clips are added",
+      "max_head_or_torso_height": 0.933,
+      "min_low_posture_fraction": 0.18,
+      "ceiling_min_x": -0.1,
+      "ceiling_max_x": 0.25,
+      "allow_knee_hand_contact": true,
+      "proxy_note": "Auto-materialized low-posture proxy; not final tunnel traversal evidence."
+    }
+  },
+  "legal_contacts": {
+    "allowed_support_bodies": [
+      "left_ankle_roll_link",
+      "right_ankle_roll_link",
+      "left_wrist_yaw_link",
+      "right_wrist_yaw_link",
+      "left_knee_link",
+      "right_knee_link"
+    ],
+    "allow_hand_contact": false,
+    "allow_knee_hand_contact": true,
+    "forbidden_contacts": [
+      "head_link hard impact",
+      "torso_link hard impact unless task profile explicitly allows body support"
+    ]
+  },
+  "risk_controls": {
+    "sim2real_sensitive_terms": [
+      "torque",
+      "action_rate",
+      "joint_limit",
+      "contact_force",
+      "base_angular_velocity",
+      "landing_impact"
+    ],
+    "must_preserve": [
+      "final evaluation success criteria",
+      "legal contact semantics",
+      "minimum uniform phase coverage",
+      "proxy-vs-real-motion distinction"
+    ]
+  },
+  "baseline_contract": {
+    "baseline_id": "baseline_beyondmimic",
+    "baseline_task": "Tracking-Flat-G1-v0",
+    "baseline_eval_json": "artifacts/g1_asap_squat_l1_lowposture/eval/baseline_beyondmimic.json",
+    "comparison_protocol": "motion-start evaluation, >=50 episodes for final claims"
+  },
+  "algorithm_priors": {
+    "source": "evolution/algorithm_priors/asap_algorithm_priors.json",
+    "usage": [
+      "phase motion tracking priors guide imitation naturalness and safety penalties",
+      "history observation and domain randomization guide robustness and sim2real preparation",
+      "delta-action priors are reserved for second-stage sim2real residual adaptation"
+    ]
+  }
+}

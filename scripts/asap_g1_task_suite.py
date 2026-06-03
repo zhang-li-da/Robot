@@ -22,6 +22,7 @@ ASAP_ROOT = resolve_asap_root()
 ASAP_MOTION_DIR = asap_motion_dir(ASAP_ROOT)
 CATALOG_PATH = "evolution/action_catalog/asap_motion_catalog.json"
 ASSET_MANIFEST_PATH = "evolution/action_catalog/asap_asset_manifest.json"
+GENERATED_TASK_SPECS_PATH = Path("evolution/action_catalog/asap_generated_task_specs.json")
 
 
 COMMON_REWARD_TERMS = [
@@ -320,8 +321,33 @@ TASK_SPECS: list[dict[str, Any]] = [
 ]
 
 
-def all_specs() -> list[dict[str, Any]]:
+def base_specs() -> list[dict[str, Any]]:
     return deepcopy(TASK_SPECS)
+
+
+def generated_specs() -> list[dict[str, Any]]:
+    path = GENERATED_TASK_SPECS_PATH
+    if not path.exists():
+        return []
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    specs = payload.get("specs", payload if isinstance(payload, list) else [])
+    if not isinstance(specs, list):
+        return []
+    base_ids = {spec["id"] for spec in TASK_SPECS}
+    valid: list[dict[str, Any]] = []
+    for spec in specs:
+        if not isinstance(spec, dict):
+            continue
+        if spec.get("id") in base_ids:
+            continue
+        required = {"id", "source", "artifact", "base_config", "output_config", "isaac_task", "baseline_task", "task"}
+        if required.issubset(spec):
+            valid.append(deepcopy(spec))
+    return valid
+
+
+def all_specs() -> list[dict[str, Any]]:
+    return base_specs() + generated_specs()
 
 
 def default_experiment_ids() -> list[str]:
@@ -334,10 +360,11 @@ def default_experiment_ids() -> list[str]:
 
 
 def get_spec(task_id: str) -> dict[str, Any]:
-    for spec in TASK_SPECS:
+    specs = all_specs()
+    for spec in specs:
         if spec["id"] == task_id:
             return deepcopy(spec)
-    known = ", ".join(spec["id"] for spec in TASK_SPECS)
+    known = ", ".join(spec["id"] for spec in specs)
     raise KeyError(f"Unknown ASAP task id '{task_id}'. Known ids: {known}")
 
 
@@ -443,7 +470,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     if args.list:
-        print("\n".join(spec["id"] for spec in TASK_SPECS))
+        print("\n".join(spec["id"] for spec in all_specs()))
         return 0
     if args.list_default:
         print(" ".join(default_experiment_ids()))

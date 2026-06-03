@@ -21,8 +21,8 @@
 | 排名 | motion | 类型 | 已配置 | 匹配分 | 位移/高度/时长 | 进化重点 |
 | ---: | --- | --- | --- | ---: | --- | --- |
 | 1 | `0-motions_raw_tairantestbed_smpl_video_squat_level3_filter_amass` | `low_posture_pretraining` | yes | 522.0 | 0.04m / 0.64m / 6.13s | phase_progress, ceiling_clearance, landing_stability |
-| 2 | `0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass` | `low_posture_pretraining` | no | 461.1 | 0.08m / 0.32m / 6.33s | phase_progress, ceiling_clearance, landing_stability |
-| 3 | `0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass` | `low_posture_pretraining` | no | 384.1 | 0.07m / 0.19m / 5.23s | phase_progress, ceiling_clearance, landing_stability |
+| 2 | `0-motions_raw_tairantestbed_smpl_video_squat_level2_filter_amass` | `low_posture_pretraining` | yes | 473.1 | 0.08m / 0.32m / 6.33s | phase_progress, ceiling_clearance, landing_stability |
+| 3 | `0-motions_raw_tairantestbed_smpl_video_squat_level1_filter_amass` | `low_posture_pretraining` | yes | 396.1 | 0.07m / 0.19m / 5.23s | phase_progress, ceiling_clearance, landing_stability |
 | 4 | `0-motions_raw_tairantestbed_smpl_video_step_forward_back_level4_filter_amass` | `recovery_pretraining` | no | 356.0 | 0.05m / 0.39m / 4.43s | phase_progress, landing_stability, contact_force |
 | 5 | `0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level4_filter_amass` | `recovery_pretraining` | no | 351.7 | 1.20m / 0.30m / 4.23s | phase_progress, landing_stability, contact_force |
 | 6 | `0-motions_raw_tairantestbed_smpl_video_step_forward_forward_level3_filter_amass` | `recovery_pretraining` | no | 302.3 | 0.96m / 0.17m / 4.43s | phase_progress, landing_stability, contact_force |

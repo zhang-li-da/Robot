@@ -218,6 +218,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--queue_limit", type=int, default=32)
     parser.add_argument("--roadmap_limit", type=int, default=24)
     parser.add_argument("--task_pack_limit", type=int, default=12)
+    parser.add_argument("--materialize_limit", type=int, default=8)
     parser.add_argument("--goals", nargs="+", default=list(DEFAULT_GOALS), choices=list(DEFAULT_GOALS))
     parser.add_argument("--summary_json", type=Path, default=DEFAULT_SUMMARY_JSON)
     parser.add_argument("--summary_md", type=Path, default=DEFAULT_SUMMARY_MD)
@@ -256,11 +257,30 @@ def main() -> int:
             env,
         )
     )
+    steps.append(
+        run_step(
+            "select_evolution_tasks",
+            ["scripts/select_asap_evolution_tasks.py", "--limit", str(args.queue_limit)],
+            env,
+        )
+    )
+    if args.materialize_limit > 0:
+        steps.append(
+            run_step(
+                "materialize_candidate_task_specs",
+                [
+                    "scripts/materialize_asap_candidate_task_specs.py",
+                    "--max_generated",
+                    str(args.materialize_limit),
+                ],
+                env,
+            )
+        )
     steps.append(run_step("create_evolution_configs", ["scripts/create_asap_evolution_configs.py"], env))
     steps.append(run_step("create_task_profiles", ["scripts/create_asap_task_profiles.py"], env))
     steps.append(
         run_step(
-            "select_evolution_tasks",
+            "select_evolution_tasks_post_materialize",
             ["scripts/select_asap_evolution_tasks.py", "--limit", str(args.queue_limit)],
             env,
         )
