@@ -102,6 +102,24 @@ def _set_clipped(genome: AlgorithmGenome, config: dict[str, Any], dotted: str, v
     setattr(section_obj, key, _clip_to_search_space(dotted, value, config))
 
 
+def _cap_resource_to_defaults(resource: ResourceGenes, config: dict[str, Any]) -> None:
+    """Use resource_defaults as hard caps unless a resource key is explicitly searchable."""
+
+    defaults = config.get("resource_defaults", {})
+    search_space = config.get("search_space", {})
+    for key in [
+        "num_envs",
+        "stage1_iterations",
+        "stage2_iterations",
+        "stage1_eval_episodes",
+        "stage2_eval_episodes",
+    ]:
+        dotted = f"resource.{key}"
+        if dotted in search_space or key not in defaults:
+            continue
+        setattr(resource, key, min(int(getattr(resource, key)), int(defaults[key])))
+
+
 def apply_task_reward_prior(genome: AlgorithmGenome, config: dict[str, Any]) -> AlgorithmGenome:
     """Add conservative task-specific priors for local fallback candidates."""
 
@@ -140,6 +158,7 @@ def normalize_genome_for_config(genome: AlgorithmGenome, config: dict[str, Any])
         dr.push_interval_min, dr.push_interval_max = dr.push_interval_max, dr.push_interval_min
 
     resource = normalized.resource
+    _cap_resource_to_defaults(resource, config)
     if resource.stage1_iterations > resource.stage2_iterations:
         resource.stage2_iterations = resource.stage1_iterations
     if resource.stage2_iterations > resource.full_iterations:
