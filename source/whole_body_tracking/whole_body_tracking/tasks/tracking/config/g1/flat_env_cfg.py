@@ -189,6 +189,11 @@ class G1JumpLeapRewardsCfg(RewardsCfg):
         weight=0.25,
         params={"command_name": "motion", "min_height": 0.85, "target_margin": 0.25},
     )
+    yaw_alignment = RewTerm(
+        func=mdp.target_yaw_alignment,
+        weight=0.0,
+        params={"command_name": "motion", "target_yaw": 0.0, "std": 0.65, "start_phase": 0.55},
+    )
     landing_stability = RewTerm(
         func=mdp.landing_stability,
         weight=0.20,

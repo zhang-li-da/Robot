@@ -53,6 +53,46 @@ latest_generation_with_scoreboard() {
   return 1
 }
 
+scoreboard_has_scores() {
+  local scoreboard="$1"
+  python - "${scoreboard}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+try:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+except Exception:
+    raise SystemExit(1)
+raise SystemExit(0 if payload.get("scores") else 1)
+PY
+}
+
+latest_generation_with_nonempty_scoreboard() {
+  local output_root="$1"
+  local candidate
+  while IFS= read -r candidate; do
+    if [[ -f "${candidate}/scoreboard.json" ]] && scoreboard_has_scores "${candidate}/scoreboard.json"; then
+      printf '%s\n' "${candidate}"
+      return 0
+    fi
+  done < <(ls -td "${output_root}"/20*_gen?? 2>/dev/null || true)
+  latest_generation_with_scoreboard "${output_root}"
+}
+
+latest_generation_with_feedback() {
+  local output_root="$1"
+  local candidate
+  while IFS= read -r candidate; do
+    if [[ -f "${candidate}/feedback.json" ]]; then
+      printf '%s\n' "${candidate}"
+      return 0
+    fi
+  done < <(ls -td "${output_root}"/20*_gen?? 2>/dev/null || true)
+  return 1
+}
+
 next_generation_index() {
   local generation_dir="$1"
   local base gen
@@ -148,7 +188,7 @@ repair_side_jump_l4() {
   local task_name="g1_asap_side_jump_l4"
   local config="evolution/configs/g1_asap_side_jump_l4_v1.json"
   local output_root="outputs/evolution_asap/${task_name}"
-  local latest_gen start_generation history feedback
+  local latest_feedback_gen latest_history_gen start_generation history feedback
   local comparison_args=()
   mapfile -t comparison_args < <(comparison_args_for_task "${task_name}")
 
@@ -157,19 +197,25 @@ repair_side_jump_l4() {
     return 0
   fi
 
-  latest_gen="$(latest_generation_with_scoreboard "${output_root}" || true)"
-  if [[ -n "${latest_gen}" ]]; then
-    start_generation="$(next_generation_index "${latest_gen}")"
-    history="${latest_gen}/scoreboard.json"
-    feedback="${latest_gen}/feedback_comparison_repair.json"
+  latest_feedback_gen="$(latest_generation_with_feedback "${output_root}" || true)"
+  latest_history_gen="$(latest_generation_with_nonempty_scoreboard "${output_root}" || true)"
+  if [[ -n "${latest_feedback_gen}" ]]; then
+    start_generation="$(next_generation_index "${latest_feedback_gen}")"
+    if [[ -n "${latest_history_gen}" ]]; then
+      history="${latest_history_gen}/scoreboard.json"
+    else
+      history="${latest_feedback_gen}/scoreboard.json"
+    fi
+    feedback="${latest_feedback_gen}/feedback_comparison_repair.json"
     python -u scripts/evolution/feedback_analyzer.py \
       --config "${config}" \
-      --output_dir "${latest_gen}" \
+      --output_dir "${latest_feedback_gen}" \
       --baseline_eval "artifacts/${task_name}/eval/baseline_beyondmimic.json" \
       --baseline_id baseline_beyondmimic \
       "${comparison_args[@]}" \
       --output "${feedback}"
-    echo "[ASAP-REPAIR-QUEUE] side-jump repair resumes after ${latest_gen} at generation ${start_generation}"
+    echo "[ASAP-REPAIR-QUEUE] side-jump repair resumes after ${latest_feedback_gen} at generation ${start_generation}"
+    echo "[ASAP-REPAIR-QUEUE] side-jump repair history=${history}"
   else
     start_generation="${SIDE_JUMP_REPAIR_START_GENERATION:-0}"
     history=""

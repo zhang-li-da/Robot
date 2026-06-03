@@ -402,6 +402,16 @@ def _runtime_failure_feedback(genome_id: str, status_path: Path, config: dict[st
         tags.append("runtime_disk_space")
         hypotheses.append("logging or checkpoint output may be blocked by storage pressure")
         levers.extend(["clean stale logs before retry", "increase save_interval for early-stage candidates"])
+    if "could not override" in lower_tail or "is not in struct" in lower_tail:
+        tags.extend(["hydra_override_key_missing", "search_space_env_mismatch"])
+        hypotheses.append("candidate referenced a Hydra key that is not present in the selected Isaac task config")
+        levers.extend(
+            [
+                "add the missing reward/termination term to the environment with zero default weight before retry",
+                "or remove the unsupported search-space lever from this task profile",
+                "run a command preflight before allocating full training budget",
+            ]
+        )
     if return_code not in (None, 0):
         tags.append("runtime_nonzero_return_code")
 
