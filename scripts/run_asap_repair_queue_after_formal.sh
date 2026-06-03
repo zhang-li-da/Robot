@@ -93,6 +93,42 @@ latest_generation_with_feedback() {
   return 1
 }
 
+task_has_strong_candidate() {
+  local task_name="$1"
+  local min_success_rate="${2:-0.75}"
+  local min_success_delta="${3:-0.08}"
+  python - "${task_name}" "${min_success_rate}" "${min_success_delta}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+task_name = sys.argv[1]
+min_success_rate = float(sys.argv[2])
+min_success_delta = float(sys.argv[3])
+records = []
+for scoreboard_path in sorted((Path("outputs/evolution_asap") / task_name).glob("*/scoreboard.json")):
+    try:
+        payload = json.loads(scoreboard_path.read_text(encoding="utf-8"))
+    except Exception:
+        continue
+    baseline = payload.get("baseline") or {}
+    baseline_success = float(baseline.get("success_rate", 0.0) or 0.0)
+    for score in payload.get("scores", []):
+        success_rate = float(score.get("success_rate", 0.0) or 0.0)
+        success_delta = float(
+            score.get("success_rate_delta_vs_baseline", success_rate - baseline_success) or 0.0
+        )
+        records.append((success_rate, success_delta, score.get("genome_id", ""), str(scoreboard_path)))
+if not records:
+    raise SystemExit(1)
+best = max(records, key=lambda item: (item[0], item[1]))
+if best[0] >= min_success_rate and best[1] >= min_success_delta:
+    print(f"{best[2]} success_rate={best[0]:.4f} delta={best[1]:.4f} scoreboard={best[3]}")
+    raise SystemExit(0)
+raise SystemExit(1)
+PY
+}
+
 next_generation_index() {
   local generation_dir="$1"
   local base gen
@@ -103,6 +139,83 @@ next_generation_index() {
   else
     printf '0\n'
   fi
+}
+
+repair_task_from_latest() {
+  local task_name="$1"
+  local config="$2"
+  local default_start_generation="$3"
+  local repair_generations="$4"
+  local repair_population="$5"
+  local label="${6:-${task_name}}"
+  local output_root="outputs/evolution_asap/${task_name}"
+  local latest_feedback_gen latest_history_gen start_generation history feedback strong_candidate
+  local comparison_args=()
+  mapfile -t comparison_args < <(comparison_args_for_task "${task_name}")
+
+  if [[ ! -f "artifacts/${task_name}/eval/baseline_beyondmimic.json" ]]; then
+    echo "[ASAP-REPAIR-QUEUE] skip ${label} repair; missing baseline eval"
+    return 0
+  fi
+  if [[ ! -f "${config}" ]]; then
+    echo "[ASAP-REPAIR-QUEUE] skip ${label} repair; missing config ${config}"
+    return 0
+  fi
+
+  if strong_candidate="$(task_has_strong_candidate \
+      "${task_name}" \
+      "${REPAIR_SKIP_SUCCESS_RATE:-0.75}" \
+      "${REPAIR_SKIP_SUCCESS_DELTA:-0.08}" 2>/dev/null)"; then
+    echo "[ASAP-REPAIR-QUEUE] skip ${label} repair; strong candidate already exists: ${strong_candidate}"
+    return 0
+  fi
+
+  latest_feedback_gen="$(latest_generation_with_feedback "${output_root}" || true)"
+  latest_history_gen="$(latest_generation_with_nonempty_scoreboard "${output_root}" || true)"
+  if [[ -n "${latest_feedback_gen}" ]]; then
+    start_generation="$(next_generation_index "${latest_feedback_gen}")"
+    if [[ -n "${latest_history_gen}" ]]; then
+      history="${latest_history_gen}/scoreboard.json"
+    else
+      history="${latest_feedback_gen}/scoreboard.json"
+    fi
+    feedback="${latest_feedback_gen}/feedback_comparison_repair.json"
+    python -u scripts/evolution/feedback_analyzer.py \
+      --config "${config}" \
+      --output_dir "${latest_feedback_gen}" \
+      --baseline_eval "artifacts/${task_name}/eval/baseline_beyondmimic.json" \
+      --baseline_id baseline_beyondmimic \
+      "${comparison_args[@]}" \
+      --output "${feedback}"
+    echo "[ASAP-REPAIR-QUEUE] ${label} repair resumes after ${latest_feedback_gen} at generation ${start_generation}"
+    echo "[ASAP-REPAIR-QUEUE] ${label} repair history=${history}"
+  else
+    start_generation="${default_start_generation}"
+    history=""
+    feedback=""
+    echo "[ASAP-REPAIR-QUEUE] ${label} repair starts without prior generation history"
+  fi
+
+  local resume_args=()
+  if [[ -n "${history}" && -n "${feedback}" ]]; then
+    resume_args=(--initial_history "${history}" --initial_feedback "${feedback}")
+  fi
+
+  python -u scripts/evolution/closed_loop.py \
+    --config "${config}" \
+    --output_root "${output_root}" \
+    --baseline_eval "artifacts/${task_name}/eval/baseline_beyondmimic.json" \
+    --baseline_id baseline_beyondmimic \
+    "${comparison_args[@]}" \
+    --generations "${repair_generations}" \
+    --population_size "${repair_population}" \
+    --start_generation "${start_generation}" \
+    --use_llm \
+    --llm_timeout "${LLM_TIMEOUT:-600}" \
+    "${resume_args[@]}" \
+    --enable_stage2 \
+    --stage2_min_success_delta "${STAGE2_MIN_SUCCESS_DELTA:-0.05}" \
+    --stage2_min_fitness_delta "${STAGE2_MIN_FITNESS_DELTA:-5.0}"
 }
 
 repair_lowposture() {
@@ -245,8 +358,19 @@ repair_side_jump_l4() {
     --stage2_min_fitness_delta "${STAGE2_MIN_FITNESS_DELTA:-5.0}"
 }
 
+repair_cr7_l2_dynamic() {
+  repair_task_from_latest \
+    "g1_asap_cr7_l2_dynamic" \
+    "evolution/configs/g1_asap_cr7_l2_dynamic_v1.json" \
+    "${CR7_REPAIR_START_GENERATION:-0}" \
+    "${CR7_REPAIR_GENERATIONS:-2}" \
+    "${CR7_REPAIR_POPULATION:-2}" \
+    "CR7 dynamic"
+}
+
 wait_for_formal_idle
 activate_env
 repair_lowposture
 repair_turn_jump_l4
 repair_side_jump_l4
+repair_cr7_l2_dynamic

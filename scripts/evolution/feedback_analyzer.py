@@ -167,11 +167,23 @@ def build_comparison_context(
         return context
 
     baseline = None
+    baseline_data: dict[str, Any] | None = None
     if baseline_eval is not None and baseline_eval.exists():
         baseline = score_eval_json(baseline_id, baseline_eval, config)
+        try:
+            baseline_data = load_json(baseline_eval)
+        except (OSError, json.JSONDecodeError):
+            baseline_data = None
 
     tags: list[str] = []
     must_address: list[str] = []
+    task = config.get("task", {})
+    criteria = task.get("success_criteria", {}) or {}
+    target_x = float(criteria.get("min_progress_x", task.get("target_x", 0.0)) or 0.0)
+    min_apex = float(criteria.get("min_apex_height", task.get("min_root_height", 0.0)) or 0.0)
+    max_final_speed = float(criteria.get("max_final_anchor_speed", 0.0) or 0.0)
+    max_final_ang_speed = float(criteria.get("max_final_ang_speed", 0.0) or 0.0)
+    max_final_yaw_error = float(criteria.get("max_final_yaw_error", 0.0) or 0.0)
     for comparison_id, eval_path in comparison_evals.items():
         entry: dict[str, Any] = {
             "comparison_id": comparison_id,
@@ -200,10 +212,18 @@ def build_comparison_context(
             continue
 
         termination_rates = _termination_rates(data)
+        comparison_metrics = {
+            "mean_max_torso_x": _safe_float(data, "mean_max_torso_x"),
+            "mean_apex_height": _safe_float(data, "mean_apex_height", _safe_float(data, "mean_max_torso_height")),
+            "mean_final_speed": _safe_float(data, "mean_final_speed"),
+            "mean_final_ang_speed": _safe_float(data, "mean_final_ang_speed"),
+            "mean_final_yaw_error": _safe_float(data, "mean_final_yaw_error"),
+        }
         entry.update(
             {
                 "status": "scored",
                 "score": score.to_dict(),
+                "criteria_metrics": comparison_metrics,
                 "termination_rates": termination_rates,
                 "dominant_termination": _dominant_termination(termination_rates),
             }
@@ -255,9 +275,53 @@ def build_comparison_context(
                     f"{comparison_id} reduced return without improving success: "
                     f"{score.mean_return:.3f} vs {baseline.mean_return:.3f}; keep task rewards baseline-adjacent"
                 )
+            if (
+                baseline_data is not None
+                and max_final_yaw_error > 0.0
+                and score.success_rate <= baseline.success_rate
+            ):
+                baseline_yaw_error = _safe_float(baseline_data, "mean_final_yaw_error")
+                if comparison_metrics["mean_final_yaw_error"] > baseline_yaw_error + 0.25:
+                    tags.append("comparison_yaw_regressed_without_success_gain")
+                    must_address.append(
+                        f"{comparison_id} worsened final yaw without success gain: "
+                        f"{comparison_metrics['mean_final_yaw_error']:.3f} vs {baseline_yaw_error:.3f}; "
+                        "gate progress rewards by yaw recovery and landing stability"
+                    )
 
         if score.success_rate <= 0.0:
             tags.append("comparison_no_success")
+        if target_x > 0.0 and comparison_metrics["mean_max_torso_x"] < target_x:
+            tags.append("comparison_progress_shortfall")
+            must_address.append(
+                f"{comparison_id} still misses target progress: "
+                f"mean_x {comparison_metrics['mean_max_torso_x']:.3f} < target {target_x:.3f}"
+            )
+        if min_apex > 0.0 and comparison_metrics["mean_apex_height"] < min_apex:
+            tags.append("comparison_apex_shortfall")
+            must_address.append(
+                f"{comparison_id} misses apex/root-height criterion: "
+                f"{comparison_metrics['mean_apex_height']:.3f} < {min_apex:.3f}; tune apex with phase tracking"
+            )
+        if max_final_speed > 0.0 and comparison_metrics["mean_final_speed"] > max_final_speed:
+            tags.append("comparison_unstable_final_speed")
+            must_address.append(
+                f"{comparison_id} violates final speed gate: "
+                f"{comparison_metrics['mean_final_speed']:.3f} > {max_final_speed:.3f}; increase landing stability"
+            )
+        if max_final_ang_speed > 0.0 and comparison_metrics["mean_final_ang_speed"] > max_final_ang_speed:
+            tags.append("comparison_unstable_final_rotation")
+            must_address.append(
+                f"{comparison_id} violates final angular-speed gate: "
+                f"{comparison_metrics['mean_final_ang_speed']:.3f} > {max_final_ang_speed:.3f}; stabilize landing rotation"
+            )
+        if max_final_yaw_error > 0.0 and comparison_metrics["mean_final_yaw_error"] > max_final_yaw_error:
+            tags.append("comparison_yaw_recovery_failure")
+            must_address.append(
+                f"{comparison_id} violates final yaw gate: "
+                f"{comparison_metrics['mean_final_yaw_error']:.3f} > {max_final_yaw_error:.3f}; "
+                "increase yaw_alignment and avoid progress-only candidates"
+            )
         if termination_rates.get("ee_body_pos", 0.0) >= 0.50:
             tags.append("comparison_ee_body_pos_dominant")
             must_address.append(
