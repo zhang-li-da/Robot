@@ -434,6 +434,69 @@ def _apply_nonzero_baseline_guard(
     return guarded
 
 
+def _is_crawl_or_low_posture_task(config: dict[str, Any]) -> bool:
+    task = config.get("task", {})
+    task_name = str(task.get("name", "")).lower()
+    isaac_task = str(task.get("isaac_task", "")).lower()
+    success_type = str(task.get("success_type", "")).lower()
+    task_family = str(task.get("task_data_contract", {}).get("target_task_family", "")).lower()
+    return (
+        success_type in {"crawl", "low_posture"}
+        or any(token in success_type for token in ("crawl", "low_posture"))
+        or "crawl" in isaac_task
+        or "crawltunnel" in isaac_task
+        or "lowposture" in task_name
+        or "low_posture" in task_name
+        or task_family == "crawl_tunnel"
+    )
+
+
+def _apply_crawl_low_posture_guard(
+    genome: AlgorithmGenome,
+    config: dict[str, Any],
+) -> AlgorithmGenome:
+    """Keep low-posture/crawl search from collapsing on strict early tracking termination."""
+
+    if not _is_crawl_or_low_posture_task(config):
+        return genome
+
+    guarded = genome
+    guarded.reward.motion_global_anchor_pos_std = _clip_context_value(
+        config,
+        "reward.motion_global_anchor_pos_std",
+        max(float(guarded.reward.motion_global_anchor_pos_std), 0.40),
+    )
+    guarded.reward.motion_body_pos_std = _clip_context_value(
+        config,
+        "reward.motion_body_pos_std",
+        max(float(guarded.reward.motion_body_pos_std), 0.32),
+    )
+    guarded.termination.anchor_pos_z_threshold = _clip_context_value(
+        config,
+        "termination.anchor_pos_z_threshold",
+        max(float(guarded.termination.anchor_pos_z_threshold), 0.40),
+    )
+    guarded.termination.ee_body_pos_z_threshold = _clip_context_value(
+        config,
+        "termination.ee_body_pos_z_threshold",
+        max(float(guarded.termination.ee_body_pos_z_threshold), 0.45),
+    )
+    guarded.sampling.fixed_start_probability = _clip_context_value(
+        config,
+        "sampling.fixed_start_probability",
+        min(float(guarded.sampling.fixed_start_probability), 0.65),
+    )
+    guarded.reward.phase_progress_weight = _clip_context_value(
+        config,
+        "reward.phase_progress_weight",
+        max(float(guarded.reward.phase_progress_weight), 0.55),
+    )
+    note = "低姿态/钻洞保护：放宽anchor/ee早期终止并保持阶段覆盖"
+    if note not in guarded.rationale:
+        guarded.rationale = list(guarded.rationale) + [note]
+    return guarded
+
+
 def _feedback_failure_tags(feedback: dict[str, Any]) -> set[str]:
     tags: set[str] = set()
     for item in feedback.get("candidates", []):
@@ -649,6 +712,7 @@ def _normalize_with_context(
     genome = _apply_high_baseline_guard(genome, config, history, feedback)
     genome = _apply_nonzero_baseline_guard(genome, config, history, feedback)
     genome = _apply_feedback_failure_guard(genome, config, feedback)
+    genome = _apply_crawl_low_posture_guard(genome, config)
     genome = _apply_task_data_contract_guard(genome, config)
     return normalize_genome_for_config(genome, config)
 
