@@ -90,7 +90,7 @@
       "description": "ASAP SpiderMan low-pose proxy for wall contact and large limb coordination.",
       "min_progress_x": 0.03,
       "min_apex_height": 0.45,
-      "target_final_yaw": 0.0,
+      "target_final_yaw": "motion_final",
       "max_final_yaw_error": 1.2,
       "max_final_anchor_speed": 1.0,
       "max_final_ang_speed": 2.2,

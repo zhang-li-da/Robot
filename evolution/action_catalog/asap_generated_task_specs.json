@@ -50,7 +50,7 @@
           "max_final_ang_speed": 2.5,
           "max_final_yaw_error": 1.1,
           "allow_hand_contact": false,
-          "target_final_yaw": 0.0
+          "target_final_yaw": "motion_final"
         },
         "auto_materialized": {
           "source_motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level3_filter_amass",
@@ -104,7 +104,7 @@
           "max_final_ang_speed": 2.5,
           "max_final_yaw_error": 1.1,
           "allow_hand_contact": false,
-          "target_final_yaw": 0.0
+          "target_final_yaw": "motion_final"
         },
         "auto_materialized": {
           "source_motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level2_filter_amass",
@@ -209,7 +209,7 @@
           "max_final_ang_speed": 2.5,
           "max_final_yaw_error": 1.1,
           "allow_hand_contact": false,
-          "target_final_yaw": 0.0
+          "target_final_yaw": "motion_final"
         },
         "auto_materialized": {
           "source_motion_id": "0-motions_raw_tairantestbed_smpl_video_jump_degree_level1_filter_amass",

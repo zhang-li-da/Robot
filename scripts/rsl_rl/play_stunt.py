@@ -9,9 +9,36 @@ import os
 import sys
 from pathlib import Path
 
+import numpy as np
 from isaaclab.app import AppLauncher
 
 import cli_args  # isort: skip
+
+
+def _wrap_scalar_to_pi(value: float) -> float:
+    return math.atan2(math.sin(value), math.cos(value))
+
+
+def _yaw_from_quat_wxyz_np(quat: np.ndarray) -> float:
+    w, x, y, z = [float(v) for v in quat]
+    siny_cosp = 2.0 * (w * z + x * y)
+    cosy_cosp = 1.0 - 2.0 * (y * y + z * z)
+    return math.atan2(siny_cosp, cosy_cosp)
+
+
+def resolve_target_yaw_arg(value: str, motion_file: str) -> float:
+    key = str(value).strip().lower()
+    if key in {"motion_final", "motion_final_yaw", "reference_final", "ref_final"}:
+        motion = np.load(motion_file, allow_pickle=True)
+        if "base_quat_w" in motion:
+            quat = motion["base_quat_w"][-1]
+        elif "body_quat_w" in motion:
+            quat = motion["body_quat_w"][-1, 0]
+        else:
+            raise KeyError(f"Motion file has no base/body quaternion for target yaw: {motion_file}")
+        return _wrap_scalar_to_pi(_yaw_from_quat_wxyz_np(quat))
+    return float(value)
+
 
 parser = argparse.ArgumentParser(description="Play and record a G1 stunt policy.")
 parser.add_argument("--video", action="store_true", default=False)
@@ -33,11 +60,17 @@ parser.add_argument("--min_root_height", type=float, default=0.45)
 parser.add_argument("--min_apex_height", type=float, default=0.0)
 parser.add_argument("--max_final_speed", type=float, default=1.2)
 parser.add_argument("--max_final_ang_speed", type=float, default=2.0)
-parser.add_argument("--target_yaw", type=float, default=0.0)
+parser.add_argument(
+    "--target_yaw",
+    type=str,
+    default="0.0",
+    help="Final yaw target in radians, or 'motion_final' to use the reference clip's final root yaw.",
+)
 parser.add_argument("--max_yaw_error", type=float, default=math.pi)
 cli_args.add_rsl_rl_args(parser)
 AppLauncher.add_app_launcher_args(parser)
 args_cli, hydra_args = parser.parse_known_args()
+args_cli.target_yaw = resolve_target_yaw_arg(args_cli.target_yaw, args_cli.motion_file)
 
 if args_cli.video:
     args_cli.enable_cameras = True
@@ -191,6 +224,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
     max_torso_height = -1.0e9
     final_speed = 0.0
     final_ang_speed = 0.0
+    final_yaw_value = 0.0
     final_yaw_error = float(math.pi)
     final_done = False
     timestep = 0
@@ -203,6 +237,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         final_speed = float(torch.norm(robot.data.body_lin_vel_w[0, torso_id]).item())
         final_ang_speed = float(torch.norm(robot.data.body_ang_vel_w[0, torso_id]).item())
         final_yaw = yaw_from_quat_wxyz(robot.data.body_quat_w[0:1, torso_id])[0]
+        final_yaw_value = float(final_yaw.item())
         final_yaw_error = float(torch.abs(_wrap_to_pi(final_yaw - args_cli.target_yaw)).item())
 
         with torch.inference_mode():
@@ -233,6 +268,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         "max_torso_height": max_torso_height,
         "final_speed": final_speed,
         "final_ang_speed": final_ang_speed,
+        "final_yaw": final_yaw_value,
         "final_yaw_error": final_yaw_error,
         "target_x": args_cli.target_x,
         "min_root_height": args_cli.min_root_height,

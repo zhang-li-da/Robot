@@ -126,7 +126,7 @@ TASK_SPECS: list[dict[str, Any]] = [
                 "description": "ASAP side jump level4 reoriented to +X for aerial balance stress testing.",
                 "min_progress_x": 1.25,
                 "min_apex_height": 0.78,
-                "target_final_yaw": 0.0,
+                "target_final_yaw": "motion_final",
                 "max_final_anchor_speed": 1.4,
                 "max_final_ang_speed": 2.4,
                 "max_final_yaw_error": 1.1,
@@ -163,7 +163,7 @@ TASK_SPECS: list[dict[str, Any]] = [
                 "description": "ASAP turn jump level5, focused on aerial yaw control and landing recovery.",
                 "min_progress_x": 0.7,
                 "min_apex_height": 0.9,
-                "target_final_yaw": 0.0,
+                "target_final_yaw": "motion_final",
                 "max_final_yaw_error": 1.1,
                 "max_final_anchor_speed": 1.4,
                 "max_final_ang_speed": 2.6,
@@ -200,7 +200,7 @@ TASK_SPECS: list[dict[str, Any]] = [
                 "description": "ASAP turn jump level4, curriculum neighbor for wall-turn and aerial yaw-control evolution.",
                 "min_progress_x": 0.55,
                 "min_apex_height": 0.86,
-                "target_final_yaw": 0.0,
+                "target_final_yaw": "motion_final",
                 "max_final_yaw_error": 1.05,
                 "max_final_anchor_speed": 1.35,
                 "max_final_ang_speed": 2.4,
@@ -231,7 +231,7 @@ TASK_SPECS: list[dict[str, Any]] = [
                 "description": "ASAP SpiderMan low-pose proxy for wall contact and large limb coordination.",
                 "min_progress_x": 0.03,
                 "min_apex_height": 0.45,
-                "target_final_yaw": 0.0,
+                "target_final_yaw": "motion_final",
                 "max_final_yaw_error": 1.2,
                 "max_final_anchor_speed": 1.0,
                 "max_final_ang_speed": 2.2,
@@ -385,7 +385,7 @@ def config_task_payload(spec: dict[str, Any]) -> dict[str, Any]:
     criteria = task.setdefault("success_criteria", {})
     reward_terms = task.setdefault("reward_terms", [])
     if "max_final_yaw_error" in criteria:
-        criteria.setdefault("target_final_yaw", 0.0)
+        criteria.setdefault("target_final_yaw", "motion_final")
         if "yaw_alignment" not in reward_terms:
             reward_terms.append("yaw_alignment")
     task.update(

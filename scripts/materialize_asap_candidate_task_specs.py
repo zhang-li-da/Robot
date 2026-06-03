@@ -155,12 +155,11 @@ def build_success_criteria(item: dict[str, Any], target_x: float, task_success_t
         "max_final_anchor_speed": 1.4,
         "max_final_ang_speed": 2.5,
         "max_final_yaw_error": 1.1,
+        "target_final_yaw": "motion_final",
         "allow_hand_contact": archetype == "wall_contact_proxy",
     }
     if archetype in {"flip_proxy_single_foot_jump", "wall_contact_proxy", "dynamic_balance", "recovery_pretraining"}:
         criteria["proxy_note"] = "Auto-materialized proxy/pretraining clip; do not use as final backflip, wall-vault, or tunnel success evidence."
-    if archetype == "aerial_turn_jump":
-        criteria["target_final_yaw"] = 0.0
     return criteria
 
 

@@ -10,9 +10,36 @@ from pathlib import Path
 import sys
 from datetime import datetime
 
+import numpy as np
 from isaaclab.app import AppLauncher
 
 import cli_args  # isort: skip
+
+
+def _wrap_scalar_to_pi(value: float) -> float:
+    return math.atan2(math.sin(value), math.cos(value))
+
+
+def _yaw_from_quat_wxyz_np(quat: np.ndarray) -> float:
+    w, x, y, z = [float(v) for v in quat]
+    siny_cosp = 2.0 * (w * z + x * y)
+    cosy_cosp = 1.0 - 2.0 * (y * y + z * z)
+    return math.atan2(siny_cosp, cosy_cosp)
+
+
+def resolve_target_yaw_arg(value: str, motion_file: str) -> float:
+    key = str(value).strip().lower()
+    if key in {"motion_final", "motion_final_yaw", "reference_final", "ref_final"}:
+        motion = np.load(motion_file, allow_pickle=True)
+        if "base_quat_w" in motion:
+            quat = motion["base_quat_w"][-1]
+        elif "body_quat_w" in motion:
+            quat = motion["body_quat_w"][-1, 0]
+        else:
+            raise KeyError(f"Motion file has no base/body quaternion for target yaw: {motion_file}")
+        return _wrap_scalar_to_pi(_yaw_from_quat_wxyz_np(quat))
+    return float(value)
+
 
 parser = argparse.ArgumentParser(description="Evaluate a humanoid stunt imitation policy.")
 parser.add_argument("--task", type=str, required=True)
@@ -38,7 +65,12 @@ parser.add_argument("--max_body_height", type=float, default=0.85)
 parser.add_argument("--ceiling_min_x", type=float, default=0.0)
 parser.add_argument("--ceiling_max_x", type=float, default=1.0e9)
 parser.add_argument("--min_low_posture_fraction", type=float, default=0.25)
-parser.add_argument("--target_yaw", type=float, default=0.0)
+parser.add_argument(
+    "--target_yaw",
+    type=str,
+    default="0.0",
+    help="Final yaw target in radians, or 'motion_final' to use the reference clip's final root yaw.",
+)
 parser.add_argument("--max_yaw_error", type=float, default=0.8)
 parser.add_argument(
     "--start_mode",
@@ -50,6 +82,7 @@ parser.add_argument(
 cli_args.add_rsl_rl_args(parser)
 AppLauncher.add_app_launcher_args(parser)
 args_cli, hydra_args = parser.parse_known_args()
+args_cli.target_yaw = resolve_target_yaw_arg(args_cli.target_yaw, args_cli.motion_file)
 sys.argv = [sys.argv[0]] + hydra_args
 
 app_launcher = AppLauncher(args_cli)
@@ -213,6 +246,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
     speed_values: list[float] = []
     ang_speed_values: list[float] = []
     yaw_error_values: list[float] = []
+    yaw_values: list[float] = []
     flip_rotation_values: list[float] = []
     success_values: list[bool] = []
     completed = 0
@@ -305,6 +339,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         )
         speed_values.extend(final_speed[done_ids].detach().cpu().tolist())
         ang_speed_values.extend(final_ang_speed[done_ids].detach().cpu().tolist())
+        yaw_values.extend(final_yaw[done_ids].detach().cpu().tolist())
         yaw_error_values.extend(final_yaw_error[done_ids].detach().cpu().tolist())
         flip_rotation_values.extend(flip_rotation[done_ids].detach().cpu().tolist())
         success_values.extend(success_now.detach().cpu().tolist())
@@ -343,8 +378,11 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         "mean_low_posture_fraction": _mean(low_posture_fraction_values[:used]),
         "mean_final_speed": _mean(speed_values[:used]),
         "mean_final_ang_speed": _mean(ang_speed_values[:used]),
+        "mean_final_yaw": _mean(yaw_values[:used]),
         "mean_final_yaw_error": _mean(yaw_error_values[:used]),
         "mean_flip_rotation": _mean(flip_rotation_values[:used]),
+        "target_yaw": args_cli.target_yaw,
+        "max_yaw_error": args_cli.max_yaw_error,
         "best_max_torso_x": float(max(progress_values[:used]) if progress_values[:used] else 0.0),
         "best_max_torso_height": float(max(root_height_values[:used]) if root_height_values[:used] else 0.0),
         "best_flip_rotation": float(max(flip_rotation_values[:used]) if flip_rotation_values[:used] else 0.0),
@@ -357,6 +395,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg, agent_cfg: RslRlOnPolic
         "episode_low_posture_fraction": [float(v) for v in low_posture_fraction_values[:used]],
         "episode_final_speed": [float(v) for v in speed_values[:used]],
         "episode_final_ang_speed": [float(v) for v in ang_speed_values[:used]],
+        "episode_final_yaw": [float(v) for v in yaw_values[:used]],
         "episode_final_yaw_error": [float(v) for v in yaw_error_values[:used]],
         "episode_flip_rotation": [float(v) for v in flip_rotation_values[:used]],
         "episode_successes": [bool(v) for v in used_success_values],
