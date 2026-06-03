@@ -41,7 +41,8 @@ def _dominant_termination(item: dict[str, Any] | None) -> str:
     term = item.get("termination_counts", {})
     if not isinstance(term, dict) or not term:
         return ""
-    return str(max(term.items(), key=lambda pair: pair[1])[0])
+    name, count = max(term.items(), key=lambda pair: pair[1])
+    return str(name) if float(count) > 0.0 else "none"
 
 
 def _task_summary_path(artifacts_root: Path, task_id: str, include_interim: bool) -> Path | None:
